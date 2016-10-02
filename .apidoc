@@ -9,7 +9,7 @@ code:
     error:
       version: latest
       generators:
-        play_2_x_json: /api/app/generated
+        play_2_x_json: generated/app
     docker-registry:
       version: latest
       generators:
