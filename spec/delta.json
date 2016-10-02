@@ -2,9 +2,9 @@
   "name": "delta",
 
   "imports": [
-    { "uri": "http://www.apidoc.me/flow/common/0.0.12/service.json" },
-    { "uri": "http://www.apidoc.me/flow/delta-config/0.1.68/service.json" },
-    { "uri": "http://www.apidoc.me/flow/github/0.0.3/service.json" }
+    { "uri": "http://www.apidoc.me/flow/common/0.1.72/service.json" },
+    { "uri": "http://www.apidoc.me/flow/delta-config/latest/service.json" },
+    { "uri": "http://www.apidoc.me/flow/github/latest/service.json" }
   ],
 
   "unions": {
@@ -68,6 +68,13 @@
 
   "models": {
 
+    "error": {
+      "fields": [
+        { "name": "code", "type": "string" },
+        { "name": "message", "type": "string" }
+      ]
+    },
+    
     "reference": {
       "fields": [
 	{ "name": "id", "type": "string" }
@@ -411,7 +418,7 @@
 	  "body": { "type": "github_authentication_form" },
           "responses": {
             "200": { "type": "io.flow.common.v0.models.user" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
 	  }
 	}
       ]
@@ -463,7 +470,7 @@
           "body": { "type": "user_form" },
           "responses": {
             "201": { "type": "io.flow.common.v0.models.user" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         }
       ]
@@ -506,7 +513,7 @@
           "responses": {
             "201": { "type": "project" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         },
 
@@ -529,7 +536,7 @@
           "responses": {
             "200": { "type": "project", "description": "Project successfully updated" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         },
 
@@ -622,7 +629,7 @@
           "responses": {
             "201": { "type": "organization" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         },
 
@@ -634,7 +641,7 @@
           "responses": {
             "200": { "type": "organization", "description": "Organization successfully updated" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         },
 
@@ -687,7 +694,7 @@
 	    "201": { "type": "membership" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
 	  }
         },
 
@@ -721,7 +728,7 @@
           "responses": {
 	    "200": { "type": "[io.flow.github.v0.models.repository]" },
 	    "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
 	},
 
@@ -736,7 +743,7 @@
           "responses": {
 	    "200": { "type": "io.flow.delta.config.v0.unions.config" },
 	    "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         }
         
@@ -784,7 +791,7 @@
           "responses": {
             "201": { "type": "subscription" },
             "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
         },
 
@@ -857,7 +864,7 @@
           "responses": {
             "201": { "type": "token" },
 	    "401": { "type": "unit" },
-            "422": { "type": "[io.flow.common.v0.models.error]" }
+            "422": { "type": "[error]" }
           }
 	},
 
