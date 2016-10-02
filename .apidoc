@@ -1,7 +1,7 @@
 code:
   flow:
     common:
-      version: latest
+      version: 0.1.76
       generators:
         play_2_x_routes: api/conf/common.routes
         play_2_4_client: generated/app
