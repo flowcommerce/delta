@@ -2,7 +2,7 @@ package io.flow.delta.actors
 
 import akka.actor.{Actor, ActorSystem}
 import db.{ConfigsDao, ImagesDao, ImagesWriteDao, UsersDao}
-import io.flow.delta.lib.{BuildNames, Semver}
+import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models._
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.docker.registry.v0.models.{BuildForm => DockerBuildForm, BuildTag => DockerBuildTag}
@@ -69,7 +69,7 @@ class DockerHubActor @javax.inject.Inject() (
                 org.docker.organization,
                 BuildNames.projectName(build),
                 createBuildForm(org.docker, project.scms, project.uri, build, buildConfig),
-                requestHeaders = requestHeaders(org.id)
+                requestHeaders = dockerHubToken.requestHeaders(org.id)
               ).map { dockerHubBuild =>
                 // TODO: Log the docker hub URL and not the VCS url
                 log.completed(s"Docker Hub repository and automated build [${dockerHubBuild.repoWebUrl}] created.")
@@ -98,8 +98,6 @@ class DockerHubActor @javax.inject.Inject() (
     case msg @ DockerHubActor.Messages.Monitor(version, start) => withErrorHandler(msg) {
       withEnabledBuild { build =>
         withOrganization { org =>
-          syncImages(org.docker, build)
-
           val imageFullName = BuildNames.dockerImageName(org.docker, build, version)
 
           ImagesDao.findByBuildIdAndVersion(build.id, version) match {
@@ -127,53 +125,6 @@ class DockerHubActor @javax.inject.Inject() (
     }
 
     case msg: Any => logUnhandledMessage(msg)
-  }
-
-  private[this] def requestHeaders(organization: String) = {
-    Seq(
-      ("Authorization", s"Bearer ${dockerHubToken.get(organization)}")
-    )
-  }
-
-  def syncImages(docker: Docker, build: Build) {
-    client.V2Tags.get(
-      docker.organization,
-      BuildNames.projectName(build),
-      requestHeaders = requestHeaders(build.project.organization.id)
-    ).map { tags =>
-      tags.results.filter(t => Semver.isSemver(t.name)).foreach { tag =>
-
-        Try(
-          upsertImage(docker, build, tag.name)
-        ) match {
-          case Success(_) => // No-op
-          case Failure(ex) => {
-            log.error(s"Error in upsertImage for tag[${tag.name}]", Some(ex))
-          }
-        }
-      }
-    }.recover {
-      case ex: Throwable => {
-        ex.printStackTrace(System.err)
-        log.error(s"${BuildNames.projectName(build)} Error fetching docker tags for build id[${build.id}]", Some(ex))
-      }
-    }
-  }
-
-  def upsertImage(docker: Docker, build: Build, version: String) {
-    ImagesDao.findByBuildIdAndVersion(buildId, version).getOrElse {
-      imagesWriteDao.create(
-        UsersDao.systemUser,
-        ImageForm(
-          buildId = buildId,
-          name = BuildNames.dockerImageName(docker, build),
-          version = version
-        )
-      ) match {
-        case Left(msgs) => sys.error(msgs.mkString(", "))
-        case Right(img) => // no-op
-      }
-    }
   }
 
   def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, config: BuildConfig): DockerBuildForm = {

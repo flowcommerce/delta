@@ -16,6 +16,7 @@
       "description": "Represents the individual stages of the continuous delivery system that can be enabled / disabled at the build level",
       "values": [
 	{ "name": "set_desired_state" },
+	{ "name": "sync_docker_image" },
 	{ "name": "build_docker_image" },
 	{ "name": "scale" }
       ]

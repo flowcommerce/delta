@@ -39,10 +39,15 @@ object ProjectsDao {
     findAll(auth, id = Some(id), limit = 1).headOption
   }
 
+  def findByBuildId(auth: Authorization, buildId: String): Option[Project] = {
+    findAll(auth, buildId = Some(buildId), limit = 1).headOption
+  }
+
   def findAll(
     auth: Authorization,
     id: Option[String] = None,
     ids: Option[Seq[String]] = None,
+    buildId: Option[String] = None,
     organizationId: Option[String] = None,
     name: Option[String] = None,
     minutesSinceLastEvent: Option[Long] = None,
@@ -73,6 +78,11 @@ object ProjectsDao {
           columnFunctions = Seq(Query.Function.Lower),
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
+        and(
+          buildId.map { bid =>
+            "id = (select project_id from builds where id = {build_id})"
+          }
+        ).bind("build_id", buildId).
         and(
           minutesSinceLastEvent.map { min =>
             "not exists (select 1 from events where events.project_id = projects.id and events.created_at > now() - interval '1 minute' * {minutes_since_last_event}::bigint)"

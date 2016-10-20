@@ -101,6 +101,11 @@ class DockerHubToken @javax.inject.Inject() (
     jwtClient.jwts.postLogin(form)
   }
 
+  def requestHeaders(organization: String) = {
+    Seq(
+      ("Authorization", s"Bearer ${get(organization)}")
+    )
+  }
 }
 
 object DockerHubTokenActor {
