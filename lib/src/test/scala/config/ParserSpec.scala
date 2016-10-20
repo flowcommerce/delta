@@ -73,7 +73,7 @@ class ParserSpec extends Specification {
             initialNumberInstances = 10,
             portContainer = 7050,
             portHost = 8000,
-            stages = Seq(BuildStage.SetDesiredState, BuildStage.BuildDockerImage),
+            stages = Seq(BuildStage.SetDesiredState, BuildStage.SyncDockerImage, BuildStage.BuildDockerImage),
             dependencies = Seq("api")
           )
         )

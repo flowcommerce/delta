@@ -23,6 +23,7 @@ builds:
       port.host: 8000
       enable:
         - set_desired_state
+        - sync_docker_image
         - build_docker_image
       disable:
         - scale
