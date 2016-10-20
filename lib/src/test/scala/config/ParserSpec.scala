@@ -165,6 +165,7 @@ builds:
       initial.number.instances: 10
       enable:
         - set_desired_state
+        - sync_docker_image
         - build_docker_image
       dependencies:
         - api
@@ -177,7 +178,7 @@ builds:
             initialNumberInstances = 5,
             instanceType = InstanceType.T2Medium,
             memory = 3500,
-            stages = Seq(BuildStage.SetDesiredState, BuildStage.BuildDockerImage)
+            stages = Seq(BuildStage.SetDesiredState, BuildStage.SyncDockerImage, BuildStage.BuildDockerImage)
           )
         )
         www must beEqualTo(
@@ -185,7 +186,7 @@ builds:
             name = "www",
             dockerfile = "www/Dockerfile",
             initialNumberInstances = 10,
-            stages = Seq(BuildStage.SetDesiredState, BuildStage.BuildDockerImage),
+            stages = Seq(BuildStage.SetDesiredState, BuildStage.SyncDockerImage, BuildStage.BuildDockerImage),
             dependencies = Seq("api")
           )
         )
