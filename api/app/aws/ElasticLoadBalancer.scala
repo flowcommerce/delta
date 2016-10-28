@@ -90,11 +90,11 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
           .withLoadBalancerName(name)
           .withHealthCheck(
             new HealthCheck()
-              .withHealthyThreshold(2)
-              .withInterval(30)
               .withTarget(s"HTTP:$externalPort/_internal_/healthcheck")
-              .withTimeout(5)
-              .withUnhealthyThreshold(2)
+              .withTimeout(25)
+              .withInterval(30)
+              .withHealthyThreshold(2)
+              .withUnhealthyThreshold(4)
           )
       )
     } catch {
