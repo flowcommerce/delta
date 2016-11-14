@@ -69,16 +69,34 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
 
     try {
       Logger.info(s"AWS ElasticLoadBalancer createLoadBalancer name[$name]")
-      val result = client.createLoadBalancer(
+      client.createLoadBalancer(
         new CreateLoadBalancerRequest()
           .withLoadBalancerName(name)
           .withListeners(elbListeners.asJava)
           .withSubnets(settings.elbSubnets.asJava)
           .withSecurityGroups(Seq(settings.elbSecurityGroup).asJava)
       )
-      println(s"Created Load Balancer: ${result.getDNSName}")
     } catch {
-      case e: DuplicateLoadBalancerNameException => println(s"Launch Configuration '$name' already exists")
+      case e: DuplicateLoadBalancerNameException => {
+
+      }
+    }
+
+    try {
+      client.modifyLoadBalancerAttributes(
+        new ModifyLoadBalancerAttributesRequest()
+          .withLoadBalancerName(name)
+          .withLoadBalancerAttributes(
+            new LoadBalancerAttributes()
+              .withConnectionDraining(
+                new ConnectionDraining()
+                  .withEnabled(true)
+                  .withTimeout(300)
+              )
+          )
+      )
+    } catch {
+      case e: Throwable => Logger.error(s"Error setting ELB connection drain settings: ${e.getMessage}")
     }
   }
 
