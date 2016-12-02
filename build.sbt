@@ -44,10 +44,10 @@ lazy val api = project
       ws,
       jdbc,
       "io.flow" %% "lib-postgresql" % "0.0.38",
-      "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
+      "com.amazonaws" % "aws-java-sdk-ec2" % 1.11.63,
+      "com.amazonaws" % "aws-java-sdk-ecs" % 1.11.63,
+      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % 1.11.63,
+      "com.amazonaws" % "aws-java-sdk-autoscaling" % 1.11.63,
       "com.sendgrid"   %  "sendgrid-java" % "3.1.0",
       "org.postgresql" % "postgresql" % "9.4.1212"
     )
@@ -82,7 +82,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("delta-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.1.37",
+    "io.flow" %% "lib-play" % "0.2.6",
     "org.scalatestplus" %% "play" % "1.4.0" % "test",
     specs2 % Test
   ),
