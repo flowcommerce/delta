@@ -43,7 +43,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       ws,
       jdbc,
-      "io.flow" %% "lib-postgresql" % "0.0.38",
+      "io.flow" %% "lib-postgresql" % "0.0.39",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
@@ -82,7 +82,7 @@ val credsToUse = Option(System.getenv("ARTIFACTORY_USERNAME")) match {
 lazy val commonSettings: Seq[Setting[_]] = Seq(
   name <<= name("delta-" + _),
   libraryDependencies ++= Seq(
-    "io.flow" %% "lib-play" % "0.1.37",
+    "io.flow" %% "lib-play" % "0.2.6",
     "org.scalatestplus" %% "play" % "1.4.0" % "test",
     specs2 % Test
   ),
