@@ -156,37 +156,50 @@ class AutoScalingGroup @javax.inject.Inject() (
     */
   def updateAutoScalingGroup(name: String, newlaunchConfigName: String, oldLaunchConfigurationName: String, instances: java.util.Collection[String]) {
     try {
-      // update the auto scaling group
-      client.updateAutoScalingGroup(
-        new UpdateAutoScalingGroupRequest()
-          .withAutoScalingGroupName(name)
-          .withLaunchConfigurationName(newlaunchConfigName)
-      )
-
-      // detach the old instances
-      client.detachInstances(
-        new DetachInstancesRequest()
-          .withAutoScalingGroupName(name)
-          .withInstanceIds(instances)
-      )
-
-      // delete the old launch configuration
-      client.deleteLaunchConfiguration(
-        new DeleteLaunchConfigurationRequest()
-          .withLaunchConfigurationName(oldLaunchConfigurationName)
-      )
-
-      /**
-        * terminate the old instances to allow new ones to come
-        * up with updated launch config and load balancer
-        */
-      ec2Client.terminateInstances(
-        new TerminateInstancesRequest()
-          .withInstanceIds(instances)
-      )
+      updateGroupLaunchConfiguration(name, newlaunchConfigName)
+      detachOldInstances(name, instances)
+      deleteOldLaunchConfiguration(oldLaunchConfigurationName)
+      terminateInstances(instances)
     } catch {
-      case e: Throwable => Logger.error(s"Error updating autoscaling group $name with launch config $newlaunchConfigName. Error: ${e.getMessage}")
+      case e: Throwable => Logger.error(s"FlowError Error updating autoscaling group $name with launch config $newlaunchConfigName. Error: ${e.getMessage}")
     }
+  }
+
+  private[this] def terminateInstances(instances: java.util.Collection[String]): Unit = {
+    /**
+      * terminate the old instances to allow new ones to come
+      * up with updated launch config and load balancer
+      */
+    ec2Client.terminateInstances(
+      new TerminateInstancesRequest()
+        .withInstanceIds(instances)
+    )
+  }
+
+  private[this] def deleteOldLaunchConfiguration(oldLaunchConfigurationName: String): Unit = {
+    // delete the old launch configuration
+    client.deleteLaunchConfiguration(
+      new DeleteLaunchConfigurationRequest()
+        .withLaunchConfigurationName(oldLaunchConfigurationName)
+    )
+  }
+
+  private[this] def detachOldInstances(name: String, instances: java.util.Collection[String]): Unit = {
+    // detach the old instances
+    client.detachInstances(
+      new DetachInstancesRequest()
+        .withAutoScalingGroupName(name)
+        .withInstanceIds(instances)
+    )
+  }
+
+  private[this] def updateGroupLaunchConfiguration(name: String, newlaunchConfigName: String): Unit = {
+    // update the auto scaling group
+    client.updateAutoScalingGroup(
+      new UpdateAutoScalingGroupRequest()
+        .withAutoScalingGroupName(name)
+        .withLaunchConfigurationName(newlaunchConfigName)
+    )
   }
 
   def lcUserData(id: String): String = {
