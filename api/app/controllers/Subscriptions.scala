@@ -15,8 +15,7 @@ import scala.concurrent.{ExecutionContext, Future}
 @javax.inject.Singleton
 class Subscriptions @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
-) extends Controller with BaseIdentifiedRestController {
+) extends Controller with BaseFlowController {
 
   /**
    * If we find an 'identifier' query string parameter, use that to

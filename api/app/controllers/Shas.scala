@@ -12,9 +12,8 @@ import play.api.libs.json._
 @javax.inject.Singleton
 class Shas @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
   shasWriteDao: ShasWriteDao
-) extends Controller with BaseIdentifiedRestController {
+) extends Controller with BaseFlowController {
 
   def get(
     id: Option[Seq[String]],

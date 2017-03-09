@@ -5,7 +5,7 @@ import io.flow.delta.v0.models.json._
 import db.{UserIdentifiersDao, UsersDao, UsersWriteDao}
 import io.flow.common.v0.models.{User, UserReference}
 import io.flow.common.v0.models.json._
-import io.flow.play.controllers.IdentifiedRestController
+import io.flow.play.controllers.FlowController
 import io.flow.play.util.{Config, Validation}
 import play.api.mvc._
 import play.api.libs.json._
@@ -14,9 +14,8 @@ import scala.concurrent.Future
 
 class Users @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
   usersWriteDao: UsersWriteDao
-) extends Controller with IdentifiedRestController {
+) extends Controller with FlowController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

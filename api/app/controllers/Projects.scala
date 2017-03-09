@@ -14,10 +14,9 @@ import play.api.libs.json._
 @javax.inject.Singleton
 class Projects @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
   projectsWriteDao: ProjectsWriteDao
-) extends Controller with BaseIdentifiedRestController {
+) extends Controller with BaseFlowController {
 
   def get(
     id: Option[Seq[String]],

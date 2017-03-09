@@ -16,7 +16,6 @@ import play.api.data.Forms._
 
 class ProjectsController @javax.inject.Inject() (
   val messagesApi: MessagesApi,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
   override val deltaClientProvider: DeltaClientProvider
 ) extends BaseController(tokenClient, deltaClientProvider) {
 
