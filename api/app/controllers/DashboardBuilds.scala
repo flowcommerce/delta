@@ -9,8 +9,7 @@ import play.api.libs.json._
 @javax.inject.Singleton
 class DashboardBuilds @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
-) extends Controller with BaseIdentifiedRestController {
+) extends Controller with BaseFlowController {
 
   def get(
     limit: Long,

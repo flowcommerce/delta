@@ -15,10 +15,9 @@ import scala.concurrent.Future
 @javax.inject.Singleton
 class Repositories @javax.inject.Inject() (
   override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
   val github: Github,
   parser: Parser
-) extends Controller with BaseIdentifiedRestController {
+) extends Controller with BaseFlowController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -4,7 +4,7 @@ import io.flow.delta.v0.Client
 import io.flow.delta.v0.models.Organization
 import io.flow.delta.www.lib.{DeltaClientProvider, Section, UiData}
 import io.flow.common.v0.models.UserReference
-import io.flow.play.controllers.IdentifiedController
+import io.flow.play.controllers.FlowController
 import scala.concurrent.ExecutionContext
 import play.api.i18n._
 import play.api.mvc._
@@ -36,7 +36,7 @@ abstract class BaseController(
   val tokenClient: io.flow.token.v0.interfaces.Client,
   val deltaClientProvider: DeltaClientProvider
 ) extends Controller
-    with IdentifiedController
+    with FlowController
     with I18nSupport
 {
 
