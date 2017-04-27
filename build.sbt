@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.11.8"
 
-val awsVersion = "1.11.123"
+val awsVersion = "1.11.124"
 
 lazy val generated = project
   .in(file("generated"))
