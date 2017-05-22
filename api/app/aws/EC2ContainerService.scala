@@ -55,31 +55,33 @@ case class EC2ContainerService @javax.inject.Inject() (
    */
   private[this] val BuildVersion11 = "1.1"
   
-  def getBaseName(imageName: String, imageVersion: String): String = {
-    return Seq(
-      s"${imageName.replaceAll("[/]","-")}", // flow/registry becomes flow-registry
-      s"${imageVersion.replaceAll("[.]","-")}" // 1.2.3 becomes 1-2-3
-    ).mkString("-")
+  def getBaseName(imageName: String, imageVersion: Option[String] = None): String = {
+    Seq(
+      Some(s"${imageName.replaceAll("[/]","-")}"), // flow/registry becomes flow-registry
+      imageVersion.map { v => s"${v.replaceAll("[.]","-")}" } // 1.2.3 becomes 1-2-3
+    ).flatten.mkString("-")
   }
 
   def getServiceName(imageName: String, imageVersion: String, settings: Settings): String = {
     if (BuildVersion11 == settings.version) {
       // Use the same service name for version 1.1
-      return s"${getBaseName(imageName, "")}-service"
+      s"${getBaseName(imageName)}-service"
+    } else {
+      s"${getBaseName(imageName, Some(imageVersion))}-service"
     }
-    return s"${getBaseName(imageName, imageVersion)}-service"
   }
 
   def getContainerName(imageName: String, imageVersion: String, settings: Settings): String = {
     if (BuildVersion11 == settings.version) {
       // Use the same container name for version 1.1
-      return s"${getBaseName(imageName, "")}-container"
+      s"${getBaseName(imageName)}-container"
+    } else {
+      s"${getBaseName(imageName, Some(imageVersion))}-container"
     }
-    return s"${getBaseName(imageName, imageVersion)}-container"
   }
 
   def getTaskName(imageName: String, imageVersion: String): String = {
-    return s"${getBaseName(imageName, imageVersion)}-task"
+    s"${getBaseName(imageName, Some(imageVersion))}-task"
   }
 
   /**
@@ -451,12 +453,10 @@ case class EC2ContainerService @javax.inject.Inject() (
       val containerName = getContainerName(imageName, imageVersion, settings)
       val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
 
-      var serviceDesiredCount = 0 // initialize service with desired count of 0, scale up will come later
-      var minimumHealthyPercent = 99
-
-      if (BuildVersion11 == settings.version) {
-        serviceDesiredCount = desiredCount.toInt
-        minimumHealthyPercent = 50 // allows ECS to deploy new task definitions
+      val (serviceDesiredCount,minimumHealthyPercent) = if (BuildVersion11 == settings.version) {
+        (desiredCount.toInt, 50) // allows ECS to deploy new task definitions
+      } else {
+        (0, 99) // initialize service with desired count of 0, scale up will come later
       }
 
       Logger.info(s"AWS EC2ContainerService describeServices projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")

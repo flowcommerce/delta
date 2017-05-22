@@ -123,7 +123,7 @@ case class Parser() {
           enable = obj.get("enable").map(toStringArray(_)).getOrElse(Nil)
         ),
         dependencies = obj.get("dependencies").map(toStringArray(_)).getOrElse(Nil),
-        version = map.get("version").getOrElse(Defaults.Build.version)
+        version = map.get("version")
       )
     }
 
