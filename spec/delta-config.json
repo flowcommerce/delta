@@ -22,14 +22,6 @@
       ]
     },
 
-    "deployer": {
-      "description": "The name of the deployer to use for deploying builds.",
-      "values": [
-	{ "name": "delta" },
-	{ "name": "ecs" }
-      ]
-    },
-
     "instance_type": {
       "description": "List of supported AWS instance types - see https://aws.amazon.com/ec2/instance-types/",
       "values": [
@@ -88,7 +80,7 @@
 	{ "name": "port_host", "type": "integer", "description": "The port number on the container instance to reserve for your container" },
 	{ "name": "stages", "type": "[build_stage]", "minimum": 0 },
 	{ "name": "dependencies", "type": "[string]", "minimum": 0, "description": "The names of other builds that this one is dependent on. If specified, we will ensure that we never scale this build to a tag that is ahead of the minimum version of the dependent application running in production.", "example": "www" },
-	{ "name": "deployer", "type": "deployer" }
+	{ "name": "version", "type": "string", "default": "1.0", "description": "The version of Delta to use for deployments." }
       ]
     }
 
