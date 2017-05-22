@@ -27,6 +27,10 @@
             <td>@buildConfig.portHost:@buildConfig.portContainer</td>
           </tr>
           <tr>
+            <td><strong>Delta Version</strong></td>
+            <td>@{buildConfig.version.getOrElse("1.0")}</td>
+          </tr>
+          <tr>
             <td><strong>Stages</strong></td>
             <td>@{buildConfig.stages.toList match {
                    case Nil => Html("<em>none</em>")
