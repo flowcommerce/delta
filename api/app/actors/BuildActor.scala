@@ -277,7 +277,8 @@ class BuildActor @javax.inject.Inject() (
       instanceType = bc.instanceType,
       containerMemory = bc.memory.asInstanceOf[Int],
       portContainer = bc.portContainer,
-      portHost = bc.portHost
+      portHost = bc.portHost,
+      version = bc.version
     )
   }.getOrElse {
     sys.error(s"Build[$buildId] Must have build configuration before getting settings for auto scaling group")

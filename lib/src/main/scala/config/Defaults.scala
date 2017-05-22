@@ -22,7 +22,8 @@ object Defaults {
     portContainer = 80,
     portHost = 80,
     stages = models.BuildStage.all,
-    dependencies = Nil
+    dependencies = Nil,
+    version = "1.0"
   )
 
   val Config = models.ConfigProject(

@@ -122,7 +122,8 @@ case class Parser() {
           disable = obj.get("disable").map(toStringArray(_)).getOrElse(Nil),
           enable = obj.get("enable").map(toStringArray(_)).getOrElse(Nil)
         ),
-        dependencies = obj.get("dependencies").map(toStringArray(_)).getOrElse(Nil)
+        dependencies = obj.get("dependencies").map(toStringArray(_)).getOrElse(Nil),
+        version = map.get("version").getOrElse(Defaults.Build.version)
       )
     }
 

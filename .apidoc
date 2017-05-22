@@ -1,11 +1,5 @@
 code:
   flow:
-    common:
-      version: latest
-      generators:
-        play_2_x_routes: api/conf/common.routes
-        play_2_4_client: generated/app
-        anorm_2_x_parsers: api/app/generated
     docker-registry:
       version: latest
       generators:
