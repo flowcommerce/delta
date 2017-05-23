@@ -163,7 +163,8 @@
     "version": {
       "fields": [
         { "name": "name", "type": "string", "example": "0.0.1" },
-        { "name": "instances", "type": "long", "description": "The number of instances running this version" }
+        { "name": "instances", "type": "long", "description": "The number of instances running this version" },
+        { "name": "service_name", "type": "string", "required": "false", "description": "The ECS service name", "example": "flowcommerce-classification-0-1-59-service"}
       ]
     },
 
@@ -739,7 +740,7 @@
             "422": { "type": "[io.flow.common.v0.models.error]" }
           }
         }
-        
+
       ]
     },
 
