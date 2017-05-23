@@ -205,26 +205,38 @@ case class EC2ContainerService @javax.inject.Inject() (
     projectId: String,
     desiredCount: Long
   ): Future[Unit] = {
-    val cluster = EC2ContainerService.getClusterName(projectId)
-
     for {
       taskDef <- registerTaskDefinition(settings, imageName, imageVersion, projectId)
       service <- createOrUpdateService(settings, imageName, imageVersion, projectId, taskDef, desiredCount)
-      count <- updateServiceDesiredCount(cluster, service, desiredCount)
+      count <- updateServiceDesiredCount(settings, imageName, imageVersion, projectId, desiredCount)
     } yield {
       // Nothing
     }
   }
 
-  def updateServiceDesiredCount(cluster: String, service: String, desiredCount: Long): Future[Long] = {
+  def updateServiceDesiredCount(
+    settings: Settings,
+    imageName: String,
+    imageVersion: String,
+    projectId: String,
+    desiredCount: Long
+  ): Future[Long] = {
     Future {
-      Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster]")
-      client.updateService(
-        new UpdateServiceRequest()
-        .withCluster(cluster)
-        .withService(service)
-        .withDesiredCount(desiredCount.toInt)
-      )
+      // Find matching service running specified image version and update
+      // the desired count.
+      val cluster = EC2ContainerService.getClusterName(projectId)
+      getClusterInfo(projectId).map { versions =>
+        val version = versions.filter(_.name == imageVersion).head     
+        if (version != Nil && version.serviceName != Nil) {
+          Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster]")
+          client.updateService(
+            new UpdateServiceRequest()
+              .withCluster(cluster)
+              .withService(version.serviceName.get)
+              .withDesiredCount(desiredCount.toInt)
+          )
+        }
+      }
       desiredCount
     }
   }
@@ -289,7 +301,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                 Logger.info(s"AWS EC2ContainerService describeTasks - get ECS container instances - projectId[$projectId] service[${service.getServiceArn}]")
                 client.listTasks(new ListTasksRequest().withCluster(cluster).withServiceName(service.getServiceArn)).getTaskArns.asScala.toList match {
                   case Nil => {
-                    Version(image.version, 0)
+                    Version(image.version, 0, Some(service.getServiceName))
                   }
 
                   case taskArns => {
@@ -297,7 +309,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                       new DescribeTasksRequest().withCluster(cluster).withTasks(taskArns.asJava)
                     ).getTasks.asScala.map(_.getContainerInstanceArn).toList match {
                       case Nil => {
-                        Version(image.version, 0)
+                        Version(image.version, 0, Some(service.getServiceName))
                       }
 
                       case serviceContainerInstances => {
@@ -312,7 +324,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                         Logger.info(s"  - $projectId: elbInstances: ${elbHealthyInstances.instances().sorted}")
                         Logger.info(s"  - $projectId: serviceInstances: ${serviceInstances.sorted}")
                         Logger.info(s"  - $projectId: healthyInstances: ${healthyInstances.sorted}")
-                        Version(image.version, healthyInstances.size)
+                        Version(image.version, healthyInstances.size, Some(service.getServiceName))
                       }
                     }
                   }
@@ -492,15 +504,19 @@ case class EC2ContainerService @javax.inject.Inject() (
         )
 
       } else if (BuildVersion11 == settings.version) {
-        // service exists in cluster, update service but only for version 1.1
+        // Service exists in cluster, update service but only for version 1.1
         // to make sure we don't mess with existing deploy method
         Logger.info(s"AWS EC2ContainerService 1.1 createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
-        client.updateService(
-          new UpdateServiceRequest()
-          .withCluster(clusterName)
-          .withService(serviceName)
-          .withTaskDefinition(taskDefinition)
-        )
+        if (desiredCount > 0) {
+          client.updateService(
+            new UpdateServiceRequest()
+              .withCluster(clusterName)
+              .withService(serviceName)
+              .withTaskDefinition(taskDefinition)
+          )
+        } else {
+          // Scale down does not apply for delta version 1.1, do nothing
+        }
       }
 
       serviceName
