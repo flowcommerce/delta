@@ -223,18 +223,23 @@ case class EC2ContainerService @javax.inject.Inject() (
   ): Future[Long] = {
     Future {
       // Find matching service running specified image version and update
-      // the desired count.
+      // the desired count. If there is no matching version in ECS, do 
+      // nothing. This method will go away after all services have been
+      // upgraded to version 1.1 since we still need this to handle the
+      // case where the previous version was deployed using 1.0 (i.e. clean
+      // up the old service by setting desired count to 0).
       val cluster = EC2ContainerService.getClusterName(projectId)
       getClusterInfo(projectId).map { versions =>
-        val version = versions.filter(_.name == imageVersion).head     
-        if (version != Nil && version.serviceName != Nil) {
-          Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster]")
-          client.updateService(
-            new UpdateServiceRequest()
-              .withCluster(cluster)
-              .withService(version.serviceName.get)
-              .withDesiredCount(desiredCount.toInt)
-          )
+        versions.find(_.name == imageVersion).foreach { version =>
+          if (version.serviceName != Nil) {
+            Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster]")
+            client.updateService(
+              new UpdateServiceRequest()
+                .withCluster(cluster)
+                .withService(version.serviceName.get)
+                .withDesiredCount(desiredCount.toInt)
+            )
+          }
         }
       }
       desiredCount
