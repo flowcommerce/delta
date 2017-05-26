@@ -229,16 +229,37 @@ case class EC2ContainerService @javax.inject.Inject() (
       // case where the previous version was deployed using 1.0 (i.e. clean
       // up the old service by setting desired count to 0).
       val cluster = EC2ContainerService.getClusterName(projectId)
-      getClusterInfo(projectId).map { versions =>
-        versions.find(_.name == imageVersion).foreach { version =>
-          if (version.serviceName != Nil) {
-            Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster]")
-            client.updateService(
-              new UpdateServiceRequest()
-                .withCluster(cluster)
-                .withService(version.serviceName.get)
-                .withDesiredCount(desiredCount.toInt)
-            )
+      val serviceArns = getServiceArns(cluster)
+
+      serviceArns match {
+        case Nil => Nil
+        case arns => {
+          getServicesInfo(cluster, arns).map { service =>
+            client.describeTaskDefinition(
+              new DescribeTaskDefinitionRequest()
+                .withTaskDefinition(service.getTaskDefinition)
+            ).getTaskDefinition().getContainerDefinitions().asScala.headOption match {
+
+              case None => {
+                sys.error(s"No container definitions for task definition ${service.getTaskDefinition}")
+              }
+
+              case Some(containerDef) => {
+                val image = Util.parseImage(containerDef.getImage()).getOrElse {
+                  sys.error(s"Invalid image name[${containerDef.getImage()}] - could not parse version")
+                }
+                if (image.version == imageVersion) {
+                  val serviceName = service.getServiceName
+                  Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster], service[$serviceName], desiredCount[$desiredCount]")
+                  client.updateService(
+                    new UpdateServiceRequest()
+                      .withCluster(cluster)
+                      .withService(serviceName)
+                      .withDesiredCount(desiredCount.toInt)
+                  )
+                }
+              }
+            }
           }
         }
       }
@@ -306,7 +327,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                 Logger.info(s"AWS EC2ContainerService describeTasks - get ECS container instances - projectId[$projectId] service[${service.getServiceArn}]")
                 client.listTasks(new ListTasksRequest().withCluster(cluster).withServiceName(service.getServiceArn)).getTaskArns.asScala.toList match {
                   case Nil => {
-                    Version(image.version, 0, Some(service.getServiceName))
+                    Version(image.version, 0)
                   }
 
                   case taskArns => {
@@ -314,7 +335,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                       new DescribeTasksRequest().withCluster(cluster).withTasks(taskArns.asJava)
                     ).getTasks.asScala.map(_.getContainerInstanceArn).toList match {
                       case Nil => {
-                        Version(image.version, 0, Some(service.getServiceName))
+                        Version(image.version, 0)
                       }
 
                       case serviceContainerInstances => {
@@ -329,7 +350,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                         Logger.info(s"  - $projectId: elbInstances: ${elbHealthyInstances.instances().sorted}")
                         Logger.info(s"  - $projectId: serviceInstances: ${serviceInstances.sorted}")
                         Logger.info(s"  - $projectId: healthyInstances: ${healthyInstances.sorted}")
-                        Version(image.version, healthyInstances.size, Some(service.getServiceName))
+                        Version(image.version, healthyInstances.size)
                       }
                     }
                   }
@@ -341,7 +362,7 @@ case class EC2ContainerService @javax.inject.Inject() (
       }
     }
   }
-
+  
   private[this] def getServiceArns(cluster: String): Seq[String] = {
     var serviceArns = scala.collection.mutable.ListBuffer.empty[List[String]]
     var hasMore = true
