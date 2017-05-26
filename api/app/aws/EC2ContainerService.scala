@@ -239,11 +239,9 @@ case class EC2ContainerService @javax.inject.Inject() (
               new DescribeTaskDefinitionRequest()
                 .withTaskDefinition(service.getTaskDefinition)
             ).getTaskDefinition().getContainerDefinitions().asScala.headOption match {
-
               case None => {
                 sys.error(s"No container definitions for task definition ${service.getTaskDefinition}")
               }
-
               case Some(containerDef) => {
                 val image = Util.parseImage(containerDef.getImage()).getOrElse {
                   sys.error(s"Invalid image name[${containerDef.getImage()}] - could not parse version")
