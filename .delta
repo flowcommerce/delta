@@ -6,7 +6,9 @@ builds:
       memory: 3500
       port.container: 9000
       port.host: 6091
+      version: 1.1
   - www:
       dockerfile: www/Dockerfile
       port.container: 9000
       port.host: 6090
+      version: 1.1
