@@ -506,6 +506,8 @@ case class EC2ContainerService @javax.inject.Inject() (
         // service doesn't exist in cluster, create service
         Logger.info(s"AWS EC2ContainerService createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
         client.createService(
+          // MaximumPercent is set to 200 to allow services with only 1 
+          // instance to be deployed with ECS.
           new CreateServiceRequest()
             .withServiceName(serviceName)
             .withCluster(clusterName)
@@ -515,7 +517,7 @@ case class EC2ContainerService @javax.inject.Inject() (
             .withDeploymentConfiguration(
             new DeploymentConfiguration()
               .withMinimumHealthyPercent(minimumHealthyPercent)
-              .withMaximumPercent(100)
+              .withMaximumPercent(200)
           )
             .withLoadBalancers(
             Seq(
