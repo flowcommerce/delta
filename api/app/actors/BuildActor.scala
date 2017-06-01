@@ -59,6 +59,9 @@ class BuildActor @javax.inject.Inject() (
 
   private[this] val TimeoutSeconds = 450
 
+  private[this] val BuildVersion11 = "1.1"
+
+
   def receive = {
 
     case msg @ BuildActor.Messages.Setup => withErrorHandler(msg) {
@@ -214,11 +217,15 @@ class BuildActor @javax.inject.Inject() (
       }
 
     } else if (diff.lastInstances < diff.desiredInstances) {
-      self ! BuildActor.Messages.ConfigureAWS
+      if (BuildVersion11 == awsSettings.version && diff.lastInstances > 0) {
+        Logger.info(s"Skipping scale up for version=1.1 since we already have ${diff.lastInstances} running")
+      } else {
+        self ! BuildActor.Messages.ConfigureAWS
 
-      val instances = diff.desiredInstances - diff.lastInstances
-      log.runAsync(s"Bring up ${Text.pluralize(instances, "instance", "instances")} of ${diff.versionName}") {
-        ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
+        val instances = diff.desiredInstances - diff.lastInstances
+        log.runAsync(s"Bring up ${Text.pluralize(instances, "instance", "instances")} of ${diff.versionName}") {
+          ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
+        }
       }
     }
   }
