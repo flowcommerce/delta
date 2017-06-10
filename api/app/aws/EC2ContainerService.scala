@@ -39,22 +39,6 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   private[this] lazy val client = new AmazonECSClient(credentials.aws, configuration.aws)
   
-  /**
-   * We are currently on version 1.0. The new version 1.1 changes the ECS 
-   * deployment to reuse service definitions, only changing the task 
-   * definition to update the docker image. This will move the logic of
-   * rolling out a new deploy to ECS instead of Delta. Requirements of
-   * your service for version 1.1:
-   * 
-   * - Docker containers upgraded to 1.12.
-   * - HEALTHCHECK statement in Dockerfile.
-   * - version=1.1 in .delta file
-   * 
-   * Once all services have been upgraded to version 1.1, we will remove
-   * the split logic and default to 1.1 moving forward.
-   */
-  private[this] val BuildVersion11 = "1.1"
-  
   def getBaseName(imageName: String, imageVersion: Option[String] = None): String = {
     Seq(
       Some(s"${imageName.replaceAll("[/]","-")}"), // flow/registry becomes flow-registry
@@ -63,21 +47,11 @@ case class EC2ContainerService @javax.inject.Inject() (
   }
 
   def getServiceName(imageName: String, imageVersion: String, settings: Settings): String = {
-    if (BuildVersion11 == settings.version) {
-      // Use the same service name for version 1.1
-      s"${getBaseName(imageName)}-service"
-    } else {
-      s"${getBaseName(imageName, Some(imageVersion))}-service"
-    }
+    s"${getBaseName(imageName)}-service"
   }
 
   def getContainerName(imageName: String, imageVersion: String, settings: Settings): String = {
-    if (BuildVersion11 == settings.version) {
-      // Use the same container name for version 1.1
-      s"${getBaseName(imageName)}-container"
-    } else {
-      s"${getBaseName(imageName, Some(imageVersion))}-container"
-    }
+    s"${getBaseName(imageName)}-container"
   }
 
   def getTaskName(imageName: String, imageVersion: String): String = {
@@ -208,60 +182,8 @@ case class EC2ContainerService @javax.inject.Inject() (
     for {
       taskDef <- registerTaskDefinition(settings, imageName, imageVersion, projectId)
       service <- createOrUpdateService(settings, imageName, imageVersion, projectId, taskDef, desiredCount)
-      count <- updateServiceDesiredCount(settings, imageName, imageVersion, projectId, desiredCount)
     } yield {
       // Nothing
-    }
-  }
-
-  def updateServiceDesiredCount(
-    settings: Settings,
-    imageName: String,
-    imageVersion: String,
-    projectId: String,
-    desiredCount: Long
-  ): Future[Long] = {
-    Future {
-      // Find matching service running specified image version and update
-      // the desired count. If there is no matching version in ECS, do 
-      // nothing. This method will go away after all services have been
-      // upgraded to version 1.1 since we still need this to handle the
-      // case where the previous version was deployed using 1.0 (i.e. clean
-      // up the old service by setting desired count to 0).
-      val cluster = EC2ContainerService.getClusterName(projectId)
-      val serviceArns = getServiceArns(cluster)
-
-      serviceArns match {
-        case Nil => Nil
-        case arns => {
-          getServicesInfo(cluster, arns).map { service =>
-            client.describeTaskDefinition(
-              new DescribeTaskDefinitionRequest()
-                .withTaskDefinition(service.getTaskDefinition)
-            ).getTaskDefinition().getContainerDefinitions().asScala.headOption match {
-              case None => {
-                sys.error(s"No container definitions for task definition ${service.getTaskDefinition}")
-              }
-              case Some(containerDef) => {
-                val image = Util.parseImage(containerDef.getImage()).getOrElse {
-                  sys.error(s"Invalid image name[${containerDef.getImage()}] - could not parse version")
-                }
-                if (image.version == imageVersion) {
-                  val serviceName = service.getServiceName
-                  Logger.info(s"AWS EC2ContainerService updateService cluster[$cluster], service[$serviceName], desiredCount[$desiredCount]")
-                  client.updateService(
-                    new UpdateServiceRequest()
-                      .withCluster(cluster)
-                      .withService(serviceName)
-                      .withDesiredCount(desiredCount.toInt)
-                  )
-                }
-              }
-            }
-          }
-        }
-      }
-      desiredCount
     }
   }
 
@@ -470,11 +392,8 @@ case class EC2ContainerService @javax.inject.Inject() (
       val containerName = getContainerName(imageName, imageVersion, settings)
       val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
 
-      val (serviceDesiredCount,minimumHealthyPercent) = if (BuildVersion11 == settings.version) {
-        (desiredCount.toInt, 50) // allows ECS to deploy new task definitions
-      } else {
-        (0, 99) // initialize service with desired count of 0, scale up will come later
-      }
+      // allows ECS to deploy new task definitions
+      val (serviceDesiredCount,minimumHealthyPercent) = (desiredCount.toInt, 50) 
 
       Logger.info(s"AWS EC2ContainerService describeServices projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
       val resp = client.describeServices(
@@ -510,20 +429,16 @@ case class EC2ContainerService @javax.inject.Inject() (
           )
         )
 
-      } else if (BuildVersion11 == settings.version) {
-        // Service exists in cluster, update service but only for version 1.1
-        // to make sure we don't mess with existing deploy method
-        Logger.info(s"AWS EC2ContainerService 1.1 createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
-        if (desiredCount > 0) {
-          client.updateService(
-            new UpdateServiceRequest()
-              .withCluster(clusterName)
-              .withService(serviceName)
-              .withTaskDefinition(taskDefinition)
-          )
-        } else {
-          // Scale down does not apply for delta version 1.1, do nothing
-        }
+      } else {
+        // Service exists in cluster, update service task definition
+        Logger.info(s"AWS EC2ContainerService 1.1 createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")        
+        client.updateService(
+          new UpdateServiceRequest()
+            .withCluster(clusterName)
+            .withService(serviceName)
+            .withDesiredCount(serviceDesiredCount)
+            .withTaskDefinition(taskDefinition)
+        )
       }
 
       serviceName

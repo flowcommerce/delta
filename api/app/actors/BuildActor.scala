@@ -59,8 +59,6 @@ class BuildActor @javax.inject.Inject() (
 
   private[this] val TimeoutSeconds = 450
 
-  private[this] val BuildVersion11 = "1.1"
-
 
   def receive = {
 
@@ -210,29 +208,15 @@ class BuildActor @javax.inject.Inject() (
     val imageName = BuildNames.dockerImageName(docker, build)
     val imageVersion = diff.versionName
 
-    if (diff.lastInstances > diff.desiredInstances) {
-      val instances = diff.lastInstances - diff.desiredInstances
+    // only need to run scale once with delta 1.1
+    if (diff.lastInstances == 0) {
+      self ! BuildActor.Messages.ConfigureAWS
+      val instances = diff.desiredInstances - diff.lastInstances
 
-      Logger.info(s"PaoloDeltaDebug project ${build.name}, scale down ${instances} of ${diff.versionName}")
+      Logger.info(s"PaoloDeltaDebug project ${build.name}, scale up ${diff.desiredInstances} of ${diff.versionName}")
 
-      log.runAsync(s"Bring down ${Text.pluralize(instances, "instance", "instances")} of ${diff.versionName}") {
+      log.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}") {
         ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
-      }
-
-    } else if (diff.lastInstances < diff.desiredInstances) {
-      if (BuildVersion11 == awsSettings.version && diff.lastInstances > 0) {
-        Logger.info(s"PaoloDeltaDebug project ${build.name}, scale up failed already ${diff.lastInstances} running")
-
-        Logger.info(s"Skipping scale up for version=1.1 since we already have ${diff.lastInstances} running")
-      } else {
-        self ! BuildActor.Messages.ConfigureAWS
-        val instances = diff.desiredInstances - diff.lastInstances
-
-        Logger.info(s"PaoloDeltaDebug project ${build.name}, scale up ${instances} of ${diff.versionName}")
-
-        log.runAsync(s"Bring up ${Text.pluralize(instances, "instance", "instances")} of ${diff.versionName}") {
-          ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
-        }
       }
     }
   }
