@@ -38,7 +38,9 @@ case class EC2ContainerService @javax.inject.Inject() (
   private[this] lazy val ec2Client = new AmazonEC2Client(credentials.aws, configuration.aws)
 
   private[this] lazy val client = new AmazonECSClient(credentials.aws, configuration.aws)
-  
+
+  private[this] val BuildVersion11 = "1.1"
+
   def getBaseName(imageName: String, imageVersion: Option[String] = None): String = {
     Seq(
       Some(s"${imageName.replaceAll("[/]","-")}"), // flow/registry becomes flow-registry
@@ -429,7 +431,7 @@ case class EC2ContainerService @javax.inject.Inject() (
           )
         )
 
-      } else {
+      } else if (BuildVersion11 == settings.version) {
         // Service exists in cluster, update service task definition
         Logger.info(s"AWS EC2ContainerService 1.1 createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")        
         client.updateService(
