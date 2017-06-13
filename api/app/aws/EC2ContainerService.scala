@@ -436,7 +436,6 @@ case class EC2ContainerService @javax.inject.Inject() (
           new UpdateServiceRequest()
             .withCluster(clusterName)
             .withService(serviceName)
-            .withDesiredCount(serviceDesiredCount)
             .withTaskDefinition(taskDefinition)
         )
       }
