@@ -64,12 +64,13 @@ case class EC2ContainerService @javax.inject.Inject() (
   def ensureContainerAgentHealth(projectId: String): Future[Unit] = {
     Future {
       val cluster = EC2ContainerService.getClusterName(projectId)
+      Logger.info(s"ensureContainerAgentHealth for lunch $cluster")
       try {
         val result = client.describeContainerInstances(new DescribeContainerInstancesRequest().withCluster(cluster))
         val badEc2Instances = result.getContainerInstances.asScala.filter(_.getAgentConnected == false).map(_.getEc2InstanceId)
-        if (!badEc2Instances.isEmpty) {
+        if (badEc2Instances.nonEmpty) {
           ec2Client.terminateInstances(new TerminateInstancesRequest().withInstanceIds(badEc2Instances.asJava))
-          Logger.info(s"Terminated ec2 instances [${badEc2Instances.mkString(",")}] because of unhealthy ecs agent")
+          Logger.info(s"ensureContainerAgentHealth Terminated ec2 instances [${badEc2Instances.mkString(",")}] because of unhealthy ecs agent")
         }
       } catch {
         case e: Throwable => Logger.error(s"Failed ensureContainerAgentHealth cluster [$cluster] - Error: ${e.getMessage}")
