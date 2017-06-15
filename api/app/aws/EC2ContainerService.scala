@@ -70,8 +70,8 @@ case class EC2ContainerService @javax.inject.Inject() (
         val result = client.describeContainerInstances(new DescribeContainerInstancesRequest().withCluster(cluster).withContainerInstances(containerInstanceArns))
         val badEc2Instances = result.getContainerInstances.asScala.filter(_.getAgentConnected == false).map(_.getEc2InstanceId)
         if (badEc2Instances.nonEmpty) {
-          ec2Client.terminateInstances(new TerminateInstancesRequest().withInstanceIds(badEc2Instances.asJava))
-          Logger.info(s"ensureContainerAgentHealth cluster $cluster Terminated ec2 instances [${badEc2Instances.mkString(",")}] because of unhealthy ecs agent")
+          //ec2Client.terminateInstances(new TerminateInstancesRequest().withInstanceIds(badEc2Instances.asJava))
+          Logger.info(s"FlowAlertError - ensureContainerAgentHealth cluster $cluster ec2 instances [${badEc2Instances.mkString(",")}] are unhealthy - please take a look")
         }
       } catch {
         case e: Throwable => Logger.error(s"Failed ensureContainerAgentHealth cluster [$cluster] - Error: ${e.getMessage}")
