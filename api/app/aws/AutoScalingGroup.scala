@@ -190,6 +190,7 @@ class AutoScalingGroup @javax.inject.Inject() (
       new DetachInstancesRequest()
         .withAutoScalingGroupName(name)
         .withInstanceIds(instances)
+        .withShouldDecrementDesiredCapacity(false)
     )
   }
 
