@@ -301,7 +301,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
     }
 
     Pager.create { offset =>
-      BuildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offsevertet)
+      BuildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { build =>
       buildsWriteDao.delete(deletedBy, build)
     }
@@ -310,7 +310,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
     DB.withConnection { implicit c =>
       SQL("select delete_project({id})").on(
-        'id -> id
+        'id -> project.id
       ).execute()
     }
 
