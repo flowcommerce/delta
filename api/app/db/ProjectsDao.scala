@@ -301,14 +301,18 @@ case class ProjectsWriteDao @javax.inject.Inject() (
     }
 
     Pager.create { offset =>
-      BuildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+      BuildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offsevertet)
     }.foreach { build =>
       buildsWriteDao.delete(deletedBy, build)
     }
 
     configsDao.deleteByProjectId(deletedBy, project.id)
 
-    Delete.delete("projects", deletedBy.id, project.id)
+    DB.withConnection { implicit c =>
+      SQL("select delete_project({id})").on(
+        'id -> id
+      ).execute()
+    }
 
     mainActor ! MainActor.Messages.ProjectDeleted(project.id)
   }
