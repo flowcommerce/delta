@@ -6,6 +6,7 @@ import io.flow.delta.api.lib.{Github, GithubHelper, Repo}
 import io.flow.delta.lib.config.{Defaults, Parser}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.Project
+import io.flow.github.v0.models.{HookConfig, HookEvent, HookForm}
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.{Config, Constants}
 import play.api.Logger
@@ -107,7 +108,7 @@ class ProjectActor @javax.inject.Inject() (
 
   private[this] val HookBaseUrl = config.requiredString("delta.api.host") + "/webhooks/github/"
   private[this] val HookName = "web"
-  private[this] val HookEvents = Seq(io.flow.github.v0.models.HookEvent.Push)
+  private[this] val HookEvents = Seq(HookEvent.Push)
 
   private[this] def createHooks(project: Project, repo: Repo) {
     GithubHelper.apiClientFromUser(project.user.id) match {
@@ -126,13 +127,15 @@ class ProjectActor @javax.inject.Inject() (
               client.hooks.post(
                 owner = repo.owner,
                 repo = repo.project,
-                name = HookName,
-                config = io.flow.github.v0.models.HookConfig(
-                  url = Some(targetUrl),
-                  contentType = Some("json")
-                ),
-                events = HookEvents,
-                active = true
+                HookForm(
+                  name = HookName,
+                  config = HookConfig(
+                    url = Some(targetUrl),
+                    contentType = Some("json")
+                  ),
+                  events = HookEvents,
+                  active = true
+                )
               )
             }.map { hook =>
               Logger.info("Created githib webhook for project[${project.id}]: $hook")
