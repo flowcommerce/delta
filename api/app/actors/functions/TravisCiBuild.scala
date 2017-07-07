@@ -1,45 +1,58 @@
 package io.flow.delta.actors.functions
 
-import io.flow.delta.v0.models._
+import io.flow.delta.actors.BuildEventLog
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
+import io.flow.delta.v0.models._
 import io.flow.play.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
-import play.api.Logger
 import scala.concurrent.ExecutionContext.Implicits.global
 
-case class TravisCiBuild() {
+case class TravisCiBuild(
+    version: String,
+    org: Organization,
+    project: Project,
+    build: Build,
+    buildConfig: BuildConfig,
+    config: Config
+) extends BuildEventLog {
   
   private[this] val client = new Client()
-  private[this] val logger = Logger("io.flow.delta.actors.functions.TravisCiBuild")
 
-  def buildDockerImage(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig, config: Config) {
-    val repositorySlug = travisRepositorySlug(org, project)
-    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
+  def withProject[T](f: Project => T): Option[T] = {
+    Option(f(project))
+  }
+
+  def withBuild[T](f: Build => T): Option[T] = {
+    Option(f(build))
+  }
+
+  def buildDockerImage() {
+      val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
     client.requests.post(
-        repositorySlug = repositorySlug,
-        requestPostForm = createRequestPostForm(version, org, project, build, buildConfig, config),
-        requestHeaders = createRequestHeaders(version, org, project, build, buildConfig, config)
+        repositorySlug = travisRepositorySlug(),
+        requestPostForm = createRequestPostForm(),
+        requestHeaders = createRequestHeaders()
     ).map { request =>
-      logger.info(s"Build triggered [${dockerImageName}:${version}]")
+      log.changed(s"Triggered build for ${dockerImageName}:${version}")
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
           case _ => {
-            logger.info(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${version}]")
+            log.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${version}]")
           }
         }
       }
       case err => {
         err.printStackTrace(System.err)
-        logger.info(s"Error triggering Travis CI build [${dockerImageName}:${version}]: $err")
+        log.error(s"Error triggering Travis CI build [${dockerImageName}:${version}]: $err")
       }
     }
   }
 
-  private def createRequestPostForm(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig, config: Config): RequestPostForm = {
+  private def createRequestPostForm(): RequestPostForm = {
     val dockerImageName = BuildNames.dockerImageName(org.docker, build)
  
     RequestPostForm(
@@ -68,7 +81,7 @@ case class TravisCiBuild() {
     )
   }
   
-  private def createRequestHeaders(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig, config: Config): Seq[(String, String)] = {
+  private def createRequestHeaders(): Seq[(String, String)] = {
     val token = config.requiredString("travis.delta.auth.token")
     Seq(
       ("Travis-API-Version", "3"),
@@ -76,7 +89,7 @@ case class TravisCiBuild() {
     )
   }
 
-  private def travisRepositorySlug(org: Organization, project: Project): String = {
+  private def travisRepositorySlug(): String = {
     org.docker.organization + "/" + project.id
   }
 }
