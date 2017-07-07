@@ -14,14 +14,15 @@ case class TravisCiBuild() {
   private[this] val client = new Client()
   
   def buildDockerImage(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig, config: Config) {
-    val repositorySlug = BuildNames.dockerImageName(org.docker, build)
-    
+    val repositorySlug = travisRepositorySlug(org, project)
+    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
+
     client.requests.post(
         repositorySlug = repositorySlug,
         requestPostForm = createRequestPostForm(version, org, project, build, buildConfig, config),
         requestHeaders = createRequestHeaders(version, org, project, build, buildConfig, config)
     ).map { request =>
-      Logger.info(s">>>>>>>> Travis CI build triggered [${repositorySlug}:${version}] <<<<<<<<")
+      Logger.info(s">>>>>>>> Travis CI build triggered [${dockerImageName}:${version}] <<<<<<<<")
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
@@ -38,12 +39,12 @@ case class TravisCiBuild() {
   }
 
   private def createRequestPostForm(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig, config: Config): RequestPostForm = {
-    val repositorySlug = BuildNames.dockerImageName(org.docker, build)
+    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
  
     RequestPostForm(
       request = RequestPostFormData(
         branch = version,
-        message = Option(s"Delta: building docker image ${version}"),
+        message = Option(s"Delta: building image ${dockerImageName}:${version}"),
         config = RequestConfigData(
           mergeMode = Option(MergeMode.Replace),
           dist = Option("trusty"),
@@ -57,9 +58,9 @@ case class TravisCiBuild() {
           script = Option(Seq(
             "docker --version",
             "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
-            s"docker build -t ${repositorySlug}:$${TRAVIS_BRANCH} .",
+            s"docker build -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
             "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
-            s"docker push ${repositorySlug}:$${TRAVIS_BRANCH}"  
+            s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
           ))
         )
       )
@@ -72,5 +73,9 @@ case class TravisCiBuild() {
       ("Travis-API-Version", "3"),
       ("Authorization", s"token ${token}")
     )
+  }
+
+  private def travisRepositorySlug(org: Organization, project: Project): String = {
+    org.docker.organization + "/" + project.id
   }
 }
