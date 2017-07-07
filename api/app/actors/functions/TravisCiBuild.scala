@@ -12,7 +12,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 case class TravisCiBuild() {
   
   private[this] val client = new Client()
-  
+  private[this] val logger = Logger("io.flow.delta.actors.functions.TravisCiBuild")
+
   def buildDockerImage(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig, config: Config) {
     val repositorySlug = travisRepositorySlug(org, project)
     val dockerImageName = BuildNames.dockerImageName(org.docker, build)
@@ -22,18 +23,18 @@ case class TravisCiBuild() {
         requestPostForm = createRequestPostForm(version, org, project, build, buildConfig, config),
         requestHeaders = createRequestHeaders(version, org, project, build, buildConfig, config)
     ).map { request =>
-      Logger.info(s">>>>>>>> Travis CI build triggered [${dockerImageName}:${version}] <<<<<<<<")
+      logger.info(s"Build triggered [${dockerImageName}:${version}]")
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
           case _ => {
-            Logger.info(s">>>>>>>> Travis CI returned HTTP $code when triggering build <<<<<<<<")
+            logger.info(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${version}]")
           }
         }
       }
       case err => {
         err.printStackTrace(System.err)
-        Logger.info(s">>>>>>>> Error triggering Travis CI build: $err")
+        logger.info(s"Error triggering Travis CI build [${dockerImageName}:${version}]: $err")
       }
     }
   }
