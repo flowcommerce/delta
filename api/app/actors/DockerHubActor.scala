@@ -2,13 +2,14 @@ package io.flow.delta.actors
 
 import akka.actor.{Actor, ActorSystem}
 import db.{ConfigsDao, ImagesDao, ImagesWriteDao, UsersDao}
-import io.flow.delta.actors.functions.SyncDockerImages
+import io.flow.delta.actors.functions.{SyncDockerImages, TravisCiBuild}
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models._
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.docker.registry.v0.models.{BuildForm => DockerBuildForm, BuildTag => DockerBuildTag}
 import io.flow.docker.registry.v0.Client
 import io.flow.play.actors.ErrorHandler
+import io.flow.play.util.Config
 import org.joda.time.DateTime
 import play.api.Logger
 import scala.concurrent.Await
@@ -29,7 +30,7 @@ object DockerHubActor {
       * completed - thus assuming an automated build in docker hub.
       */
     case class Build(version: String) extends Message
-    
+
     case class Monitor(version: String, start: DateTime) extends Message
 
     case object Setup extends Message
@@ -46,15 +47,18 @@ class DockerHubActor @javax.inject.Inject() (
   system: ActorSystem,
   dockerHubToken: DockerHubToken,
   override val configsDao: ConfigsDao,
-  @com.google.inject.assistedinject.Assisted buildId: String
+  @com.google.inject.assistedinject.Assisted buildId: String,
+  config: Config
 ) extends Actor with ErrorHandler with DataBuild with BuildEventLog {
 
   private[this] implicit val ec = system.dispatchers.lookup("dockerhub-actor-context")
-  
+
   private[this] val client = new Client()
 
   private[this] val IntervalSeconds = 30
   private[this] val TimeoutSeconds = 1500
+
+  private[this] val BuildVersion12 = "1.2"
 
   def receive = {
     case msg @ DockerHubActor.Messages.Setup => withErrorHandler(msg) {
@@ -66,29 +70,11 @@ class DockerHubActor @javax.inject.Inject() (
         withProject { project =>
           withEnabledBuild { build =>
             withBuildConfig { buildConfig =>
-              client.DockerRepositories.postAutobuild(
-                org.docker.organization,
-                BuildNames.projectName(build),
-                createBuildForm(org.docker, project.scms, project.uri, build, buildConfig),
-                requestHeaders = dockerHubToken.requestHeaders(org.id)
-              ).map { dockerHubBuild =>
-                // TODO: Log the docker hub URL and not the VCS url
-                log.completed(s"Docker Hub repository and automated build [${dockerHubBuild.repoWebUrl}] created.")
-              }.recover {
-                case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
-                  code match {
-                    case 400 => // automated build already exists
-                    case _ => {
-                      log.completed(s"Docker Hub returned HTTP $code when trying to create automated build")
-                    }
-                  }
-                }
-                case err => {
-                  err.printStackTrace(System.err)
-                  log.completed(s"Error creating Docker Hub repository and automated build: $err", Some(err))
-                }
+              if (buildConfig.version.getOrElse(BuildVersion12) == BuildVersion12) {
+                TravisCiBuild().buildDockerImage(version, org, project, build, buildConfig, config)
+              } else {
+                postDockerHubImageBuild(version, org, project, build, buildConfig)
               }
-
               self ! DockerHubActor.Messages.Monitor(version, new DateTime())
             }
           }
@@ -131,6 +117,31 @@ class DockerHubActor @javax.inject.Inject() (
     }
 
     case msg: Any => logUnhandledMessage(msg)
+  }
+
+  def postDockerHubImageBuild(version: String, org: Organization, project: Project, build: Build, buildConfig: BuildConfig) {
+    client.DockerRepositories.postAutobuild(
+      org.docker.organization,
+      BuildNames.projectName(build),
+      createBuildForm(org.docker, project.scms, project.uri, build, buildConfig),
+      requestHeaders = dockerHubToken.requestHeaders(org.id)
+    ).map { dockerHubBuild =>
+      // TODO: Log the docker hub URL and not the VCS url
+      log.completed(s"Docker Hub repository and automated build [${dockerHubBuild.repoWebUrl}] created.")
+    }.recover {
+      case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
+        code match {
+          case 400 => // automated build already exists
+          case _ => {
+            log.completed(s"Docker Hub returned HTTP $code when trying to create automated build")
+          }
+        }
+      }
+      case err => {
+        err.printStackTrace(System.err)
+        log.completed(s"Error creating Docker Hub repository and automated build: $err", Some(err))
+      }
+    }
   }
 
   def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, config: BuildConfig): DockerBuildForm = {
