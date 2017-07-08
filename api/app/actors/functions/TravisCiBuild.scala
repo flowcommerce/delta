@@ -17,7 +17,7 @@ case class TravisCiBuild(
     buildConfig: BuildConfig,
     config: Config
 ) extends BuildEventLog {
-  
+
   private[this] val client = new Client()
 
   def withProject[T](f: Project => T): Option[T] = {
@@ -36,7 +36,7 @@ case class TravisCiBuild(
         requestPostForm = createRequestPostForm(),
         requestHeaders = createRequestHeaders()
     ).map { request =>
-      log.changed(s"Triggered build for ${dockerImageName}:${version}")
+      log.changed(s"Triggered docker build for ${dockerImageName}:${version}")
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
@@ -54,7 +54,7 @@ case class TravisCiBuild(
 
   private def createRequestPostForm(): RequestPostForm = {
     val dockerImageName = BuildNames.dockerImageName(org.docker, build)
- 
+
     RequestPostForm(
       request = RequestPostFormData(
         branch = version,
@@ -80,7 +80,7 @@ case class TravisCiBuild(
       )
     )
   }
-  
+
   private def createRequestHeaders(): Seq[(String, String)] = {
     val token = config.requiredString("travis.delta.auth.token")
     Seq(
