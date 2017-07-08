@@ -70,7 +70,7 @@ class DockerHubActor @javax.inject.Inject() (
         withProject { project =>
           withEnabledBuild { build =>
             withBuildConfig { buildConfig =>
-              if (buildConfig.version.getOrElse(BuildVersion12) == BuildVersion12) {
+              if (buildConfig.version.getOrElse("1.0") == BuildVersion12) {
                 TravisCiBuild(version, org, project, build, buildConfig, config).buildDockerImage()
               } else {
                 postDockerHubImageBuild(version, org, project, build, buildConfig)
