@@ -1,5 +1,6 @@
 package io.flow.delta.actors.functions
 
+import db.EventsDao
 import io.flow.delta.actors.BuildEventLog
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
@@ -29,26 +30,41 @@ case class TravisCiBuild(
   }
 
   def buildDockerImage() {
-      val dockerImageName = BuildNames.dockerImageName(org.docker, build)
+    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
+    val msg = s"Triggered docker build for ${dockerImageName}:${version}"
+    
+    EventsDao.findAll(
+      projectId = Some(project.id),
+      `type` = Some(EventType.Change),
+      summaryKeywords = Some(msg),
+      limit = 1        
+    ).headOption match {
 
-    client.requests.post(
-        repositorySlug = travisRepositorySlug(),
-        requestPostForm = createRequestPostForm(),
-        requestHeaders = createRequestHeaders()
-    ).map { request =>
-      log.changed(s"Triggered docker build for ${dockerImageName}:${version}")
-    }.recover {
-      case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
-        code match {
-          case _ => {
-            log.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${version}]")
+      case None => {
+        client.requests.post(
+          repositorySlug = travisRepositorySlug(),
+          requestPostForm = createRequestPostForm(),
+          requestHeaders = createRequestHeaders()
+        ).map { request =>
+          log.changed(msg)
+        }.recover {
+          case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
+            code match {
+              case _ => {
+                log.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${version}]")
+              }
+            }
+          }
+          case err => {
+            err.printStackTrace(System.err)
+            log.error(s"Error triggering Travis CI build [${dockerImageName}:${version}]: $err")
           }
         }
       }
-      case err => {
-        err.printStackTrace(System.err)
-        log.error(s"Error triggering Travis CI build [${dockerImageName}:${version}]: $err")
-      }
+
+      case Some(_) => {
+        log.checkpoint(s"Waiting for triggered build [${dockerImageName}:${version}]")
+      }     
     }
   }
 
