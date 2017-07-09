@@ -19,7 +19,7 @@ apidoc. To regenerate code, clone github.com/gilt/apidoc-cli and
 
     apidoc upload flow delta ./spec/delta.json --version `sem-info tag next`
     apidoc upload flow delta-config ./spec/delta-config.json --version `sem-info tag next`
-    
+
     apidoc update
 
 Database
@@ -44,6 +44,20 @@ In another screen:
 
 Goto http://localhost:6090 in your browser
 
+Running with docker-compose
+===========================
+
+Download development.txt from S3 and place it in the root delta folder. Then modify to add:
+
+CONF_DB_DEFAULT_URL=jdbc:postgresql://db:5432/deltadb
+CONF_DELTA_API_HOST=http://api:9000
+CONF_DELTA_WWW_HOST=http://localhost:6090
+
+$ docker-compose build
+$ docker-compose up
+
+Goto http://localhost:6090 in your browser
+
 Environment Variables
 =====================
 
@@ -58,6 +72,9 @@ Environment Variables
         - Username for dockerhub login
     - CONF_DOCKER_PASSWORD
         - Password for dockerhub login
+- Travis CI
+    - CONF_TRAVIS_DELTA_AUTH_TOKEN
+        - Travis CI auth token
 - GitHub
     - CONF_GITHUB_DELTA_LOCALHOST_CLIENT_ID
     - CONF_GITHUB_DELTA_CLIENT_SECRET
