@@ -124,22 +124,8 @@ package io.flow.travis.ci.v0.models {
     afterScript: _root_.scala.Option[Seq[String]] = None
   )
 
-  case class RequestGetData(
-    id: Long,
-    state: _root_.scala.Option[String] = None,
-    result: _root_.scala.Option[String] = None,
-    message: _root_.scala.Option[String] = None,
-    repository: io.flow.travis.ci.v0.models.RequestRepositoryData,
-    branchName: io.flow.travis.ci.v0.models.RequestBranchName,
-    commit: io.flow.travis.ci.v0.models.RequestCommit,
-    builds: Seq[io.flow.travis.ci.v0.models.RequestBuild],
-    owner: io.flow.travis.ci.v0.models.RequestOwner,
-    createdAt: _root_.org.joda.time.DateTime,
-    eventType: io.flow.travis.ci.v0.models.EventType
-  )
-
   case class RequestGetResponse(
-    requests: Seq[io.flow.travis.ci.v0.models.RequestGetData]
+    requests: Seq[io.flow.travis.ci.v0.models.RequestRepositoryGetData]
   )
 
   case class RequestOwner(
@@ -177,6 +163,20 @@ package io.flow.travis.ci.v0.models {
     name: String,
     ownerName: _root_.scala.Option[String] = None,
     slug: _root_.scala.Option[String] = None
+  )
+
+  case class RequestRepositoryGetData(
+    id: Long,
+    state: _root_.scala.Option[String] = None,
+    result: _root_.scala.Option[String] = None,
+    message: _root_.scala.Option[String] = None,
+    repository: io.flow.travis.ci.v0.models.RequestRepositoryData,
+    branchName: io.flow.travis.ci.v0.models.RequestBranchName,
+    commit: io.flow.travis.ci.v0.models.RequestCommit,
+    builds: Seq[io.flow.travis.ci.v0.models.RequestBuild],
+    owner: io.flow.travis.ci.v0.models.RequestOwner,
+    createdAt: _root_.org.joda.time.DateTime,
+    eventType: io.flow.travis.ci.v0.models.EventType
   )
 
   case class RequestUserData(
@@ -829,56 +829,8 @@ package io.flow.travis.ci.v0.models {
       }
     }
 
-    implicit def jsonReadsTravisCiRequestGetData: play.api.libs.json.Reads[RequestGetData] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "state").readNullable[String] and
-        (__ \ "result").readNullable[String] and
-        (__ \ "message").readNullable[String] and
-        (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData] and
-        (__ \ "branch_name").read[io.flow.travis.ci.v0.models.RequestBranchName] and
-        (__ \ "commit").read[io.flow.travis.ci.v0.models.RequestCommit] and
-        (__ \ "builds").read[Seq[io.flow.travis.ci.v0.models.RequestBuild]] and
-        (__ \ "owner").read[io.flow.travis.ci.v0.models.RequestOwner] and
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType]
-      )(RequestGetData.apply _)
-    }
-
-    def jsObjectRequestGetData(obj: io.flow.travis.ci.v0.models.RequestGetData): play.api.libs.json.JsObject = {
-      play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsNumber(obj.id),
-        "repository" -> jsObjectRequestRepositoryData(obj.repository),
-        "branch_name" -> jsObjectRequestBranchName(obj.branchName),
-        "commit" -> jsObjectRequestCommit(obj.commit),
-        "builds" -> play.api.libs.json.Json.toJson(obj.builds),
-        "owner" -> jsObjectRequestOwner(obj.owner),
-        "created_at" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.createdAt)),
-        "event_type" -> play.api.libs.json.JsString(obj.eventType.toString)
-      ) ++ (obj.state match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("state" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.result match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("result" -> play.api.libs.json.JsString(x))
-      }) ++
-      (obj.message match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("message" -> play.api.libs.json.JsString(x))
-      })
-    }
-
-    implicit def jsonWritesTravisCiRequestGetData: play.api.libs.json.Writes[RequestGetData] = {
-      new play.api.libs.json.Writes[io.flow.travis.ci.v0.models.RequestGetData] {
-        def writes(obj: io.flow.travis.ci.v0.models.RequestGetData) = {
-          jsObjectRequestGetData(obj)
-        }
-      }
-    }
-
     implicit def jsonReadsTravisCiRequestGetResponse: play.api.libs.json.Reads[RequestGetResponse] = {
-      (__ \ "requests").read[Seq[io.flow.travis.ci.v0.models.RequestGetData]].map { x => new RequestGetResponse(requests = x) }
+      (__ \ "requests").read[Seq[io.flow.travis.ci.v0.models.RequestRepositoryGetData]].map { x => new RequestGetResponse(requests = x) }
     }
 
     def jsObjectRequestGetResponse(obj: io.flow.travis.ci.v0.models.RequestGetResponse): play.api.libs.json.JsObject = {
@@ -1044,6 +996,54 @@ package io.flow.travis.ci.v0.models {
       new play.api.libs.json.Writes[io.flow.travis.ci.v0.models.RequestRepositoryData] {
         def writes(obj: io.flow.travis.ci.v0.models.RequestRepositoryData) = {
           jsObjectRequestRepositoryData(obj)
+        }
+      }
+    }
+
+    implicit def jsonReadsTravisCiRequestRepositoryGetData: play.api.libs.json.Reads[RequestRepositoryGetData] = {
+      (
+        (__ \ "id").read[Long] and
+        (__ \ "state").readNullable[String] and
+        (__ \ "result").readNullable[String] and
+        (__ \ "message").readNullable[String] and
+        (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData] and
+        (__ \ "branch_name").read[io.flow.travis.ci.v0.models.RequestBranchName] and
+        (__ \ "commit").read[io.flow.travis.ci.v0.models.RequestCommit] and
+        (__ \ "builds").read[Seq[io.flow.travis.ci.v0.models.RequestBuild]] and
+        (__ \ "owner").read[io.flow.travis.ci.v0.models.RequestOwner] and
+        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
+        (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType]
+      )(RequestRepositoryGetData.apply _)
+    }
+
+    def jsObjectRequestRepositoryGetData(obj: io.flow.travis.ci.v0.models.RequestRepositoryGetData): play.api.libs.json.JsObject = {
+      play.api.libs.json.Json.obj(
+        "id" -> play.api.libs.json.JsNumber(obj.id),
+        "repository" -> jsObjectRequestRepositoryData(obj.repository),
+        "branch_name" -> jsObjectRequestBranchName(obj.branchName),
+        "commit" -> jsObjectRequestCommit(obj.commit),
+        "builds" -> play.api.libs.json.Json.toJson(obj.builds),
+        "owner" -> jsObjectRequestOwner(obj.owner),
+        "created_at" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.createdAt)),
+        "event_type" -> play.api.libs.json.JsString(obj.eventType.toString)
+      ) ++ (obj.state match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("state" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.result match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("result" -> play.api.libs.json.JsString(x))
+      }) ++
+      (obj.message match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("message" -> play.api.libs.json.JsString(x))
+      })
+    }
+
+    implicit def jsonWritesTravisCiRequestRepositoryGetData: play.api.libs.json.Writes[RequestRepositoryGetData] = {
+      new play.api.libs.json.Writes[io.flow.travis.ci.v0.models.RequestRepositoryGetData] {
+        def writes(obj: io.flow.travis.ci.v0.models.RequestRepositoryGetData) = {
+          jsObjectRequestRepositoryGetData(obj)
         }
       }
     }

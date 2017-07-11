@@ -33,7 +33,7 @@ case class TravisCiBuild(
 
     client.requests.get(
         repositorySlug = travisRepositorySlug(),
-        limit = Option(5),
+        limit = Option(20),
         requestHeaders = createRequestHeaders()
     ).map { requestGetResponse =>
       
@@ -43,11 +43,11 @@ case class TravisCiBuild(
         .filter(_.commit.message.getOrElse("").contains(dockerImageName))
 
       requests match {
-        case Seq() => {
+        case Nil => {
           // no matching builds, submit new build
           postBuildRequest()
         }
-        case Seq(_*) => {
+        case requests => {
           requests.foreach { request =>
             request.builds.foreach { build =>
               log.changed(s"Travis CI build [${dockerImageName}:${version}], number: ${build.number}, state: ${build.state}")
@@ -58,11 +58,7 @@ case class TravisCiBuild(
       
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
-        code match {
-          case _ => {
-            log.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${version}]")
-          }
-        }
+        log.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${version}]")
       }
       case err => {
         err.printStackTrace(System.err)
