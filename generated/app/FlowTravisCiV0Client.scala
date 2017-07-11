@@ -81,7 +81,7 @@ package io.flow.travis.ci.v0.models {
     eventType: io.flow.travis.ci.v0.models.EventType,
     previousState: _root_.scala.Option[String] = None,
     pullRequestTitle: _root_.scala.Option[String] = None,
-    pullRequestNumber: _root_.scala.Option[String] = None,
+    pullRequestNumber: _root_.scala.Option[Long] = None,
     startedAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None,
     finishedAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None
   )
@@ -593,7 +593,7 @@ package io.flow.travis.ci.v0.models {
         (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType] and
         (__ \ "previous_state").readNullable[String] and
         (__ \ "pull_request_title").readNullable[String] and
-        (__ \ "pull_request_number").readNullable[String] and
+        (__ \ "pull_request_number").readNullable[Long] and
         (__ \ "started_at").readNullable[_root_.org.joda.time.DateTime] and
         (__ \ "finished_at").readNullable[_root_.org.joda.time.DateTime]
       )(RequestBuild.apply _)
@@ -619,7 +619,7 @@ package io.flow.travis.ci.v0.models {
       }) ++
       (obj.pullRequestNumber match {
         case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("pull_request_number" -> play.api.libs.json.JsString(x))
+        case Some(x) => play.api.libs.json.Json.obj("pull_request_number" -> play.api.libs.json.JsNumber(x))
       }) ++
       (obj.startedAt match {
         case None => play.api.libs.json.Json.obj()
