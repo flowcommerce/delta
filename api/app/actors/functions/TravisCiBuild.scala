@@ -1,9 +1,10 @@
 package io.flow.delta.actors.functions
 
+import db.EventsDao
 import io.flow.delta.actors.BuildEventLog
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
-import io.flow.delta.v0.models.{Organization, Project, Build}
+import io.flow.delta.v0.models.{Organization, Project, Build, EventType => DeltaEventType}
 import io.flow.play.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
@@ -44,8 +45,21 @@ case class TravisCiBuild(
 
       requests match {
         case Nil => {
-          // no matching builds, submit new build
-          postBuildRequest()
+          // No matching builds from Travis. Check the Event log to see
+          // if we tried to submit a build, otherwise submit a new build.
+          EventsDao.findAll(
+            projectId = Some(project.id),
+            `type` = Some(DeltaEventType.Change),
+            summaryKeywords = Some(travisCommitMessage(dockerImageName, version)),
+            limit = 1
+          ).headOption match {
+            case None => {
+              postBuildRequest()
+            }
+            case Some(_) => {
+              log.checkpoint(s"Waiting for triggered build [${dockerImageName}:${version}]")
+            }
+          }
         }
         case requests => {
           requests.foreach { request =>
@@ -97,7 +111,7 @@ case class TravisCiBuild(
     RequestPostForm(
       request = RequestPostFormData(
         branch = version,
-        message = Option(s"Delta: building image ${dockerImageName}:${version}"),
+        message = Option(travisCommitMessage(dockerImageName, version)),
         config = RequestConfigData(
           mergeMode = Option(MergeMode.Replace),
           dist = Option("trusty"),
@@ -131,4 +145,9 @@ case class TravisCiBuild(
   private def travisRepositorySlug(): String = {
     org.docker.organization + "/" + project.id
   }
+  
+  private def travisCommitMessage(dockerImageName: String, version: String): String = {
+    s"Delta: building image ${dockerImageName}:${version}"
+  }
+
 }
