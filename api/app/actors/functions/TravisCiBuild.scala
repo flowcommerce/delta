@@ -50,7 +50,7 @@ case class TravisCiBuild(
         case requests => {
           requests.foreach { request =>
             request.builds.foreach { build =>
-              log.changed(s"Travis CI build [${dockerImageName}:${version}], number: ${build.number}, state: ${build.state}")
+              log.checkpoint(s"Travis CI build [${dockerImageName}:${version}], number: ${build.number}, state: ${build.state}")
             }
           }
         }
