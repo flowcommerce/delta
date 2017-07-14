@@ -252,56 +252,68 @@ class MainActor @javax.inject.Inject() (
   }
 
   def upsertDockerHubActor(buildId: String): ActorRef = {
-    dockerHubActors.lift(buildId).getOrElse {
-      val ref = injectedChild(dockerHubFactory(buildId), name = s"$name:dockerHubActor:$buildId")
-      ref ! DockerHubActor.Messages.Setup
-      dockerHubActors += (buildId -> ref)
-      ref
+    this.synchronized {
+      dockerHubActors.lift(buildId).getOrElse {
+        val ref = injectedChild(dockerHubFactory(buildId), name = s"$name:dockerHubActor:$buildId")
+        ref ! DockerHubActor.Messages.Setup
+        dockerHubActors += (buildId -> ref)
+        ref
+      }
     }
   }
 
   def upsertUserActor(id: String): ActorRef = {
-    userActors.lift(id).getOrElse {
-      val ref = system.actorOf(Props[UserActor], name = s"$name:userActor:$id")
-      ref ! UserActor.Messages.Data(id)
-      userActors += (id -> ref)
-      ref
+    this.synchronized {
+      userActors.lift(id).getOrElse {
+        val ref = system.actorOf(Props[UserActor], name = s"$name:userActor:$id")
+        ref ! UserActor.Messages.Data(id)
+        userActors += (id -> ref)
+        ref
+     }
     }
   }
 
   def upsertProjectActor(id: String): ActorRef = {
-    projectActors.lift(id).getOrElse {
-      val ref = injectedChild(projectFactory(id), name = s"$name:projectActor:$id")
-      ref ! ProjectActor.Messages.Setup
-      projectActors += (id -> ref)
-      ref
+    this.synchronized {
+      projectActors.lift(id).getOrElse {
+        val ref = injectedChild(projectFactory(id), name = s"$name:projectActor:$id")
+        ref ! ProjectActor.Messages.Setup
+        projectActors += (id -> ref)
+        ref
+      }
     }
   }
 
   def upsertBuildActor(id: String): ActorRef = {
-    buildActors.lift(id).getOrElse {
-      val ref = injectedChild(buildFactory(id), name = s"$name:buildActor:$id")
-      ref ! BuildActor.Messages.Setup
-      buildActors += (id -> ref)
-      ref
+    this.synchronized {
+      buildActors.lift(id).getOrElse {
+        val ref = injectedChild(buildFactory(id), name = s"$name:buildActor:$id")
+        ref ! BuildActor.Messages.Setup
+        buildActors += (id -> ref)
+        ref
+      }
     }
   }
 
   def upsertProjectSupervisorActor(id: String): ActorRef = {
-    projectSupervisorActors.lift(id).getOrElse {
-      val ref = system.actorOf(Props[ProjectSupervisorActor], name = s"$name:projectSupervisorActor:$id")
-      ref ! ProjectSupervisorActor.Messages.Data(id)
-      projectSupervisorActors += (id -> ref)
-      ref
+    this.synchronized {
+      projectSupervisorActors.lift(id).getOrElse {
+        val ref = system.actorOf(Props[ProjectSupervisorActor], name = s"$name:projectSupervisorActor:$id")
+        ref ! ProjectSupervisorActor.Messages.Data(id)
+        projectSupervisorActors += (id -> ref)
+        ref
+      }
     }
   }
 
   def upsertBuildSupervisorActor(id: String): ActorRef = {
-    buildSupervisorActors.lift(id).getOrElse {
-      val ref = system.actorOf(Props[BuildSupervisorActor], name = s"$name:buildSupervisorActor:$id")
-      ref ! BuildSupervisorActor.Messages.Data(id)
-      buildSupervisorActors += (id -> ref)
-      ref
+    this.synchronized {
+      buildSupervisorActors.lift(id).getOrElse {
+        val ref = system.actorOf(Props[BuildSupervisorActor], name = s"$name:buildSupervisorActor:$id")
+        ref ! BuildSupervisorActor.Messages.Data(id)
+        buildSupervisorActors += (id -> ref)
+        ref
+      }
     }
   }
 }

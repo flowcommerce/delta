@@ -423,16 +423,10 @@ package io.flow.delta.config.v0.models {
 
     implicit def jsonReadsDeltaConfigConfig: play.api.libs.json.Reads[Config] = new play.api.libs.json.Reads[Config] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[Config] = {
-        (js \ "discriminator").validateOpt[String] match {
-          case play.api.libs.json.JsError(msg) => play.api.libs.json.JsError(msg)
-          case play.api.libs.json.JsSuccess(discriminator, _) => {
-            discriminator match {
-              case Some("config_project") => js.validate[io.flow.delta.config.v0.models.ConfigProject]
-              case Some("config_error") => js.validate[io.flow.delta.config.v0.models.ConfigError]
-              case Some(other) => play.api.libs.json.JsSuccess(io.flow.delta.config.v0.models.ConfigUndefinedType(other))
-              case None => sys.error("Union[Config] requires a discriminator named 'discriminator' - this field was not found in the Json Value")
-            }
-          }
+        (js \ "discriminator").asOpt[String].getOrElse { sys.error("Union[Config] requires a discriminator named 'discriminator' - this field was not found in the Json Value") } match {
+          case "config_project" => js.validate[io.flow.delta.config.v0.models.ConfigProject]
+          case "config_error" => js.validate[io.flow.delta.config.v0.models.ConfigError]
+          case other => play.api.libs.json.JsSuccess(io.flow.delta.config.v0.models.ConfigUndefinedType(other))
         }
       }
     }

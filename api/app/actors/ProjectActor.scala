@@ -57,8 +57,6 @@ class ProjectActor @javax.inject.Inject() (
         }
       }
 
-      self ! ProjectActor.Messages.SyncBuilds
-
       system.scheduler.schedule(
         Duration(ProjectActor.SyncIfInactiveIntervalMinutes, "minutes"),
         Duration(ProjectActor.SyncIfInactiveIntervalMinutes, "minutes")
