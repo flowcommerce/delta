@@ -19,7 +19,7 @@ case class TravisCiBuild(
     config: Config
 ) extends BuildEventLog {
 
-  private[this] val client = new Client()
+  private[this] val client = createClient()
 
   def withProject[T](f: Project => T): Option[T] = {
     Option(f(project))
@@ -35,8 +35,7 @@ case class TravisCiBuild(
     this.synchronized {
       client.requests.get(
           repositorySlug = travisRepositorySlug(),
-          limit = Option(20),
-          requestHeaders = createRequestHeaders()
+          limit = Option(20)
       ).map { requestGetResponse =>
 
         val requests = requestGetResponse.requests
@@ -89,8 +88,7 @@ case class TravisCiBuild(
 
     client.requests.post(
       repositorySlug = travisRepositorySlug(),
-      requestPostForm = createRequestPostForm(),
-      requestHeaders = createRequestHeaders()
+      requestPostForm = createRequestPostForm()
     ).map { request =>
       log.changed(travisChangedMessage(dockerImageName, version))
     }.recover {
@@ -138,11 +136,27 @@ case class TravisCiBuild(
   }
 
   private def createRequestHeaders(): Seq[(String, String)] = {
-    val token = config.requiredString("travis.delta.auth.token")
+    val token = if (project.visibility == Visibility.Public) {
+      config.requiredString("travis.delta.auth.token.public")
+    } else {
+      config.requiredString("travis.delta.auth.token.private")
+    }
+
     Seq(
       ("Travis-API-Version", "3"),
       ("Authorization", s"token ${token}")
     )
+  }
+
+  private def createClient(): Client = {
+    // Travis separates public and private projects into separate domains
+    val baseUrl = if (project.visibility == Visibility.Public) {
+      "https://api.travis-ci.org"
+    } else {
+      "https://api.travis-ci.com"
+    }
+
+    new Client(baseUrl, None, createRequestHeaders())
   }
 
   private def travisRepositorySlug(): String = {

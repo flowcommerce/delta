@@ -73,8 +73,10 @@ Environment Variables
     - CONF_DOCKER_PASSWORD
         - Password for dockerhub login
 - Travis CI
-    - CONF_TRAVIS_DELTA_AUTH_TOKEN
-        - Travis CI auth token
+    - CONF_TRAVIS_DELTA_AUTH_TOKEN_PRIVATE
+        - Travis CI auth token for private repos (.com)
+    - CONF_TRAVIS_DELTA_AUTH_TOKEN_PUBLIC
+        - Travis CI auth token for public repos (.org)
 - GitHub
     - CONF_GITHUB_DELTA_LOCALHOST_CLIENT_ID
     - CONF_GITHUB_DELTA_CLIENT_SECRET
