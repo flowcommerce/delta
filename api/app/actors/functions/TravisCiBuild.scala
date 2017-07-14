@@ -4,7 +4,7 @@ import db.EventsDao
 import io.flow.delta.actors.BuildEventLog
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
-import io.flow.delta.v0.models.{Organization, Project, Build, EventType => DeltaEventType}
+import io.flow.delta.v0.models.{Organization, Project, Build, EventType => DeltaEventType, Visibility}
 import io.flow.play.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
