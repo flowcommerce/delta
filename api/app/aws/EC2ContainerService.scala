@@ -41,21 +41,21 @@ case class EC2ContainerService @javax.inject.Inject() (
   
   def getBaseName(imageName: String, imageVersion: Option[String] = None): String = {
     Seq(
-      Some(s"${imageName.replaceAll("[/]","-")}"), // flow/registry becomes flow-registry
+      Some(s"${imageName.replaceAll("_", "-").replaceAll("[/]","-")}"), // flow/registry becomes flow-registry
       imageVersion.map { v => s"${v.replaceAll("[.]","-")}" } // 1.2.3 becomes 1-2-3
     ).flatten.mkString("-")
   }
 
   def getServiceName(imageName: String, imageVersion: String, settings: Settings): String = {
-    s"${getBaseName(imageName)}-service"
+    s"${getBaseName(imageName).replaceAll("_", "-")}-service"
   }
 
   def getContainerName(imageName: String, imageVersion: String, settings: Settings): String = {
-    s"${getBaseName(imageName)}-container"
+    s"${getBaseName(imageName).replaceAll("_", "-")}-container"
   }
 
   def getTaskName(imageName: String, imageVersion: String): String = {
-    s"${getBaseName(imageName, Some(imageVersion))}-task"
+    s"${getBaseName(imageName, Some(imageVersion)).replaceAll("_", "-")}-task"
   }
 
   /**

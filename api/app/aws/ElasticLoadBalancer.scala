@@ -12,7 +12,7 @@ import scala.concurrent.Future
 
 object ElasticLoadBalancer {
 
-  def getLoadBalancerName(projectId: String): String = s"$projectId-ecs-lb"
+  def getLoadBalancerName(projectId: String): String = s"${projectId.replaceAll("_", "-")}-ecs-lb"
 
 }
 
