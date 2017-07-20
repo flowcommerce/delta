@@ -82,7 +82,7 @@ case class TravisCiBuild(
       Thread.sleep(2000)
     }
   }
-  
+
   private def postBuildRequest() {
     val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
@@ -126,7 +126,7 @@ case class TravisCiBuild(
           script = Option(Seq(
             "docker --version",
             "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
-            s"docker build -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
+            s"docker build --build-arg npm_user=$${NPM_USER} --build-arg npm_pass=$${NPM_PASS} --build-arg npm_email=$${NPM_EMAIL} --build-arg aws_access_key=$${AWS_ACCESS_KEY} --build-arg aws_secret_key=$${AWS_SECRET_KEY} -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
             "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
             s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
           ))
@@ -162,11 +162,11 @@ case class TravisCiBuild(
   private def travisRepositorySlug(): String = {
     org.docker.organization + "/" + project.id
   }
-  
+
   private def travisChangedMessage(dockerImageName: String, version: String): String = {
     s"Triggered docker build for ${dockerImageName}:${version}"
   }
-  
+
   private def travisCommitMessage(dockerImageName: String, version: String): String = {
     s"Delta: building image ${dockerImageName}:${version}"
   }
