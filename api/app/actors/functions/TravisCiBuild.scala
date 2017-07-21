@@ -123,6 +123,11 @@ case class TravisCiBuild(
                packages = Option(Seq("docker-ce=17.05.0~ce-0~ubuntu-trusty"))
              ))
           )),
+          cache = Option(RequestConfigCacheData(
+              directories = Option(Seq(
+                  "node_modules"
+              ))
+          )),
           script = Option(Seq(
             "docker --version",
             "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
