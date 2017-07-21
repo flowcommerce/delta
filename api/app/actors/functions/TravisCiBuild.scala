@@ -126,7 +126,7 @@ case class TravisCiBuild(
           script = Option(Seq(
             "docker --version",
             "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
-            s"docker build --build-arg npm_user=$${NPM_USER} --build-arg npm_pass=$${NPM_PASS} --build-arg npm_email=$${NPM_EMAIL} --build-arg aws_access_key=$${AWS_ACCESS_KEY} --build-arg aws_secret_key=$${AWS_SECRET_KEY} -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
+            s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
             "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
             s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
           ))
