@@ -4,26 +4,26 @@ services:
     ports:
       - "6099:5432"
     image: flowcommerce/delta-postgresql:latest
-  api:
-    build:
-      context: .
-      dockerfile: api/Dockerfile
-    ports:
-      - "6091:9000"
-    image: delta-api
-    entrypoint: "java -jar /root/environment-provider.jar --service play delta bin/delta-api development"
-    env_file: development.txt
-    depends_on:
-      - db
-  www:
-    build:
-      context: .
-      dockerfile: www/Dockerfile
-    ports:
-      - "6090:9000"
-    image: delta-www
-    entrypoint: "java -jar /root/environment-provider.jar --service play delta bin/delta-www development"
-    env_file: development.txt
-    depends_on:
-      - db
-      - api
+  # api:
+  #   build:
+  #     context: .
+  #     dockerfile: api/Dockerfile
+  #   ports:
+  #     - "6091:9000"
+  #   image: delta-api
+  #   entrypoint: "java -jar /root/environment-provider.jar --service play delta bin/delta-api development"
+  #   env_file: development.txt
+  #   depends_on:
+  #     - db
+  # www:
+  #   build:
+  #     context: .
+  #     dockerfile: www/Dockerfile
+  #   ports:
+  #     - "6090:9000"
+  #   image: delta-www
+  #   entrypoint: "java -jar /root/environment-provider.jar --service play delta bin/delta-www development"
+  #   env_file: development.txt
+  #   depends_on:
+  #     - db
+  #     - api
