@@ -48,7 +48,7 @@ lazy val api = project
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
-      "com.sendgrid"   %  "sendgrid-java" % "3.2.1",
+      "com.sendgrid"   %  "sendgrid-java" % "4.0.1",
       "org.postgresql" % "postgresql" % "42.1.3"
     )
   )
