@@ -39,7 +39,7 @@ case class TravisCiBuild(
 
       val response = client.requests.get(
           repositorySlug = travisRepositorySlug(),
-          limit = Option(20)
+          limit = Some(20)
       )
       Await.result(response, 2.seconds)
 
