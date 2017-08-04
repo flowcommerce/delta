@@ -2,6 +2,7 @@ package io.flow.delta.actors.functions
 
 import db.EventsDao
 import io.flow.delta.actors.BuildEventLog
+import io.flow.delta.api.lib.BuildLockUtil
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Organization, Project, Build, EventType => DeltaEventType, Visibility}
@@ -9,6 +10,8 @@ import io.flow.play.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
+import scala.concurrent.duration._
 
 case class TravisCiBuild(
     version: String,
@@ -32,61 +35,71 @@ case class TravisCiBuild(
   def buildDockerImage() {
     val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
-    client.requests.get(
-        repositorySlug = travisRepositorySlug(),
-        limit = Option(20)
-    ).map { requestGetResponse =>
+    BuildLockUtil().withLock(build.id) ({
 
-      val requests = requestGetResponse.requests
-        .filter(_.eventType == EventType.Api)
-        .filter(_.branchName.name.getOrElse("") == version)
-        .filter(_.commit.message.getOrElse("").contains(dockerImageName))
+      val response = client.requests.get(
+          repositorySlug = travisRepositorySlug(),
+          limit = Option(20)
+      )
+      Await.result(response, 2.seconds)
 
-      requests match {
-        case Nil => {
-          // No matching builds from Travis. Check the Event log to see
-          // if we tried to submit a build, otherwise submit a new build.
-          EventsDao.findAll(
-            projectId = Some(project.id),
-            `type` = Some(DeltaEventType.Change),
-            summaryKeywords = Some(travisChangedMessage(dockerImageName, version)),
-            limit = 1
-          ).headOption match {
-            case None => {
-              postBuildRequest()
+      response.map { requestGetResponse =>
+
+        val requests = requestGetResponse.requests
+          .filter(_.eventType == EventType.Api)
+          .filter(_.branchName.name.getOrElse("") == version)
+          .filter(_.commit.message.getOrElse("").contains(dockerImageName))
+
+        requests match {
+          case Nil => {
+            // No matching builds from Travis. Check the Event log to see
+            // if we tried to submit a build, otherwise submit a new build.
+            EventsDao.findAll(
+              projectId = Some(project.id),
+              `type` = Some(DeltaEventType.Change),
+              summaryKeywords = Some(travisChangedMessage(dockerImageName, version)),
+              limit = 1
+            ).headOption match {
+              case None => {
+                postBuildRequest()
+              }
+              case Some(_) => {
+                log.checkpoint(s"Waiting for triggered build [${dockerImageName}:${version}]")
+              }
             }
-            case Some(_) => {
-              log.checkpoint(s"Waiting for triggered build [${dockerImageName}:${version}]")
+          }
+          case requests => {
+            requests.foreach { request =>
+              request.builds.foreach { build =>
+                log.checkpoint(s"Travis CI build [${dockerImageName}:${version}], number: ${build.number}, state: ${build.state}")
+              }
             }
           }
         }
-        case requests => {
-          requests.foreach { request =>
-            request.builds.foreach { build =>
-              log.checkpoint(s"Travis CI build [${dockerImageName}:${version}], number: ${build.number}, state: ${build.state}")
-            }
-          }
+
+      }.recover {
+        case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
+          log.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${version}]")
+        }
+        case err => {
+          err.printStackTrace(System.err)
+          log.error(s"Error fetching Travis CI requests [${dockerImageName}:${version}]: $err")
         }
       }
 
-    }.recover {
-      case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
-        log.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${version}]")
-      }
-      case err => {
-        err.printStackTrace(System.err)
-        log.error(s"Error fetching Travis CI requests [${dockerImageName}:${version}]: $err")
-      }
-    }
+    })
   }
 
   private def postBuildRequest() {
     val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
-    client.requests.post(
+    val response = client.requests.post(
       repositorySlug = travisRepositorySlug(),
       requestPostForm = createRequestPostForm()
-    ).map { request =>
+    )
+    Await.result(response, 2.seconds)
+
+    response.map { request =>
       log.changed(travisChangedMessage(dockerImageName, version))
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
