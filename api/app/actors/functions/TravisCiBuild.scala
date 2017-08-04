@@ -41,7 +41,7 @@ case class TravisCiBuild(
           repositorySlug = travisRepositorySlug(),
           limit = Some(20)
       )
-      Await.result(response, 2.seconds)
+      Await.result(response, 5.seconds)
 
       response.map { requestGetResponse =>
 
@@ -97,7 +97,7 @@ case class TravisCiBuild(
       repositorySlug = travisRepositorySlug(),
       requestPostForm = createRequestPostForm()
     )
-    Await.result(response, 2.seconds)
+    Await.result(response, 5.seconds)
 
     response.map { request =>
       log.changed(travisChangedMessage(dockerImageName, version))
