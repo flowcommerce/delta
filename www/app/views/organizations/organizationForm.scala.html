@@ -20,14 +20,14 @@
     }
 
     @helper.inputText(
-        form("organization"),
-        '_label -> "Docker Hub Organization name",
+        form("docker_organization"),
+        '_label -> "Docker Hub Organization",
         '_error -> form.error("docker_organization")
     )
 
     @helper.inputText(
-        form("travis"),
-        '_label -> "Travis Organization name",
+        form("travis_organization"),
+        '_label -> "Travis Organization",
         '_error -> form.error("travis_organization")
     )
 </fieldset>
