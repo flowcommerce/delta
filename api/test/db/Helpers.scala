@@ -23,7 +23,7 @@ trait Helpers {
   val random = Random()
 
   def createTestEmail(): String = {
-    s"${createTestKey}@test.bryzek.com"
+    s"$createTestKey@test.bryzek.com"
   }
 
   def createTestName(): String = {
@@ -79,7 +79,8 @@ trait Helpers {
   def createOrganizationForm() = {
     OrganizationForm(
       id = createTestKey(),
-      docker = Docker(provider=DockerProvider.DockerHub, organization="flowcommerce")
+      docker = Docker(provider=DockerProvider.DockerHub, organization="flowcommerce"),
+      travis = Travis(organization = "flowcommerce")
     )
   }
 
