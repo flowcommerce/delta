@@ -136,6 +136,7 @@ case class TravisCiBuild(
             only = Option(Seq("/^\\d+\\.\\d+\\.\\d+$/"))
           )),
           dist = Option("trusty"),
+          env = Option(Seq("DELTA=skipping-env-setting")),
           sudo = Option("required"),
           services = Option(Seq("docker")),
           addons = Option(RequestConfigAddonsData(
