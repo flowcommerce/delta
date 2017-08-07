@@ -1,9 +1,10 @@
 package controllers
 
 import io.flow.delta.v0.errors.UnitResponse
-import io.flow.delta.v0.models.{OrganizationForm, Docker, DockerProvider}
+import io.flow.delta.v0.models.{Docker, DockerProvider, OrganizationForm, Travis}
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.util.{Pagination, PaginatedCollection}
+import io.flow.play.util.{PaginatedCollection, Pagination}
+
 import scala.concurrent.Future
 import play.api.i18n.MessagesApi
 import play.api.data._
@@ -66,7 +67,8 @@ class OrganizationsController @javax.inject.Inject() (
         OrganizationsController.uiForm.fill(
           OrganizationsController.UiForm(
             id = "",
-            organization="",
+            docker_organization="",
+            travis_organization="",
             returnUrl = returnUrl
           )
         )
@@ -163,12 +165,14 @@ object OrganizationsController {
 
   case class UiForm(
     id: String,
-    organization: String,
+    docker_organization: String,
+    travis_organization: String,
     returnUrl: Option[String]
   ) {
     val organizationForm = OrganizationForm(
       id = id,
-      docker = Docker(provider=DockerProvider.DockerHub, organization=organization)
+      docker = Docker(provider=DockerProvider.DockerHub, organization=docker_organization),
+      travis = Travis(organization=travis_organization)
     )
 
   }
@@ -176,7 +180,8 @@ object OrganizationsController {
   private val uiForm = Form(
     mapping(
       "id" -> nonEmptyText,
-      "organization" -> nonEmptyText,
+      "docker_organization" -> nonEmptyText,
+      "travis_organization" -> nonEmptyText,
       "return_url" -> optional(text)
     )(UiForm.apply)(UiForm.unapply)
   )

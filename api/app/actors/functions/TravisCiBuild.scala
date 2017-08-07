@@ -190,7 +190,7 @@ case class TravisCiBuild(
   }
 
   private def travisRepositorySlug(): String = {
-    org.docker.organization + "/" + project.id
+    org.travis.organization + "/" + project.id
   }
 
   private def travisChangedMessage(dockerImageName: String, version: String): String = {

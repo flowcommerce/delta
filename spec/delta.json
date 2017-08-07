@@ -85,7 +85,8 @@
       "fields": [
 	{ "name": "id", "type": "string" },
 	{ "name": "user", "type": "user_summary", "description": "The user that created this organization" },
-        { "name": "docker", "type": "docker", "description": "Required information to locate docker images for projects associated with this organization." }
+        { "name": "docker", "type": "docker", "description": "Required information to locate docker images for projects associated with this organization." },
+        { "name": "travis", "type": "travis" }
       ]
     },
 
@@ -98,13 +99,20 @@
     "organization_form": {
       "fields": [
 	{ "name": "id", "type": "string" },
-        { "name": "docker", "type": "docker" }
+        { "name": "docker", "type": "docker" },
+        { "name": "travis", "type": "travis" }
       ]
     },
 
     "docker": {
       "fields": [
         { "name": "provider", "type": "docker_provider" },
+        { "name": "organization", "type": "string", "example": "flowcommerce" }
+      ]
+    },
+
+    "travis": {
+      "fields": [
         { "name": "organization", "type": "string", "example": "flowcommerce" }
       ]
     },

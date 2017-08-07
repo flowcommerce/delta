@@ -21,7 +21,7 @@ use cases:
      all settings are enabled, but you can include an explicit "enable" to
      list the settings to enable, or a "disable" to specifically disable a 
      given setting. Available settings are documented at
-     http://apidoc.me/flow/delta/latest#model-settings
+     https://app.apibuilder.io/flow/delta/latest#model-settings
 
 For projects with a single build, the default build is called 'root' and
 does not need to be specified.

@@ -16,6 +16,7 @@ object OrganizationsDao {
            organizations.user_id,
            organizations.docker_provider,
            organizations.docker_organization,
+           organizations.travis_organization,
            users.id as user_id,
            users.email as user_email,
            users.first_name as name_first,
@@ -69,16 +70,17 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
 
   private[this] val InsertQuery = """
     insert into organizations
-    (id, user_id, docker_provider, docker_organization, updated_by_user_id)
+    (id, user_id, docker_provider, docker_organization, travis_organization, updated_by_user_id)
     values
-    ({id}, {user_id}, {docker_provider}, {docker_organization}, {updated_by_user_id})
+    ({id}, {user_id}, {docker_provider}, {docker_organization}, {travis_organization}, {updated_by_user_id})
   """
 
   private[this] val UpdateQuery = """
     update organizations
        set updated_by_user_id = {updated_by_user_id},
            docker_provider = {docker_provider},
-           docker_organization = {docker_organization}
+           docker_organization = {docker_organization},
+           travis_organization = {travis_organization}
      where id = {id}
   """
 
@@ -144,6 +146,7 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
       'user_id -> createdBy.id,
       'docker_provider -> form.docker.provider.toString,
       'docker_organization -> form.docker.organization.trim,
+      'travis_organization -> form.travis.organization.trim,
       'updated_by_user_id -> createdBy.id
     ).execute()
 
@@ -166,6 +169,7 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
             'id -> organization.id,
             'docker_provider -> form.docker.provider.toString,
             'docker_organization -> form.docker.organization.trim,
+            'travis_organization -> form.travis.organization.trim,
             'updated_by_user_id -> createdBy.id
           ).execute()
         }
