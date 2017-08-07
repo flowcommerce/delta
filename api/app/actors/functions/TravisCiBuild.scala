@@ -132,13 +132,16 @@ case class TravisCiBuild(
         message = Option(travisCommitMessage(dockerImageName, version)),
         config = RequestConfigData(
           mergeMode = Option(MergeMode.Merge),
+          branches = Option(RequestConfigBranchesData(
+            only = Option(Seq("/^\\d+\\.\\d+\\.\\d+$/"))
+          )),
           dist = Option("trusty"),
           sudo = Option("required"),
           services = Option(Seq("docker")),
           addons = Option(RequestConfigAddonsData(
-             apt = Option(RequestConfigAddonsAptData(
-               packages = Option(Seq("docker-ce=17.05.0~ce-0~ubuntu-trusty"))
-             ))
+            apt = Option(RequestConfigAddonsAptData(
+              packages = Option(Seq("docker-ce=17.05.0~ce-0~ubuntu-trusty"))
+            ))
           )),
           beforeInstall = Option(Seq("echo Delta: skipping before_install step")),
           install = Option(Seq("echo Delta: skipping install step")),
