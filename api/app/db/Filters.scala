@@ -77,6 +77,8 @@ case class Filters(auth: Authorization) {
           case Some(col) => Clause.Or(Seq(orgClause, publicVisibilityClause(col)))
         }
       }
+      case _: Authorization.Partner => sys.error("Invalid Authorization.Partner")
+      case _: Authorization.Session => sys.error("Invalid Authorization.Session")
     }
   }
 
