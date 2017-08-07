@@ -88,6 +88,10 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
           .withLoadBalancerName(name)
           .withLoadBalancerAttributes(
             new LoadBalancerAttributes()
+              .withCrossZoneLoadBalancing(
+                new CrossZoneLoadBalancing()
+                  .withEnabled(false)
+              )
               .withConnectionDraining(
                 new ConnectionDraining()
                   .withEnabled(true)
