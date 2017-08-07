@@ -131,7 +131,7 @@ case class TravisCiBuild(
         branch = version,
         message = Option(travisCommitMessage(dockerImageName, version)),
         config = RequestConfigData(
-          mergeMode = Option(MergeMode.Replace),
+          mergeMode = Option(MergeMode.Merge),
           dist = Option("trusty"),
           sudo = Option("required"),
           services = Option(Seq("docker")),
@@ -140,18 +140,22 @@ case class TravisCiBuild(
                packages = Option(Seq("docker-ce=17.05.0~ce-0~ubuntu-trusty"))
              ))
           )),
-          cache = Option(RequestConfigCacheData(
-              directories = Option(Seq(
-                  "node_modules"
-              ))
-          )),
+          beforeInstall = Option(Seq("echo Delta: skipping before_install step")),
+          install = Option(Seq("echo Delta: skipping install step")),
+          beforeScript = Option(Seq("echo Delta: skipping before_script step")),
           script = Option(Seq(
             "docker --version",
             "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
             s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
             "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
             s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
-          ))
+          )),
+          afterScript = Option(Seq("echo Delta: skipping after_script step")),
+          afterSuccess = Option(Seq("echo Delta: skipping after_success step")),
+          afterFailure = Option(Seq("echo Delta: skipping after_failure step")),
+          beforeDeploy = Option(Seq("echo Delta: skipping before_deploy step")),
+          deploy = None,
+          afterDeploy = Option(Seq("echo Delta: skipping after_deploy step"))
         )
       )
     )
