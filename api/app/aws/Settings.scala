@@ -9,6 +9,7 @@ case class DefaultSettings(
   override val asgMaxSize: Int,
   override val asgDesiredSize: Int,
   override val elbSslCertificateId: String,
+  override val apibuilderSslCertificateId: String,
   override val elbSubnets: Seq[String],
   override val asgSubnets: Seq[String],
   override val lcSecurityGroup: String,
@@ -48,6 +49,7 @@ trait Settings {
 
   // SSL settings for ELB listeners
   val elbSslCertificateId: String
+  val apibuilderSslCertificateId: String
 
   // Subnets for the load balancer and autoscaling group instances
   val elbSubnets: Seq[String]

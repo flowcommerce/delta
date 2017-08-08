@@ -264,6 +264,7 @@ class BuildActor @javax.inject.Inject() (
       asgMaxSize = config.requiredInt("aws.asg.max.size"),
       asgDesiredSize = config.requiredInt("aws.asg.desired.size"),
       elbSslCertificateId = config.requiredString("aws.elb.ssl.certificate"),
+      apibuilderSslCertificateId = config.requiredString("aws.elb.ssl.certificate.apibuilder"),
       elbSubnets = config.requiredString("aws.elb.subnets").split(","),
       asgSubnets = config.requiredString("aws.autoscaling.subnets").split(","),
       lcSecurityGroup = config.requiredString("aws.launch.configuration.security.group"),
