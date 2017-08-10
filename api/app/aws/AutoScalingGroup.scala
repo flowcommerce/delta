@@ -217,7 +217,9 @@ class AutoScalingGroup @javax.inject.Inject() (
       """curl -o /tmp/sumo.sh https://collectors.sumologic.com/rest/download/linux/64""",
       """chmod +x /tmp/sumo.sh""",
       """export PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)""",
-      s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\""
+      s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\"",
+      """echo '* soft nofile 1024000' >> /etc/security/limits.conf""",
+      """echo '* hard nofile 1024000' >> /etc/security/limits.conf"""
     ).mkString("\n")
   }
 }
