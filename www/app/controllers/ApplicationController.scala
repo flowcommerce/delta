@@ -62,9 +62,11 @@ case class BuildView(val dashboardBuild: io.flow.delta.v0.models.DashboardBuild)
   }
 
   def format(versions: Seq[Version]): String = {
-    versions.map(_.name) match {
+    versions.map { v =>
+      s"${v.name} (${v.instances})"
+    } match {
       case Nil => "Nothing"
-      case names => names.mkString(", ")
+      case strings => strings.mkString(", ")
     }
   }
 
