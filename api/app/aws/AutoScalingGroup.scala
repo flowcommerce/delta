@@ -219,7 +219,9 @@ class AutoScalingGroup @javax.inject.Inject() (
       """export PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)""",
       s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\"",
       """echo '* soft nofile 100000' >> /etc/security/limits.conf""",
-      """echo '* hard nofile 100000' >> /etc/security/limits.conf"""
+      """echo '* hard nofile 100000' >> /etc/security/limits.conf""",
+      """service docker restart""",
+      """start ecs"""
     ).mkString("\n")
   }
 }
