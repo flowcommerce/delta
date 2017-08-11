@@ -205,10 +205,10 @@ class AutoScalingGroup @javax.inject.Inject() (
 
   def lcUserData(id: String): String = {
     val ecsClusterName = EC2ContainerService.getClusterName(id)
+    val nofileMax = 100000
 
     return Seq(
       """#!/bin/bash""",
-      """echo 'OPTIONS="-e env=production"' > /etc/sysconfig/docker""",
       s"""echo 'ECS_CLUSTER=${ecsClusterName}' >> /etc/ecs/ecs.config""",
       """echo 'ECS_ENGINE_AUTH_TYPE=dockercfg' >> /etc/ecs/ecs.config""",
       s"""echo 'ECS_ENGINE_AUTH_DATA={"https://index.docker.io/v1/":{"auth":"${dockerHubToken}","email":"${dockerHubEmail}"}}' >> /etc/ecs/ecs.config""",
@@ -218,10 +218,9 @@ class AutoScalingGroup @javax.inject.Inject() (
       """chmod +x /tmp/sumo.sh""",
       """export PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)""",
       s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\"",
-      """echo '* soft nofile 100000' >> /etc/security/limits.conf""",
-      """echo '* hard nofile 100000' >> /etc/security/limits.conf""",
-      """service docker restart""",
-      """start ecs"""
+      s"""echo '* soft nofile $nofileMax' >> /etc/security/limits.conf""",
+      s"""echo '* hard nofile $nofileMax' >> /etc/security/limits.conf""",
+      """service docker restart"""
     ).mkString("\n")
   }
 }
