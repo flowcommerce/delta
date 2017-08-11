@@ -8,7 +8,12 @@ object InstanceTypeDefaults {
   def memory(typ: InstanceType): Int = {
     typ match {
       case InstanceType.M4Large => 7500
+      case InstanceType.M4Xlarge => 15500
+      case InstanceType.M42xlarge => 31500
+
       case InstanceType.C4Large => 3500
+      case InstanceType.C4Xlarge => 7200
+      case InstanceType.C42xlarge => 14700
 
       case InstanceType.T2Micro => 700
       case InstanceType.T2Small => 1500

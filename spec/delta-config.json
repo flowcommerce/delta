@@ -26,7 +26,11 @@
       "description": "List of supported AWS instance types - see https://aws.amazon.com/ec2/instance-types/",
       "values": [
 	{ "name": "c4.large" },
+	{ "name": "c4.xlarge" },
+	{ "name": "c4.2xlarge" },
 	{ "name": "m4.large" },
+	{ "name": "m4.xlarge" },
+	{ "name": "m4.2xlarge" },
 	{ "name": "t2.micro" },
 	{ "name": "t2.small" },
 	{ "name": "t2.medium" },
