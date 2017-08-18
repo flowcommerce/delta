@@ -177,7 +177,7 @@ builds:
             dockerfile = "api/Dockerfile",
             initialNumberInstances = 5,
             instanceType = InstanceType.T2Medium,
-            memory = 3500,
+            memory = 4000,
             stages = Seq(BuildStage.SetDesiredState, BuildStage.SyncDockerImage, BuildStage.BuildDockerImage)
           )
         )
