@@ -3,7 +3,6 @@ builds:
       dockerfile: api/Dockerfile
       initial.number.instances: 1
       instance.type: t2.medium
-      memory: 3500
       port.container: 9000
       port.host: 6091
       version: 1.2
