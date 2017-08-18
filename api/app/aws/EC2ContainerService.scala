@@ -336,7 +336,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                 new ContainerDefinition()
                   .withName(containerName)
                   .withImage(imageName + ":" + imageVersion)
-                  .withMemory(settings.containerMemory)
+                  .withMemory(memory.toInt) // memory reserved for container should be the same as jvmMemorySetting
                   .withUlimits(
                     Seq(
                       new Ulimit()
