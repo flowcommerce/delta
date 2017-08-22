@@ -9,6 +9,7 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest
 import play.api.Logger
 import sun.misc.BASE64Encoder
 
+import scala.collection.immutable.ListMap
 import collection.JavaConverters._
 
 @javax.inject.Singleton
@@ -23,6 +24,12 @@ class AutoScalingGroup @javax.inject.Inject() (
 
   private[this] lazy val sumoId = config.requiredString("sumo.service.id")
   private[this] lazy val sumoKey = config.requiredString("sumo.service.key")
+
+  private[this] lazy val awsOpsworksStackId = config.requiredString("aws.opsworks.stack.id")
+  private[this] lazy val awsOpsworksLayerId = config.requiredString("aws.opsworks.layer.id")
+  private[this] lazy val awsOpsworksSnsTopicArn = config.requiredString("aws.opsworks.sns.topic.arn")
+
+  private[this] val BuildVersion13 = "1.3"
 
   lazy val ec2Client = new AmazonEC2Client(credentials.aws, configuration.aws)
   lazy val client = new AmazonAutoScalingClient(credentials.aws, configuration.aws)
@@ -49,7 +56,13 @@ class AutoScalingGroup @javax.inject.Inject() (
       )
   ).asJava
 
-  def getLaunchConfigurationName(settings: Settings, id: String) = s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
+  def getLaunchConfigurationName(settings: Settings, id: String) =
+    if (settings.version == BuildVersion13) {
+      // create a new LC for v1.3 for Opsworks
+      s"${id.replaceAll("_", "-")}-ecs-ow-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
+    } else {
+      s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
+    }
 
   def getAutoScalingGroupName(id: String) = s"${id.replaceAll("_", "-")}-ecs-auto-scaling-group"
 
@@ -143,6 +156,23 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withMaxSize(settings.asgMaxSize)
           .withDesiredCapacity(settings.asgDesiredSize)
       )
+      client.createOrUpdateTags(
+        new CreateOrUpdateTagsRequest()
+          .withTags(
+            new Tag()
+              .withKey("opsworks_stack_id")
+              .withPropagateAtLaunch(true)
+              .withResourceId("name")
+              .withResourceType("auto-scaling-group")
+              .withValue(awsOpsworksStackId)
+          )
+      )
+      client.putNotificationConfiguration(
+        new PutNotificationConfigurationRequest()
+          .withAutoScalingGroupName(name)
+          .withTopicARN(awsOpsworksSnsTopicArn)
+          .withNotificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
+      )
     } catch {
       case e: Throwable => Logger.error(s"Error creating autoscaling group $name with launch config $launchConfigName and load balancer $loadBalancerName. Error: ${e.getMessage}")
     }
@@ -157,9 +187,10 @@ class AutoScalingGroup @javax.inject.Inject() (
   def updateAutoScalingGroup(name: String, newlaunchConfigName: String, oldLaunchConfigurationName: String, instances: java.util.Collection[String]) {
     try {
       updateGroupLaunchConfiguration(name, newlaunchConfigName)
-      detachOldInstances(name, instances)
-      deleteOldLaunchConfiguration(oldLaunchConfigurationName)
-      terminateInstances(instances)
+      // PN: Disabling rotation of old instances, too risky for production
+      // detachOldInstances(name, instances)
+      // deleteOldLaunchConfiguration(oldLaunchConfigurationName)
+      // terminateInstances(instances)
     } catch {
       case e: Throwable => Logger.error(s"FlowError Error updating autoscaling group $name with launch config $newlaunchConfigName. Error: ${e.getMessage}")
     }
@@ -201,6 +232,23 @@ class AutoScalingGroup @javax.inject.Inject() (
         .withAutoScalingGroupName(name)
         .withLaunchConfigurationName(newlaunchConfigName)
     )
+    client.createOrUpdateTags(
+      new CreateOrUpdateTagsRequest()
+        .withTags(
+          new Tag()
+            .withKey("opsworks_stack_id")
+            .withPropagateAtLaunch(true)
+            .withResourceId("name")
+            .withResourceType("auto-scaling-group")
+            .withValue(awsOpsworksStackId)
+        )
+    )
+    client.putNotificationConfiguration(
+      new PutNotificationConfigurationRequest()
+        .withAutoScalingGroupName(name)
+        .withTopicARN(awsOpsworksSnsTopicArn)
+        .withNotificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
+    )
   }
 
   def lcUserData(id: String): String = {
@@ -220,7 +268,14 @@ class AutoScalingGroup @javax.inject.Inject() (
       s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\"",
       s"""echo '* soft nofile $nofileMax' >> /etc/security/limits.conf""",
       s"""echo '* hard nofile $nofileMax' >> /etc/security/limits.conf""",
-      """service docker restart"""
+      """service docker restart""",
+      """sed -i'' -e 's/.*requiretty.*//' /etc/sudoers""",
+      """curl -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py""",
+      """python /tmp/get-pip.py && /bin/rm /tmp/get-pip.py""",
+      """/usr/local/bin/pip install --upgrade awscli""",
+      """INSTANCE_ID=$(/usr/local/bin/aws opsworks register --use-instance-profile --infrastructure-class ec2 --region us-east-1 --stack-id " + s"${awsOpsworksStackId} --override-hostname ${id}-" + "$(tr -cd 'a-z' < /dev/urandom |head -c8) --local 2>&1 |grep -o 'Instance ID: .*' |cut -d' ' -f3)""",
+      """/usr/local/bin/aws opsworks wait instance-registered --region us-east-1 --instance-id $INSTANCE_ID""",
+      """/usr/local/bin/aws opsworks assign-instance --region us-east-1 --instance-id $INSTANCE_ID --layer-ids " + s"${awsOpsworksLayerId}"""
     ).mkString("\n")
   }
 }

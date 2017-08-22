@@ -58,8 +58,6 @@ class DockerHubActor @javax.inject.Inject() (
   private[this] val IntervalSeconds = 30
   private[this] val TimeoutSeconds = 1500
 
-  private[this] val BuildVersion12 = "1.2"
-
   def receive = {
     case msg @ DockerHubActor.Messages.Setup => withErrorHandler(msg) {
       setBuildId(buildId)
@@ -70,11 +68,7 @@ class DockerHubActor @javax.inject.Inject() (
         withProject { project =>
           withEnabledBuild { build =>
             withBuildConfig { buildConfig =>
-              if (buildConfig.version.getOrElse("1.0") == BuildVersion12) {
-                TravisCiBuild(version, org, project, build, buildConfig, config).buildDockerImage()
-              } else {
-                postDockerHubImageBuild(version, org, project, build, buildConfig)
-              }
+              TravisCiBuild(version, org, project, build, buildConfig, config).buildDockerImage()
               self ! DockerHubActor.Messages.Monitor(version, new DateTime())
             }
           }
