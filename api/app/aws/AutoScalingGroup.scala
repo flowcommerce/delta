@@ -155,6 +155,8 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withMaxSize(settings.asgMaxSize)
           .withDesiredCapacity(settings.asgDesiredSize)
       )
+      // Add an opsworks_stack_id tag to the instance which is used by a lambda
+      // function attached to SNS to deregister from Opsworks.
       client.createOrUpdateTags(
         new CreateOrUpdateTagsRequest()
           .withTags(
@@ -231,6 +233,8 @@ class AutoScalingGroup @javax.inject.Inject() (
         .withAutoScalingGroupName(name)
         .withLaunchConfigurationName(newlaunchConfigName)
     )
+    // Add an opsworks_stack_id tag to the instance which is used by a lambda
+    // function attached to SNS to deregister from Opsworks.
     client.createOrUpdateTags(
       new CreateOrUpdateTagsRequest()
         .withTags(
