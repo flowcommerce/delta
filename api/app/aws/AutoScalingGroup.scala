@@ -9,7 +9,6 @@ import com.amazonaws.services.ec2.model.TerminateInstancesRequest
 import play.api.Logger
 import sun.misc.BASE64Encoder
 
-import scala.collection.immutable.ListMap
 import collection.JavaConverters._
 
 @javax.inject.Singleton
