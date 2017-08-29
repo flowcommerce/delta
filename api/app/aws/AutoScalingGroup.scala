@@ -276,9 +276,9 @@ class AutoScalingGroup @javax.inject.Inject() (
       """curl -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py""",
       """python /tmp/get-pip.py && /bin/rm /tmp/get-pip.py""",
       """/usr/local/bin/pip install --upgrade awscli""",
-      """INSTANCE_ID=$(/usr/local/bin/aws opsworks register --use-instance-profile --infrastructure-class ec2 --region us-east-1 --stack-id " + s"${awsOpsworksStackId} --override-hostname ${id}-" + "$(tr -cd 'a-z' < /dev/urandom |head -c8) --local 2>&1 |grep -o 'Instance ID: .*' |cut -d' ' -f3)""",
+      """INSTANCE_ID=$(/usr/local/bin/aws opsworks register --use-instance-profile --infrastructure-class ec2 --region us-east-1 --stack-id """ + awsOpsworksStackId + """ --override-hostname """ + id + """-$(tr -cd 'a-z' < /dev/urandom |head -c8) --local 2>&1 |grep -o 'Instance ID: .*' |cut -d' ' -f3)""",
       """/usr/local/bin/aws opsworks wait instance-registered --region us-east-1 --instance-id $INSTANCE_ID""",
-      """/usr/local/bin/aws opsworks assign-instance --region us-east-1 --instance-id $INSTANCE_ID --layer-ids " + s"${awsOpsworksLayerId}"""
+      """/usr/local/bin/aws opsworks assign-instance --region us-east-1 --instance-id $INSTANCE_ID --layer-ids """ + awsOpsworksLayerId
     ).mkString("\n")
   }
 }

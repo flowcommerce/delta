@@ -112,6 +112,13 @@ Environment Variables
     - CONF_AWS_AUTOSCALING_SUBNETS
         - Comma-separated list of subnet IDs to be used by Auto-scaling group
     - CONF_AWS_SERVICE_SECURITY_GROUP: sg-55bb682d
+    - CONF_AWS_OPSWORKS_LAYER_ID
+        - Opsworks Layer ID
+    - CONF_AWS_OPSWORKS_SNS_TOPIC_ARN
+        - Opsworks SNS topic ARN
+    - CONF_AWS_OPSWORKS_STACK_ID
+        - Opsworks Stack ID
+
 - RDS/Postgresql
     - CONF_DB_DEFAULT_PASS
         - Database password
