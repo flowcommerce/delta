@@ -161,11 +161,11 @@ class AutoScalingGroup @javax.inject.Inject() (
         new CreateOrUpdateTagsRequest()
           .withTags(
             new Tag()
-              .withKey("opsworks_stack_id")
-              .withPropagateAtLaunch(true)
-              .withResourceId("name")
+              .withResourceId(name)
               .withResourceType("auto-scaling-group")
+              .withKey("opsworks_stack_id")
               .withValue(awsOpsworksStackId)
+              .withPropagateAtLaunch(true)
           )
       )
       client.putNotificationConfiguration(
@@ -239,11 +239,11 @@ class AutoScalingGroup @javax.inject.Inject() (
       new CreateOrUpdateTagsRequest()
         .withTags(
           new Tag()
-            .withKey("opsworks_stack_id")
-            .withPropagateAtLaunch(true)
-            .withResourceId("name")
+            .withResourceId(name)
             .withResourceType("auto-scaling-group")
+            .withKey("opsworks_stack_id")
             .withValue(awsOpsworksStackId)
+            .withPropagateAtLaunch(true)
         )
     )
     client.putNotificationConfiguration(
