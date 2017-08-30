@@ -423,9 +423,9 @@ case class EC2ContainerService @javax.inject.Inject() (
           .withServices(Seq(serviceName).asJava)
       )
 
-      if (!resp.getFailures().isEmpty() || 
+      if (!resp.getFailures().isEmpty() ||
           (!resp.getServices().isEmpty() && resp.getServices().get(0).getStatus() == "INACTIVE")) {
-        // If there are failures (because the service doesn't exist) 
+        // If there are failures (because the service doesn't exist)
         // or the service exists but is INACTIVE, then create the service
         Logger.info(s"AWS EC2ContainerService createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
         client.createService(
