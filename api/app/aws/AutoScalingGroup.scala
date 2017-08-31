@@ -58,7 +58,7 @@ class AutoScalingGroup @javax.inject.Inject() (
   def getLaunchConfigurationName(settings: Settings, id: String) =
     if (settings.version == BuildVersion13) {
       // create a new LC for v1.3 for Opsworks
-      s"${id.replaceAll("_", "-")}-ecs-ow-lc-ami-d61027ad-${settings.launchConfigInstanceType}"
+      s"${id.replaceAll("_", "-")}-ecs-lc-ami-d61027ad-${settings.launchConfigInstanceType}"
     } else {
       s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
     }
