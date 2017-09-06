@@ -101,7 +101,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
               .withConnectionDraining(
                 new ConnectionDraining()
                   .withEnabled(true)
-                  .withTimeout(300)
+                  .withTimeout(60)
               )
           )
       )
