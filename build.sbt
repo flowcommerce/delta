@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.11.11"
 
-val awsVersion = "1.11.184"
+val awsVersion = "1.11.191"
 
 lazy val generated = project
   .in(file("generated"))
@@ -67,7 +67,7 @@ lazy val www = project
     libraryDependencies ++= Seq(
       "org.webjars" %% "webjars-play" % "2.6.1",
       "org.webjars" % "bootstrap" % "3.3.7",
-      "org.webjars.bower" % "bootstrap-social" % "5.0.0",
+      "org.webjars.bower" % "bootstrap-social" % "5.1.1",
       "org.webjars" % "font-awesome" % "4.7.0",
       "org.webjars" % "jquery" % "2.1.4"
     )
