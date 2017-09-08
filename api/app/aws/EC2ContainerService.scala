@@ -324,12 +324,19 @@ case class EC2ContainerService @javax.inject.Inject() (
       * - 70% of the EC2 instance type's memory
       * - EC2 instance type's memory minus 500 MB
       */
-    val memory: Int = Seq(
-      BigDecimal(settings.containerMemory * 0.70).setScale(0, BigDecimal.RoundingMode.UP).toInt,
+    val ecsContainerMemory: Int = Seq(
+      BigDecimal(settings.containerMemory * 0.75).setScale(0, BigDecimal.RoundingMode.UP).toInt,
       settings.containerMemory - 500
     ).max
 
-    val jvmMemorySetting = s"-Xms${memory}m -Xmx${memory}m"
+    // jvm should be lower than the max of the container
+    // get max of either 95% of the max container memory or 100 less
+    val jvmMemory: Int = Seq(
+      BigDecimal(ecsContainerMemory * 0.95).setScale(0, BigDecimal.RoundingMode.UP).toInt,
+      ecsContainerMemory - 100
+    ).max
+
+    val jvmMemorySetting = s"-Xms${jvmMemory}m -Xmx${jvmMemory}m"
 
     // if task definition does not exist, register a new one
     Future {
@@ -345,7 +352,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                 new ContainerDefinition()
                   .withName(containerName)
                   .withImage(imageName + ":" + imageVersion)
-                  .withMemory(memory) // memory reserved for container should be the same as jvmMemorySetting
+                  .withMemory(ecsContainerMemory) // memory reserved for container should be the same as jvmMemorySetting
                   .withUlimits(
                     Seq(
                       new Ulimit()
