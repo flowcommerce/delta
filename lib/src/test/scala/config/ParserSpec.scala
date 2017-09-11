@@ -69,7 +69,7 @@ class ParserSpec extends Specification {
             name = "www",
             dockerfile = "www/Dockerfile",
             instanceType = InstanceType.T2Medium,
-            memory = 8150,
+            memory = Some(8150),
             initialNumberInstances = 10,
             portContainer = 7050,
             portHost = 8000,
@@ -177,7 +177,7 @@ builds:
             dockerfile = "api/Dockerfile",
             initialNumberInstances = 5,
             instanceType = InstanceType.T2Medium,
-            memory = 4000,
+            memory = Some(4000),
             stages = Seq(BuildStage.SetDesiredState, BuildStage.SyncDockerImage, BuildStage.BuildDockerImage)
           )
         )
@@ -203,7 +203,7 @@ builds:
     """).builds.toList match {
       case build :: Nil => {
         build must beEqualTo(
-          Defaults.Build.copy(instanceType = InstanceType.T2Medium, memory = 1000)
+          Defaults.Build.copy(instanceType = InstanceType.T2Medium, memory = Some(1000))
         )
       }
 
