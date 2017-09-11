@@ -115,7 +115,7 @@ case class Parser() {
         dockerfile = map.get("dockerfile").getOrElse(Defaults.Build.dockerfile),
         initialNumberInstances = map.get("initial.number.instances").map(_.toLong).getOrElse(Defaults.Build.initialNumberInstances),
         instanceType = instanceType,
-        memory = map.get("memory").map(_.toLong).getOrElse(InstanceTypeDefaults.memory(instanceType)),
+        memory = map.get("memory").map(_.toLong),
         portContainer = map.get("port.container").map(_.toInt).getOrElse(Defaults.Build.portContainer),
         portHost = map.get("port.host").map(_.toInt).getOrElse(Defaults.Build.portHost),
         stages = toBuildStages(

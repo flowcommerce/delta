@@ -18,7 +18,9 @@ case class DefaultSettings(
   override val launchConfigImageId: String,
   override val launchConfigIamInstanceProfile: String,
   override val serviceRole: String,
+  override val jvmMemory: Int, // in MB
   override val containerMemory: Int, // in MB
+  override val instanceMemory: Int, // in MB
   override val portContainer: Int,
   override val portHost: Int,
   override val version: String
@@ -78,7 +80,11 @@ trait Settings {
   val launchConfigInstanceType: String
 
   // MB of memory
+  val jvmMemory: Int
+
   val containerMemory: Int
+
+  val instanceMemory: Int
 
   val portContainer: Int
 

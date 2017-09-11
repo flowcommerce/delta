@@ -1,6 +1,6 @@
 package io.flow.delta.actors
 
-import db.{ConfigsDao, UsersDao, BuildLastStatesWriteDao}
+import db.{BuildLastStatesWriteDao, ConfigsDao, UsersDao}
 import io.flow.delta.aws.{AutoScalingGroup, DefaultSettings, EC2ContainerService, ElasticLoadBalancer}
 import io.flow.delta.api.lib.StateDiff
 import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
@@ -10,6 +10,8 @@ import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import play.api.Logger
 import akka.actor.{Actor, ActorSystem}
+import io.flow.delta.lib.config.InstanceTypeDefaults
+
 import scala.concurrent.duration._
 import scala.concurrent.Future
 
@@ -258,6 +260,26 @@ class BuildActor @javax.inject.Inject() (
   }
 
   private[this] def awsSettings() = withBuildConfig { bc =>
+    val instanceType = bc.instanceType
+    val instanceMemory = InstanceTypeDefaults.memory(instanceType)
+
+    val containerMemory: Int = Seq(
+      BigDecimal(instanceMemory * 0.75).setScale(0, BigDecimal.RoundingMode.UP).toInt,
+      instanceMemory - 500
+    ).max
+
+    // JVM memory - if provided in .delta file, this will be used for xmx
+    // otherwise default to 90% of the container memory
+    val jvmMemory = bc.memory match {
+      case Some(m) => m
+      case None => {
+        Seq(
+          BigDecimal(containerMemory * 0.90).setScale(0, BigDecimal.RoundingMode.UP).toInt,
+          containerMemory - 300
+        ).max
+      }
+    }
+
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
       asgMinSize = config.requiredInt("aws.asg.min.size"),
@@ -273,8 +295,10 @@ class BuildActor @javax.inject.Inject() (
       launchConfigImageId = config.requiredString("aws.launch.configuration.ami"),
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
       serviceRole = config.requiredString("aws.service.role"),
-      instanceType = bc.instanceType,
-      containerMemory = bc.memory.asInstanceOf[Int],
+      instanceType = instanceType,
+      jvmMemory = jvmMemory.toInt,
+      containerMemory = containerMemory,
+      instanceMemory = instanceMemory,
       portContainer = bc.portContainer,
       portHost = bc.portHost,
       version = bc.version.getOrElse("1.0")  // default delta version

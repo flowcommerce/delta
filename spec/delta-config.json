@@ -79,7 +79,7 @@
 	{ "name": "dockerfile", "type": "string" },
 	{ "name": "initial_number_instances", "type": "long", "description": "When first deploying this branch, the number of instances we create" },
 	{ "name": "instance_type", "type": "instance_type" },
-	{ "name": "memory", "type": "long", "description": "The number of MiB of memory to reserve for the container." },
+	{ "name": "memory", "type": "long", "required": false, "description": "The number of MiB of memory to reserve for the container." },
 	{ "name": "port_container", "type": "integer", "description": "The port number on the container that is bound to the user-specified or automatically assigned host port." },
 	{ "name": "port_host", "type": "integer", "description": "The port number on the container instance to reserve for your container" },
 	{ "name": "stages", "type": "[build_stage]", "minimum": 0 },
