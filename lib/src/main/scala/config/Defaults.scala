@@ -18,7 +18,7 @@ object Defaults {
     dockerfile = "./Dockerfile",
     initialNumberInstances = 2,
     instanceType = instanceType,
-    memory = InstanceTypeDefaults.memory(instanceType),
+    memory = None,
     portContainer = 80,
     portHost = 80,
     stages = models.BuildStage.all,
