@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.11.11"
 
-val awsVersion = "1.11.191"
+val awsVersion = "1.11.196"
 
 lazy val generated = project
   .in(file("generated"))
@@ -65,7 +65,7 @@ lazy val www = project
     routesImport += "io.flow.delta.v0.Bindables._",
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
-      "org.webjars" %% "webjars-play" % "2.6.1",
+      "org.webjars" %% "webjars-play" % "2.6.2",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars.bower" % "bootstrap-social" % "5.1.1",
       "org.webjars" % "font-awesome" % "4.7.0",
