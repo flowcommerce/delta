@@ -28,8 +28,6 @@ class AutoScalingGroup @javax.inject.Inject() (
   private[this] lazy val awsOpsworksLayerId = config.requiredString("aws.opsworks.layer.id")
   private[this] lazy val awsOpsworksSnsTopicArn = config.requiredString("aws.opsworks.sns.topic.arn")
 
-  private[this] val BuildVersion13 = "1.3"
-
   lazy val ec2Client = new AmazonEC2Client(credentials.aws, configuration.aws)
   lazy val client = new AmazonAutoScalingClient(credentials.aws, configuration.aws)
   lazy val encoder = new BASE64Encoder()
@@ -56,18 +54,12 @@ class AutoScalingGroup @javax.inject.Inject() (
   ).asJava
 
   def getLaunchConfigurationName(settings: Settings, id: String) =
-    if (settings.version == BuildVersion13) {
-      // create a new LC for v1.3 for Opsworks
-      s"${id.replaceAll("_", "-")}-ecs-lc-ami-9eb4b1e5-${settings.launchConfigInstanceType}"
-    } else {
-      s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
-    }
+    s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
 
   def getAutoScalingGroupName(id: String) = s"${id.replaceAll("_", "-")}-ecs-auto-scaling-group"
 
   def createLaunchConfiguration(settings: Settings, id: String): String = {
     val name = getLaunchConfigurationName(settings, id)
-    val imageId = if (settings.version == BuildVersion13) { "ami-9eb4b1e5" } else { settings.launchConfigImageId }
 
     try {
       Logger.info(s"AWS AutoScalingGroup createLaunchConfiguration id[$id]")
@@ -79,7 +71,7 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withBlockDeviceMappings(launchConfigBlockDeviceMappings)
           .withSecurityGroups(Seq(settings.lcSecurityGroup).asJava)
           .withKeyName(settings.ec2KeyName)
-          .withImageId(imageId)
+          .withImageId(settings.launchConfigImageId)
           .withInstanceType(settings.launchConfigInstanceType)
           .withUserData(encoder.encode(lcUserData(id).getBytes))
       )
@@ -182,18 +174,14 @@ class AutoScalingGroup @javax.inject.Inject() (
   }
 
   /**
-    * TODO:
-    * This could probably be handled more gracefully
-    * Right now it causes an outage and unsure how to handle
-    * old instance termination in a phased approach
+    * NOTE:
+    * This will update the launch configuration for the ASG. The instances
+    * will need to be manually rotated for the LC to take affect. There is
+    * a helper script for rotations in the infra-tools/aws repo.
     */
   def updateAutoScalingGroup(name: String, newlaunchConfigName: String, oldLaunchConfigurationName: String, instances: java.util.Collection[String]) {
     try {
       updateGroupLaunchConfiguration(name, newlaunchConfigName)
-      // PN: Disabling rotation of old instances, too risky for production
-      // detachOldInstances(name, instances)
-      // deleteOldLaunchConfiguration(oldLaunchConfigurationName)
-      // terminateInstances(instances)
     } catch {
       case e: Throwable => Logger.error(s"FlowError Error updating autoscaling group $name with launch config $newlaunchConfigName. Error: ${e.getMessage}")
     }
