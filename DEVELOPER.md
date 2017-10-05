@@ -98,6 +98,8 @@ Environment Variables
         - Maximum size of auto-scaling group
     - CONF_AWS_ELB_CERTIFICATE
         - SSL ARN certificate to be used if HTTPS listeners are desired
+    - CONF_AWS_ELB_HEALTHCHECK_URL
+        - Healthcheck URL for ELB
     - CONF_AWS_DELTA_ACCESS_KEY
         - AWS IAM Access Key
     - CONF_AWS_DELTA_SECRET_KEY
