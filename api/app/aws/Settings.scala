@@ -23,7 +23,8 @@ case class DefaultSettings(
   override val instanceMemory: Int, // in MB
   override val portContainer: Int,
   override val portHost: Int,
-  override val version: String
+  override val version: String,
+  override val healthcheckUrl: String
 ) extends Settings {
 
   override val launchConfigInstanceType = instanceType.toString
@@ -89,6 +90,9 @@ trait Settings {
   val portContainer: Int
 
   val portHost: Int
-  
+
+  // Delta version
   val version: String
+  
+  val healthcheckUrl: String
 }

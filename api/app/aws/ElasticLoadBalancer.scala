@@ -40,7 +40,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
     Future {
       val name = ElasticLoadBalancer.getLoadBalancerName(projectId)
       createLoadBalancer(settings, name, settings.portHost)
-      configureHealthCheck(name, settings.portHost)
+      configureHealthCheck(name, settings.portHost, settings.healthcheckUrl)
       name
     }
   }
@@ -110,7 +110,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
     }
   }
 
-  def configureHealthCheck(name: String, externalPort: Long) {
+  def configureHealthCheck(name: String, externalPort: Long, healthcheckUrl: String) {
     try {
       Logger.info(s"AWS ElasticLoadBalancer configureHealthCheck name[$name]")
       client.configureHealthCheck(
@@ -118,7 +118,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
           .withLoadBalancerName(name)
           .withHealthCheck(
             new HealthCheck()
-              .withTarget(s"HTTP:$externalPort/_internal_/healthcheck")
+              .withTarget(s"HTTP:$externalPort$healthcheckUrl")
               .withTimeout(25)
               .withInterval(30)
               .withHealthyThreshold(2)
