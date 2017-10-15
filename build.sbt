@@ -26,7 +26,7 @@ lazy val lib = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % "1.18"
+      "org.yaml" % "snakeyaml" % "1.19"
     )
   )
 
