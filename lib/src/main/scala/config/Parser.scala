@@ -24,7 +24,7 @@ case class Parser() {
         val yaml = new Yaml()
 
         Try {
-          val y = Option(yaml.load(contents))
+          val y = Option(yaml.loadAs(value, classOf[java.util.Map[String, Object]]))
 
           val obj = y match {
             case None => Map[String, Object]()
