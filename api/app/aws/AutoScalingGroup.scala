@@ -252,6 +252,7 @@ class AutoScalingGroup @javax.inject.Inject() (
       """#!/bin/bash""",
       s"""echo 'ECS_CLUSTER=${ecsClusterName}' >> /etc/ecs/ecs.config""",
       """echo 'ECS_ENGINE_AUTH_TYPE=dockercfg' >> /etc/ecs/ecs.config""",
+      """echo 'ECS_LOGLEVEL=warn' >> /etc/ecs/ecs.config""",
       s"""echo 'ECS_ENGINE_AUTH_DATA={"https://index.docker.io/v1/":{"auth":"${dockerHubToken}","email":"${dockerHubEmail}"}}' >> /etc/ecs/ecs.config""",
       """mkdir -p /etc/sumo""",
       s"""echo '{"api.version":"v1","sources":[{"sourceType":"LocalFile","name":"ecs_docker_logs","category":"${id}_docker_logs","pathExpression":"/var/lib/docker/containers/*/*.log","blacklist":[]}]}' > /etc/sumo/sources.json""",
