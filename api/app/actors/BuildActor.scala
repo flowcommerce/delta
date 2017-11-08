@@ -261,24 +261,7 @@ class BuildActor @javax.inject.Inject() (
 
   private[this] def awsSettings() = withBuildConfig { bc =>
     val instanceType = bc.instanceType
-    val instanceMemory = InstanceTypeDefaults.memory(instanceType)
-
-    val containerMemory: Int = Seq(
-      BigDecimal(instanceMemory * 0.75).setScale(0, BigDecimal.RoundingMode.UP).toInt,
-      instanceMemory - 500
-    ).max
-
-    // JVM memory - if provided in .delta file, this will be used for xmx
-    // otherwise default to 90% of the container memory
-    val jvmMemory = bc.memory match {
-      case Some(m) => m
-      case None => {
-        Seq(
-          BigDecimal(containerMemory * 0.90).setScale(0, BigDecimal.RoundingMode.UP).toInt,
-          containerMemory - 300
-        ).max
-      }
-    }
+    val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
 
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
@@ -296,9 +279,9 @@ class BuildActor @javax.inject.Inject() (
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
       serviceRole = config.requiredString("aws.service.role"),
       instanceType = instanceType,
-      jvmMemory = jvmMemory.toInt,
-      containerMemory = containerMemory,
-      instanceMemory = instanceMemory,
+      jvmMemory = instanceMemorySettings.jvm,
+      containerMemory = instanceMemorySettings.container,
+      instanceMemory = instanceMemorySettings.instance,
       portContainer = bc.portContainer,
       portHost = bc.portHost,
       version = bc.version.getOrElse("1.0"),  // default delta version
