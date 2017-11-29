@@ -4,7 +4,7 @@ name := "delta"
 
 organization := "io.flow"
 
-scalaVersion in ThisBuild := "2.11.11"
+scalaVersion in ThisBuild := "2.11.12"
 
 val awsVersion = "1.11.236"
 
