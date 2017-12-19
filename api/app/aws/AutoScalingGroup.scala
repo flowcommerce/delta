@@ -255,7 +255,7 @@ class AutoScalingGroup @javax.inject.Inject() (
       """echo 'ECS_LOGLEVEL=warn' >> /etc/ecs/ecs.config""",
       s"""echo 'ECS_ENGINE_AUTH_DATA={"https://index.docker.io/v1/":{"auth":"${dockerHubToken}","email":"${dockerHubEmail}"}}' >> /etc/ecs/ecs.config""",
       """mkdir -p /etc/sumo""",
-      s"""echo '{"api.version":"v1","sources":[{"sourceType":"LocalFile","name":"ecs_docker_logs","category":"${id}_docker_logs","pathExpression":"/var/lib/docker/containers/*/*.log","blacklist":[]}]}' > /etc/sumo/sources.json""",
+      s"""echo '{"api.version":"v1","sources":[{"sourceType":"DockerLog","name":"ecs_docker_logs","category":"${id}_docker_logs","uri":"unix:///var/run/docker.sock","allContainers":true,"collectEvents":false}]}' > /etc/sumo/sources.json""",
       """curl -o /tmp/sumo.sh https://collectors.sumologic.com/rest/download/linux/64""",
       """chmod +x /tmp/sumo.sh""",
       """export PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)""",
