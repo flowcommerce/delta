@@ -54,7 +54,7 @@ class AutoScalingGroup @javax.inject.Inject() (
   ).asJava
 
   def getLaunchConfigurationName(settings: Settings, id: String) =
-    s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}"
+    s"${id.replaceAll("_", "-")}-ecs-lc-${settings.launchConfigImageId}-${settings.launchConfigInstanceType}-${settings.version}"
 
   def getAutoScalingGroupName(id: String) = s"${id.replaceAll("_", "-")}-ecs-auto-scaling-group"
 
