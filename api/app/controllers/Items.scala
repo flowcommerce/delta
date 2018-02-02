@@ -2,15 +2,16 @@ package controllers
 
 import db.ItemsDao
 import io.flow.delta.v0.models.json._
-import io.flow.play.util.Config
-import play.api.mvc._
+import io.flow.play.controllers.FlowControllerComponents
 import play.api.libs.json._
+import play.api.mvc._
 
 @javax.inject.Singleton
 class Items @javax.inject.Inject() (
-  override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
-) extends Controller with BaseIdentifiedRestController {
+  itemsDao: ItemsDao,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends BaseIdentifiedRestController {
 
   def get(
     q: Option[String],
@@ -19,7 +20,7 @@ class Items @javax.inject.Inject() (
   ) = Identified { request =>
     Ok(
       Json.toJson(
-        ItemsDao.findAll(
+        itemsDao.findAll(
           authorization(request),
           q = q,
           limit = limit,

@@ -3,7 +3,9 @@ package controllers
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.v0.models.{Token, TokenForm}
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.util.{Pagination, PaginatedCollection}
+import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
+import io.flow.play.util.{PaginatedCollection, Pagination}
+
 import scala.concurrent.Future
 import play.api.i18n.MessagesApi
 import play.api.mvc._
@@ -11,10 +13,12 @@ import play.api.data._
 import play.api.data.Forms._
 
 class TokensController @javax.inject.Inject() (
-  val messagesApi: MessagesApi,
+  override val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider
-) extends BaseController(tokenClient, deltaClientProvider) {
+  override val deltaClientProvider: DeltaClientProvider,
+  override val controllerComponents: ControllerComponents,
+  override val flowControllerComponents: FlowControllerComponents
+) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -60,8 +64,8 @@ class TokensController @javax.inject.Inject() (
         ).map { token =>
           Redirect(routes.TokensController.show(token.id)).flashing("success" -> "Token created")
         }.recover {
-          case r: io.flow.delta.v0.errors.ErrorsResponse => {
-            Ok(views.html.tokens.create(uiData(request), form, r.errors.map(_.message)))
+          case r: io.flow.delta.v0.errors.GenericErrorResponse => {
+            Ok(views.html.tokens.create(uiData(request), form, r.genericError.messages))
           }
         }
       }

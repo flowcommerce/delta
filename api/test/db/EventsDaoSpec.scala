@@ -1,21 +1,17 @@
 package db
 
-import io.flow.delta.v0.models.EventType
-import io.flow.postgresql.Authorization
-import org.scalatest._
-import play.api.test._
-import play.api.test.Helpers._
-import org.scalatestplus.play._
 import java.util.UUID
 
-class EventsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
+import io.flow.delta.v0.models.EventType
+import io.flow.play.util.Constants
+import io.flow.test.utils.FlowPlaySpec
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+class EventsDaoSpec extends FlowPlaySpec with Helpers {
 
   "create" in {
     val project = createProject()
-    val id = EventsDao.create(systemUser, project.id, EventType.Info, "test", ex = None)
-    val event = EventsDao.findById(id).getOrElse {
+    val id = eventsDao.create(Constants.SystemUser, project.id, EventType.Info, "test", ex = None)
+    val event = eventsDao.findById(id).getOrElse {
       sys.error("Failed to create event")
     }
     event.`type` must be(EventType.Info)
@@ -25,24 +21,24 @@ class EventsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
   "findById" in {
     val event = createEvent()
-    EventsDao.findById(event.id).map(_.id) must be(
+    eventsDao.findById(event.id).map(_.id) must be(
       Some(event.id)
     )
 
-    EventsDao.findById(UUID.randomUUID.toString) must be(None)
+    eventsDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
     val event1 = createEvent()
     val event2 = createEvent()
 
-    EventsDao.findAll(ids = Some(Seq(event1.id, event2.id))).map(_.id).sorted must be(
+    eventsDao.findAll(ids = Some(Seq(event1.id, event2.id))).map(_.id).sorted must be(
       Seq(event1.id, event2.id).sorted
     )
 
-    EventsDao.findAll(ids = Some(Nil)) must be(Nil)
-    EventsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    EventsDao.findAll(ids = Some(Seq(event1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(event1.id))
+    eventsDao.findAll(ids = Some(Nil)) must be(Nil)
+    eventsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    eventsDao.findAll(ids = Some(Seq(event1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(event1.id))
   }
 
   "findAll by projectId" in {
@@ -53,24 +49,24 @@ class EventsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val event2 = createEvent(project2)
     val ids = Seq(event1.id, event2.id)
 
-    EventsDao.findAll(ids = Some(ids), projectId = Some(project1.id)).map(_.id).sorted must be(
+    eventsDao.findAll(ids = Some(ids), projectId = Some(project1.id)).map(_.id).sorted must be(
       Seq(event1.id)
     )
 
-    EventsDao.findAll(ids = Some(ids), projectId = Some(project2.id)).map(_.id).sorted must be(
+    eventsDao.findAll(ids = Some(ids), projectId = Some(project2.id)).map(_.id).sorted must be(
       Seq(event2.id)
     )
 
-    EventsDao.findAll(projectId = Some(createTestKey())) must be(Nil)
+    eventsDao.findAll(projectId = Some(createTestKey())) must be(Nil)
   }
 
   "findAll by numberMinutesSinceCreation" in {
     val event = createEvent()
 
-    EventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10)).map(_.id) must be(Seq(event.id))
+    eventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10)).map(_.id) must be(Seq(event.id))
 
     DirectDbAccess.setCreatedAt("events", event.id, -15)
-    EventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10)) must be(Nil)
+    eventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10)) must be(Nil)
   }
 
 }

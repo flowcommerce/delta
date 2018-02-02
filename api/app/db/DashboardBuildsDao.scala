@@ -1,13 +1,16 @@
 package db
 
+import javax.inject.{Inject, Singleton}
+
+import anorm._
 import io.flow.delta.v0.models.DashboardBuild
 import io.flow.postgresql.{Authorization, Query}
-import anorm._
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
-object DashboardBuildsDao {
+@Singleton
+class DashboardBuildsDao @Inject()(
+  @NamedDatabase("default") db: Database
+){
 
   private[this] val BaseQuery = Query(s"""
     select builds.id,
@@ -32,7 +35,7 @@ object DashboardBuildsDao {
     offset: Long = 0
   ): Seq[DashboardBuild] = {
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         and(Filters(auth).organizations("projects.organization_id").sql).
         limit(limit).

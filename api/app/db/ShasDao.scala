@@ -1,13 +1,11 @@
 package db
 
-import io.flow.delta.actors.MainActor
-import io.flow.delta.v0.models.{OrganizationSummary, ProjectSummary, Sha}
-import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.common.v0.models.UserReference
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.actors.MainActor
+import io.flow.delta.v0.models.Sha
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
 case class ShaForm(
   projectId: String,
@@ -15,7 +13,10 @@ case class ShaForm(
   hash: String
 )
 
-object ShasDao {
+@javax.inject.Singleton
+class ShasDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query(s"""
     select shas.id,
@@ -50,7 +51,7 @@ object ShasDao {
     offset: Long = 0
   ): Seq[Sha] = {
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "shas",
@@ -82,7 +83,11 @@ object ShasDao {
 }
 
 case class ShasWriteDao @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
+  projectsDao: ProjectsDao,
+  shasDao: ShasDao,
+  delete: Delete
 ) {
 
   private[this] val UpsertQuery = """
@@ -113,12 +118,12 @@ case class ShasWriteDao @javax.inject.Inject() (
       Nil
     }
 
-    val projectErrors = ProjectsDao.findById(Authorization.All, form.projectId) match {
+    val projectErrors = projectsDao.findById(Authorization.All, form.projectId) match {
       case None => Seq("Project not found")
       case Some(project) => Nil
     }
 
-    val existingErrors = ShasDao.findByProjectIdAndBranch(Authorization.All, form.projectId, form.branch) match {
+    val existingErrors = shasDao.findByProjectIdAndBranch(Authorization.All, form.projectId, form.branch) match {
       case None => Nil
       case Some(found) => {
         existing.map(_.id) == Some(found.id) match {
@@ -155,7 +160,7 @@ case class ShasWriteDao @javax.inject.Inject() (
   private[this] def upsert(createdBy: UserReference, form: ShaForm): Sha = {
     val newId = io.flow.play.util.IdGenerator("sha").randomId()
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(UpsertQuery).on(
         'id -> newId,
         'project_id -> form.projectId.trim,
@@ -165,7 +170,7 @@ case class ShasWriteDao @javax.inject.Inject() (
       ).execute()
     }
 
-    val sha = ShasDao.findByProjectIdAndBranch(Authorization.All, form.projectId, form.branch).getOrElse {
+    val sha = shasDao.findByProjectIdAndBranch(Authorization.All, form.projectId, form.branch).getOrElse {
       sys.error(s"Failed to upsert projectId[${form.projectId}] branch[${form.branch}]")
     }
 
@@ -175,7 +180,7 @@ case class ShasWriteDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, sha: Sha) {
-    Delete.delete("shas", deletedBy.id, sha.id)
+    delete.delete("shas", deletedBy.id, sha.id)
   }
 
 }

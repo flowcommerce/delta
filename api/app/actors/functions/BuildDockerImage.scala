@@ -1,23 +1,17 @@
 package io.flow.delta.actors.functions
 
-import db.{EventsDao, ImagesDao, BuildDesiredStatesDao}
-import io.flow.delta.actors.{MainActor, MainActorProvider, BuildSupervisorFunction, SupervisorResult}
-import io.flow.delta.config.v0.models.BuildStage
-import io.flow.delta.v0.models.{Build, EventType}
-import io.flow.delta.lib.Text
-import io.flow.postgresql.Authorization
-import play.api.Logger
-import play.libs.Akka
-import akka.actor.{Actor, ActorRef}
-import scala.concurrent.Future
-import scala.util.{Failure, Success, Try}
+import javax.inject.Inject
 
-/**
-  * Looks up the desired state for a build. If found, checks to see
-  * if we already have a docker image locally for each version in the
-  * desired stated, triggering docker builds for each image that is
-  * not found locally.
-  */
+import db.{BuildDesiredStatesDao, EventsDao, ImagesDao}
+import io.flow.delta.actors.{BuildSupervisorFunction, MainActor, SupervisorResult}
+import io.flow.delta.config.v0.models.BuildStage
+import io.flow.delta.lib.Text
+import io.flow.delta.v0.models.{Build, EventType}
+import io.flow.postgresql.Authorization
+import play.api.Application
+
+import scala.concurrent.Future
+
 object BuildDockerImage extends BuildSupervisorFunction {
 
   override val stage = BuildStage.BuildDockerImage
@@ -25,33 +19,42 @@ object BuildDockerImage extends BuildSupervisorFunction {
   override def run(
     build: Build
   ) (
-    implicit ec: scala.concurrent.ExecutionContext
-  ): Future[SupervisorResult] = {
-    Future {
-      BuildDockerImage(build).run
-    }
+    implicit ec: scala.concurrent.ExecutionContext, app: Application
+  ): Future[SupervisorResult] = Future {
+    val buildDockerImage = app.injector.instanceOf[BuildDockerImage]
+    buildDockerImage.run(build)
   }
 
 }
 
-case class BuildDockerImage(build: Build) {
-
-  def run(
+/**
+  * Looks up the desired state for a build. If found, checks to see
+  * if we already have a docker image locally for each version in the
+  * desired stated, triggering docker builds for each image that is
+  * not found locally.
+  */
+class BuildDockerImage @Inject()(
+  buildDesiredStatesDao: BuildDesiredStatesDao,
+  eventsDao: EventsDao,
+  imagesDao: ImagesDao,
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
+) {
+  def run(build: Build)(
     implicit ec: scala.concurrent.ExecutionContext
   ): SupervisorResult = {
-    BuildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
+    buildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
       case None => {
         SupervisorResult.Error("Build does not have a desired state")
       }
 
       case Some(state) => {
         val versions = state.versions.flatMap { version =>
-          ImagesDao.findByBuildIdAndVersion(build.id, version.name) match {
-            case Some(i) => {
+          imagesDao.findByBuildIdAndVersion(build.id, version.name) match {
+            case Some(_) => {
               None
             }
             case None => {
-              MainActorProvider.ref ! MainActor.Messages.BuildDockerImage(build.id, version.name)
+              mainActor ! MainActor.Messages.BuildDockerImage(build.id, version.name)
               Some(version.name)
             }
           }
@@ -65,7 +68,7 @@ case class BuildDockerImage(build: Build) {
             val label = Text.pluralize(versions.size, "docker image", "docker images") + ": " + versions.mkString(", ")
             val msg = s"Started build of $label"
 
-            EventsDao.findAll(
+            eventsDao.findAll(
               projectId = Some(build.project.id),
               `type` = Some(EventType.Change),
               summaryKeywords = Some(msg),

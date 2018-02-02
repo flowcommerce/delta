@@ -4,16 +4,18 @@ import db.{ImagesDao, ImagesWriteDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.Image
 import io.flow.delta.v0.models.json._
-import io.flow.play.util.Config
-import play.api.mvc._
+import io.flow.play.controllers.FlowControllerComponents
 import play.api.libs.json._
+import play.api.mvc._
 
 @javax.inject.Singleton
 class Images @javax.inject.Inject() (
-  override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
-  imagesWriteDao: ImagesWriteDao
-) extends Controller with BaseIdentifiedRestController {
+  helpers: Helpers,
+  imagesDao: ImagesDao,
+  imagesWriteDao: ImagesWriteDao,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -23,10 +25,10 @@ class Images @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    withOrderBy(sort) { orderBy =>
+    helpers.withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          ImagesDao.findAll(
+          imagesDao.findAll(
             ids = optionals(id),
             buildId = build,
             names = name.map { n => Seq(n) },
@@ -55,7 +57,7 @@ class Images @javax.inject.Inject() (
   def withImage(user: UserReference, id: String)(
     f: Image => Result
   ): Result = {
-    ImagesDao.findById(id) match {
+    imagesDao.findById(id) match {
       case None => {
         Results.NotFound
       }

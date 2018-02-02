@@ -1,14 +1,19 @@
 package db
 
-import io.flow.delta.v0.models.{Membership, MembershipForm, Organization, OrganizationSummary, Role}
-import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.common.v0.models.UserReference
 import anorm._
+import com.google.inject.Provider
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{Membership, MembershipForm, Role}
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
-object MembershipsDao {
+@javax.inject.Singleton
+class MembershipsDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database,
+  delete: Delete,
+  membershipsDao: Provider[MembershipsDao],
+  organizationsDao: Provider[OrganizationsDao]
+) {
 
   val DefaultUserNameLength = 8
 
@@ -33,7 +38,7 @@ object MembershipsDao {
   """
 
   def isMember(orgId: String, user: UserReference): Boolean = {
-    MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, orgId, user.id) match {
+    membershipsDao.get().findByOrganizationIdAndUserId(Authorization.All, orgId, user.id) match {
       case None => false
       case Some(_) => true
     }
@@ -46,7 +51,7 @@ object MembershipsDao {
     val roleErrors = form.role match {
       case Role.UNDEFINED(_) => Seq("Invalid role. Must be one of: " + Role.all.map(_.toString).mkString(", "))
       case _ => {
-        MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, form.organization, form.userId) match {
+        membershipsDao.get().findByOrganizationIdAndUserId(Authorization.All, form.organization, form.userId) match {
           case None => Seq.empty
           case Some(membership) => {
             Seq("User is already a member")
@@ -55,7 +60,7 @@ object MembershipsDao {
       }
     }
 
-    val organizationErrors = MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, form.organization, user.id) match {
+    val organizationErrors = membershipsDao.get().findByOrganizationIdAndUserId(Authorization.All, form.organization, user.id) match {
       case None => Seq("Organization does not exist or you are not authorized to access this organization")
       case Some(_) => Nil
     }
@@ -66,7 +71,7 @@ object MembershipsDao {
   def create(createdBy: UserReference, form: MembershipForm): Either[Seq[String], Membership] = {
     validate(createdBy, form) match {
       case Nil => {
-        val id = DB.withConnection { implicit c =>
+        val id = db.withConnection { implicit c =>
           create(c, createdBy, form)
         }
         Right(
@@ -80,7 +85,7 @@ object MembershipsDao {
   }
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: UserReference, form: MembershipForm): String = {
-    val org = OrganizationsDao.findById(Authorization.All, form.organization).getOrElse {
+    val org = organizationsDao.get().findById(Authorization.All, form.organization).getOrElse {
       sys.error("Could not find organization with id[${form.organization}]")
     }
 
@@ -101,7 +106,7 @@ object MembershipsDao {
   }
 
   def delete(deletedBy: UserReference, membership: Membership) {
-    Delete.delete("memberships", deletedBy.id, membership.id)
+    delete.delete("memberships", deletedBy.id, membership.id)
   }
 
   def findByOrganizationIdAndUserId(
@@ -132,7 +137,7 @@ object MembershipsDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Membership] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
     Standards.query(
       BaseQuery,
       tableName = "memberships",

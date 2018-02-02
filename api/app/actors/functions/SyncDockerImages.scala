@@ -1,18 +1,20 @@
 package io.flow.delta.actors.functions
 
-import db.{ImagesDao, ImagesWriteDao, OrganizationsDao, UsersDao}
+import javax.inject.Inject
+
+import db.{ImagesDao, ImagesWriteDao, OrganizationsDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, DockerHubToken, SupervisorResult}
 import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.lib.{BuildNames, Semver}
-import io.flow.docker.registry.v0.Client
 import io.flow.delta.v0.models.{Build, Docker, ImageForm}
+import io.flow.docker.registry.v0.Client
+import io.flow.play.util.Constants
 import io.flow.postgresql.Authorization
-import play.api.Logger
+import play.api.Application
+import play.api.libs.ws.WSClient
+
 import scala.concurrent.{ExecutionContext, Future}
 
-/**
-  * Downloads all tags from docker hub and stores in local DB
-  */
 object SyncDockerImages extends BuildSupervisorFunction {
 
   override val stage = BuildStage.SyncDockerImage
@@ -20,23 +22,30 @@ object SyncDockerImages extends BuildSupervisorFunction {
   override def run(
     build: Build
   ) (
-    implicit ec: ExecutionContext
+    implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = {
-    SyncDockerImages(build).run
+    val syncDockerImages = app.injector.instanceOf[SyncDockerImages]
+    syncDockerImages.run(build)
   }
 
 }
 
-case class SyncDockerImages(build: Build) {
+/**
+  * Downloads all tags from docker hub and stores in local DB
+  */
+class SyncDockerImages @Inject()(
+  dockerHubToken: DockerHubToken,
+  imagesDao: ImagesDao,
+  imagesWriteDao: ImagesWriteDao,
+  organizationsDao: OrganizationsDao,
+  wSClient: WSClient
+) {
+  private[this] val client = new Client(ws = wSClient)
 
-  private[this] def imagesWriteDao = play.api.Play.current.injector.instanceOf[ImagesWriteDao]
-  private[this] def dockerHubToken = play.api.Play.current.injector.instanceOf[DockerHubToken]
-  private[this] val client = new Client()
-
-  def run(
+  def run(build: Build)(
     implicit ec: ExecutionContext
   ): Future[SupervisorResult] = {
-    OrganizationsDao.findById(Authorization.All, build.project.organization.id) match {
+    organizationsDao.findById(Authorization.All, build.project.organization.id) match {
       case None =>{
         // build was deleted
         Future(SupervisorResult.Ready(s"Build org[${build.project.organization.id}] not found - nothing to do"))
@@ -89,7 +98,7 @@ case class SyncDockerImages(build: Build) {
   }
 
   private[this] def upsertImage(docker: Docker, build: Build, version: String): Boolean = {
-    ImagesDao.findByBuildIdAndVersion(build.id, version) match {
+    imagesDao.findByBuildIdAndVersion(build.id, version) match {
       case Some(_) => {
         // Already know about this tag
         false
@@ -97,7 +106,7 @@ case class SyncDockerImages(build: Build) {
 
       case None => {
         imagesWriteDao.create(
-          UsersDao.systemUser,
+          Constants.SystemUser,
           ImageForm(
             buildId = build.id,
             name = BuildNames.dockerImageName(docker, build),

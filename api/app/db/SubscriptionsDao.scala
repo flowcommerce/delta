@@ -1,15 +1,19 @@
 package db
 
-import io.flow.delta.v0.models.{Publication, Subscription, SubscriptionForm}
-import io.flow.common.v0.models.UserReference
-import io.flow.postgresql.{Authorization, Query, OrderBy}
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{Publication, Subscription, SubscriptionForm}
+import io.flow.postgresql.{OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
+
 import scala.util.{Failure, Success, Try}
 
-object SubscriptionsDao {
+@javax.inject.Singleton
+class SubscriptionsDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database,
+  usersDao: UsersDao,
+  delete: Delete
+) {
 
   private[this] val BaseQuery = Query(s"""
     select subscriptions.id,
@@ -28,7 +32,7 @@ object SubscriptionsDao {
   private[db] def validate(
     form: SubscriptionForm
   ): Seq[String] = {
-    val userErrors = UsersDao.findById(form.userId) match {
+    val userErrors = usersDao.findById(form.userId) match {
       case None => Seq("User not found")
       case Some(_) => Nil
     }
@@ -64,7 +68,7 @@ object SubscriptionsDao {
       case Nil => {
         val id = io.flow.play.util.IdGenerator("sub").randomId()
 
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'id -> id,
             'user_id -> form.userId,
@@ -84,7 +88,7 @@ object SubscriptionsDao {
   }
 
   def delete(deletedBy: UserReference, subscription: Subscription) {
-    Delete.delete("subscriptions", deletedBy.id, subscription.id)
+    delete.delete("subscriptions", deletedBy.id, subscription.id)
   }
 
   def findByUserIdAndPublication(
@@ -112,7 +116,7 @@ object SubscriptionsDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Subscription] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "subscriptions",

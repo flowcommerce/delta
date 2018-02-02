@@ -1,13 +1,16 @@
 package db
 
-import io.flow.postgresql.{Authorization, Query, OrderBy}
-import io.flow.delta.v0.models.{GithubUser, GithubUserForm}
-import io.flow.common.v0.models.UserReference
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{GithubUser, GithubUserForm}
+import io.flow.postgresql.{OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
 
-object GithubUsersDao {
+@javax.inject.Singleton
+class GithubUsersDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database,
+  usersDao: UsersDao
+) {
 
   private[this] val BaseQuery = Query(s"""
     select github_users.id,
@@ -25,7 +28,7 @@ object GithubUsersDao {
   """
 
   def upsertById(createdBy: Option[UserReference], form: GithubUserForm): GithubUser = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       upsertByIdWithConnection(createdBy, form)
     }
   }
@@ -37,7 +40,7 @@ object GithubUsersDao {
   }
 
   def create(createdBy: Option[UserReference], form: GithubUserForm): GithubUser = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       createWithConnection(createdBy, form)
     }
   }
@@ -49,7 +52,7 @@ object GithubUsersDao {
       'user_id -> form.userId,
       'github_user_id -> form.githubUserId,
       'login -> form.login.trim,
-      'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
+      'updated_by_user_id -> createdBy.getOrElse(usersDao.anonymousUser).id
     ).execute()
 
     findById(id).getOrElse {
@@ -74,7 +77,7 @@ object GithubUsersDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[GithubUser] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         optionalIn("github_users.id", id).
         equals("github_users.user_id", userId).

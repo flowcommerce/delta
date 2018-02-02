@@ -3,18 +3,22 @@ package controllers
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.v0.models.{Membership, MembershipForm, Role}
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.util.{Pagination, PaginatedCollection}
-import scala.concurrent.Future
+import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
+import io.flow.play.util.{PaginatedCollection, Pagination}
+import play.api.data.Forms._
+import play.api.data._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
+
+import scala.concurrent.Future
 
 class MembersController @javax.inject.Inject() (
-  val messagesApi: MessagesApi,
+  override val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider
-) extends BaseController(tokenClient, deltaClientProvider) {
+  override val deltaClientProvider: DeltaClientProvider,
+  override val controllerComponents: ControllerComponents,
+  override val flowControllerComponents: FlowControllerComponents
+) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -83,9 +87,9 @@ class MembersController @javax.inject.Inject() (
                   ).map { membership =>
                     Redirect(routes.MembersController.index(org.id)).flashing("success" -> s"User added as ${membership.role}")
                   }.recover {
-                    case response: io.flow.delta.v0.errors.ErrorsResponse => {
+                    case response: io.flow.delta.v0.errors.GenericErrorResponse => {
                       Ok(views.html.members.create(
-                        uiData(request).copy(organization = Some(org.id)), org, boundForm, response.errors.map(_.message))
+                        uiData(request).copy(organization = Some(org.id)), org, boundForm, response.genericError.messages)
                       )
                     }
                   }
@@ -135,8 +139,8 @@ class MembersController @javax.inject.Inject() (
         ).map { membership =>
           Redirect(routes.MembersController.index(membership.organization.id)).flashing("success" -> s"User added as ${membership.role}")
         }.recover {
-          case response: io.flow.delta.v0.errors.ErrorsResponse => {
-            Redirect(routes.MembersController.index(membership.organization.id)).flashing("warning" -> response.errors.map(_.message).mkString(", "))
+          case response: io.flow.delta.v0.errors.GenericErrorResponse => {
+            Redirect(routes.MembersController.index(membership.organization.id)).flashing("warning" -> response.genericError.messages.mkString(", "))
           }
         }
       }

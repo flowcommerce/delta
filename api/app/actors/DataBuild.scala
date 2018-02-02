@@ -1,12 +1,14 @@
 package io.flow.delta.actors
 
 import db.BuildsDao
-import io.flow.delta.v0.models.{Build, Status}
 import io.flow.delta.config.v0.{models => config}
+import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
 import play.api.Logger
 
 trait DataBuild extends DataProject {
+
+  def buildsDao: BuildsDao
 
   private[this] var dataBuild: Option[Build] = None
 
@@ -15,7 +17,7 @@ trait DataBuild extends DataProject {
     * dataBuild var to that build
     */
   def setBuildId(id: String) {
-    BuildsDao.findById(Authorization.All, id) match {
+    buildsDao.findById(Authorization.All, id) match {
       case None => {
         dataBuild = None
         Logger.warn(s"Could not find build with id[$id]")

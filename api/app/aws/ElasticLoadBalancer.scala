@@ -1,13 +1,11 @@
 package io.flow.delta.aws
 
+import akka.actor.ActorSystem
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient
 import com.amazonaws.services.elasticloadbalancing.model._
-
-import collection.JavaConverters._
-
-import play.api.libs.concurrent.Akka
 import play.api.Logger
-import play.api.Play.current
+
+import scala.collection.JavaConverters._
 import scala.concurrent.Future
 
 object ElasticLoadBalancer {
@@ -19,10 +17,11 @@ object ElasticLoadBalancer {
 @javax.inject.Singleton
 case class ElasticLoadBalancer @javax.inject.Inject() (
   credentials: Credentials,
-  configuration: Configuration
+  configuration: Configuration,
+  system: ActorSystem
 ) {
 
-  private[this] implicit val executionContext = Akka.system.dispatchers.lookup("ec2-context")
+  private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
 
   private[this] lazy val client = new AmazonElasticLoadBalancingClient(credentials.aws, configuration.aws)
 

@@ -1,13 +1,8 @@
 package controllers
 
-import io.flow.delta.v0.{Authorization, Client}
-import io.flow.delta.v0.models.ProjectForm
-
 import java.util.UUID
-import play.api.libs.ws._
-import play.api.test._
 
-class ProjectsSpec extends PlaySpecification with MockClient {
+class ProjectsSpec extends MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -15,85 +10,85 @@ class ProjectsSpec extends PlaySpecification with MockClient {
   lazy val project1 = createProject(org)()
   lazy val project2 = createProject(org)()
 
-  "GET /projects by id" in new WithServer(port=port) {
+  "GET /projects by id" in {
     await(
-      client.projects.get(id = Some(Seq(project1.id)))
-    ).map(_.id) must beEqualTo(
+      identifiedClientSystemUser().projects.get(id = Some(Seq(project1.id)))
+    ).map(_.id) must be(
       Seq(project1.id)
     )
 
     await(
-      client.projects.get(id = Some(Seq(UUID.randomUUID.toString)))
+      identifiedClientSystemUser().projects.get(id = Some(Seq(UUID.randomUUID.toString)))
     ).map(_.id) must be(
       Nil
     )
   }
 
-  "GET /projects by name" in new WithServer(port=port) {
+  "GET /projects by name" in {
     await(
-      client.projects.get(name = Some(project1.name))
-    ).map(_.name) must beEqualTo(
+      identifiedClientSystemUser().projects.get(name = Some(project1.name))
+    ).map(_.name) must be(
       Seq(project1.name)
     )
 
     await(
-      client.projects.get(name = Some(project1.name.toUpperCase))
-    ).map(_.name) must beEqualTo(
+      identifiedClientSystemUser().projects.get(name = Some(project1.name.toUpperCase))
+    ).map(_.name) must be(
       Seq(project1.name)
     )
 
     await(
-      client.projects.get(name = Some(UUID.randomUUID.toString))
+      identifiedClientSystemUser().projects.get(name = Some(UUID.randomUUID.toString))
     ) must be(
       Nil
     )
   }
 
-  "GET /projects/:id" in new WithServer(port=port) {
-    await(client.projects.getById(project1.id)).id must beEqualTo(project1.id)
-    await(client.projects.getById(project2.id)).id must beEqualTo(project2.id)
+  "GET /projects/:id" in {
+    await(identifiedClientSystemUser().projects.getById(project1.id)).id must be(project1.id)
+    await(identifiedClientSystemUser().projects.getById(project2.id)).id must be(project2.id)
 
     expectNotFound {
-      client.projects.getById(UUID.randomUUID.toString)
+      identifiedClientSystemUser().projects.getById(UUID.randomUUID.toString)
     }
   }
 
-  "POST /projects" in new WithServer(port=port) {
+  "POST /projects" in {
     val form = createProjectForm(org)
-    val project = await(client.projects.post(form))
-    project.name must beEqualTo(form.name)
-    project.scms must beEqualTo(form.scms)
-    project.uri must beEqualTo(form.uri)
+    val project = await(identifiedClientSystemUser().projects.post(form))
+    project.name must be(form.name)
+    project.scms must be(form.scms)
+    project.uri must be(form.uri)
   }
 
-  "POST /projects validates duplicate name" in new WithServer(port=port) {
+  "POST /projects validates duplicate name" in {
     expectErrors(
-      client.projects.post(createProjectForm(org).copy(name = project1.name))
-    ).errors.map(_.message) must beEqualTo(
+      identifiedClientSystemUser().projects.post(createProjectForm(org).copy(name = project1.name))
+    ).genericError.messages must be(
       Seq("Project with this name already exists")
     )
   }
 
-  "PUT /projects/:id" in new WithServer(port=port) {
+  "PUT /projects/:id" in {
     val form = createProjectForm(org)
     val project = createProject(org)(form)
     val newUri = "http://github.com/mbryzek/test"
-    await(client.projects.putById(project.id, form.copy(uri = newUri)))
-    await(client.projects.getById(project.id)).uri must beEqualTo(newUri)
+    await(identifiedClientSystemUser().projects.putById(project.id, form.copy(uri = newUri)))
+    await(identifiedClientSystemUser().projects.getById(project.id)).uri must be(newUri)
   }
 
-  "DELETE /projects" in new WithServer(port=port) {
+  "DELETE /projects" in {
     val project = createProject(org)()
     await(
-      client.projects.deleteById(project.id)
-    ) must beEqualTo(())
+      identifiedClientSystemUser().projects.deleteById(project.id)
+    ) must be(())
 
     expectNotFound(
-      client.projects.getById(project.id)
+      identifiedClientSystemUser().projects.getById(project.id)
     )
 
     expectNotFound(
-      client.projects.deleteById(project.id)
+      identifiedClientSystemUser().projects.deleteById(project.id)
     )
   }
 

@@ -1,8 +1,9 @@
 package io.flow.delta.www.lib
 
-import io.flow.delta.v0.models.{ItemSummary, ItemSummaryUndefinedType, ProjectSummary, Scms}
-import io.flow.play.util.DefaultConfig
 import java.net.URLEncoder
+
+import io.flow.delta.v0.models.Scms
+import io.flow.play.util.DefaultConfig
 
 object Config {
 

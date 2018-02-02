@@ -1,21 +1,23 @@
 package db
 
 import anorm._
+import com.google.inject.Provider
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
-import io.flow.delta.lib.config.Defaults
 import io.flow.delta.api.lib.GithubUtil
-import io.flow.delta.lib.BuildNames
-import io.flow.delta.v0.models.{OrganizationSummary, Project, ProjectForm, ProjectSummary, Scms, Status, Visibility}
 import io.flow.delta.config.v0.models.Config
 import io.flow.delta.config.v0.models.json._
+import io.flow.delta.lib.config.Defaults
+import io.flow.delta.v0.models._
 import io.flow.play.util.UrlKey
-import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
+import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
 import play.api.db._
 import play.api.libs.json._
-import play.api.Play.current
 
-object ProjectsDao {
+@javax.inject.Singleton
+class ProjectsDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val BaseQuery = Query(s"""
     select projects.id,
@@ -56,7 +58,7 @@ object ProjectsDao {
     offset: Long = 0
   ): Seq[Project] = {
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "projects",
@@ -126,9 +128,16 @@ object ProjectsDao {
 
 case class ProjectsWriteDao @javax.inject.Inject() (
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database,
+  buildsDao: BuildsDao,
   buildsWriteDao: BuildsWriteDao,
   configsDao: ConfigsDao,
+  membershipsDao: MembershipsDao,
+  organizationsDao: OrganizationsDao,
+  projectsDao: ProjectsDao,
+  shasDao: ShasDao,
   shasWriteDao: ShasWriteDao,
+  tagsDao: TagsDao,
   tagsWriteDao: TagsWriteDao
 ) {
 
@@ -188,7 +197,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
       Seq("Name cannot be empty")
 
     } else {
-      ProjectsDao.findByOrganizationIdAndName(Authorization.All, form.organization, form.name) match {
+      projectsDao.findByOrganizationIdAndName(Authorization.All, form.organization, form.name) match {
         case None => Seq.empty
         case Some(p) => {
           Some(p.id) == existing.map(_.id) match {
@@ -199,7 +208,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
       }
     }
 
-    val organizationErrors = MembershipsDao.isMember(form.organization, user) match  {
+    val organizationErrors = membershipsDao.isMember(form.organization, user) match  {
       case false => Seq("You do not have access to this organization")
       case true => Nil
     }
@@ -211,13 +220,13 @@ case class ProjectsWriteDao @javax.inject.Inject() (
     validate(createdBy, form) match {
       case Nil => {
 
-        val org = OrganizationsDao.findById(Authorization.All, form.organization).getOrElse {
+        val org = organizationsDao.findById(Authorization.All, form.organization).getOrElse {
           sys.error("Could not find organization with id[${form.organization}]")
         }
         
         val id = urlKey.generate(form.name.trim)
 
-        DB.withTransaction { implicit c =>
+        db.withTransaction { implicit c =>
           SQL(InsertQuery).on(
             'id -> id,
             'organization_id -> org.id,
@@ -240,12 +249,12 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
         mainActor ! MainActor.Messages.ProjectCreated(id)
 
-        BuildsDao.findAll(Authorization.All, projectId = Some(id)).foreach { build =>
+        buildsDao.findAll(Authorization.All, projectId = Some(id)).foreach { build =>
           mainActor ! MainActor.Messages.BuildCreated(build.id)
         }
 
         Right(
-          ProjectsDao.findById(Authorization.All, id).getOrElse {
+          projectsDao.findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create project")
           }
         )
@@ -264,7 +273,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
           "Changing organization ID not currently supported"
         )
 
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'id -> project.id,
             'visibility -> form.visibility.toString,
@@ -278,7 +287,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
         mainActor ! MainActor.Messages.ProjectUpdated(project.id)
 
         Right(
-          ProjectsDao.findById(Authorization.All, project.id).getOrElse {
+          projectsDao.findById(Authorization.All, project.id).getOrElse {
             sys.error("Failed to create project")
           }
         )
@@ -289,26 +298,26 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
   def delete(deletedBy: UserReference, project: Project) {
     Pager.create { offset =>
-      ShasDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+      shasDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { sha =>
       shasWriteDao.delete(deletedBy, sha)
     }
 
     Pager.create { offset =>
-      TagsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+      tagsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { tag =>
       tagsWriteDao.delete(deletedBy, tag)
     }
 
     Pager.create { offset =>
-      BuildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+      buildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { build =>
       buildsWriteDao.delete(deletedBy, build)
     }
 
     configsDao.deleteByProjectId(deletedBy, project.id)
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL("select delete_project({id})").on(
         'id -> project.id
       ).execute()

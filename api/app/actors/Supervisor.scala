@@ -2,6 +2,8 @@ package io.flow.delta.actors
 
 import io.flow.delta.v0.models.{Build, Project}
 import io.flow.delta.config.v0.models.{BuildStage, ConfigProject, ProjectStage}
+import play.api.Application
+
 import scala.collection.mutable
 import scala.concurrent.Future
 
@@ -93,7 +95,7 @@ trait ProjectSupervisorFunction {
     project: Project,
     config: ConfigProject
   ) (
-    implicit ec: scala.concurrent.ExecutionContext
+    implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult]
 
 }
@@ -112,7 +114,8 @@ trait BuildSupervisorFunction {
   def run(
     build: Build
   ) (
-    implicit ec: scala.concurrent.ExecutionContext
+    implicit ec: scala.concurrent.ExecutionContext,
+    app: Application
   ): Future[SupervisorResult]
 
 }
