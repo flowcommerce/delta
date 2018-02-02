@@ -2,18 +2,16 @@ package db
 
 import anorm._
 import play.api.db._
+import play.api.Play.current
 
-@javax.inject.Singleton
-class Delete @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
-) {
+object Delete {
 
   private[this] val Query = """
     select util.delete_by_id({user_id}, {table}, {id})
   """
 
   def delete(table: String, deletedById: String, id: String) {
-    db.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       delete(c, table, deletedById, id)
     }
   }

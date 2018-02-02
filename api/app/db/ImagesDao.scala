@@ -1,17 +1,15 @@
 package db
 
-import anorm._
-import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.lib.Semver
 import io.flow.delta.v0.models._
-import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.common.v0.models.UserReference
+import anorm._
 import play.api.db._
+import play.api.Play.current
 
-@javax.inject.Singleton
-class ImagesDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
-) {
+object ImagesDao {
 
   private[this] val BaseQuery = Query(s"""
     select images.id,
@@ -51,7 +49,7 @@ class ImagesDao @javax.inject.Inject() (
    limit: Long = 25,
    offset: Long = 0
   ): Seq[Image] = {
-    db.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       BaseQuery.
         optionalIn("images.id", ids).
         optionalIn("images.name", names).
@@ -69,11 +67,7 @@ class ImagesDao @javax.inject.Inject() (
 }
 
 case class ImagesWriteDao @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
-  buildsDao: BuildsDao,
-  delete: Delete,
-  imagesDao: ImagesDao
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
   private[this] val UpsertQuery = """
@@ -118,7 +112,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
       }
     }
 
-    val buildErrors = buildsDao.findById(Authorization.All, form.buildId) match {
+    val buildErrors = BuildsDao.findById(Authorization.All, form.buildId) match {
       case None => Seq("Build not found")
       case Some(build) => Nil
     }
@@ -136,7 +130,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
       name = name,
       version = version
     )
-    imagesDao.findByBuildIdAndVersion(buildId, version) match {
+    ImagesDao.findByBuildIdAndVersion(buildId, version) match {
       case None => {
         create(createdBy, form) match {
           case Left(errors) => sys.error(errors.mkString(", "))
@@ -159,7 +153,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
     validate(createdBy, form) match {
       case Nil => {
 
-        db.withConnection { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(UpsertQuery).on(
             'id -> io.flow.play.util.IdGenerator("img").randomId(),
             'build_id -> form.buildId,
@@ -170,7 +164,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
           ).execute()
         }
 
-        val image = imagesDao.findByBuildIdAndVersion(form.buildId, form.version).getOrElse {
+        val image = ImagesDao.findByBuildIdAndVersion(form.buildId, form.version).getOrElse {
           sys.error(s"Failed to create image for buildId[${form.buildId}] version[${form.version}]")
         }
 
@@ -185,7 +179,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
   private[this] def update(createdBy: UserReference, image: Image, form: ImageForm): Either[Seq[String], Image] = {
     validate(createdBy, form, Some(image)) match {
       case Nil => {
-        db.withConnection { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'id -> image.id,
             'build_id -> form.buildId,
@@ -199,7 +193,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
         mainActor ! MainActor.Messages.ImageCreated(form.buildId, image.id, form.version.trim)
 
         Right(
-          imagesDao.findById(image.id).getOrElse {
+          ImagesDao.findById(image.id).getOrElse {
             sys.error("Failed to create image")
           }
         )
@@ -211,7 +205,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, image: Image) {
-    delete.delete("images", deletedBy.id, image.id)
+    Delete.delete("images", deletedBy.id, image.id)
   }
 
 }

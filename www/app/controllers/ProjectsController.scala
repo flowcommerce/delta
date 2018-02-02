@@ -1,26 +1,24 @@
 package controllers
 
-import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.v0.errors.UnitResponse
-import io.flow.delta.v0.models._
+import io.flow.delta.v0.models.{EventType, Project, ProjectForm, Scms, Visibility}
+import io.flow.delta.v0.models.json._
+import io.flow.delta.config.v0.models.{Config, ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
-import io.flow.play.util.{PaginatedCollection, Pagination}
+import io.flow.play.util.{Pagination, PaginatedCollection}
+import play.api.libs.json.Json
+import scala.concurrent.Future
 import play.api.Logger
-import play.api.data.Forms._
-import play.api.data._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
-
-import scala.concurrent.Future
+import play.api.data._
+import play.api.data.Forms._
 
 class ProjectsController @javax.inject.Inject() (
-  override val messagesApi: MessagesApi,
+  val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
+  override val deltaClientProvider: DeltaClientProvider
+) extends BaseController(tokenClient, deltaClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -217,8 +215,8 @@ class ProjectsController @javax.inject.Inject() (
           ).map { project =>
             Redirect(routes.ProjectsController.show(project.id)).flashing("success" -> "Project created")
           }.recover {
-            case response: io.flow.delta.v0.errors.GenericErrorResponse => {
-              Ok(views.html.projects.create(uiData(request), boundForm, orgs, response.genericError.messages))
+            case response: io.flow.delta.v0.errors.ErrorsResponse => {
+              Ok(views.html.projects.create(uiData(request), boundForm, orgs, response.errors.map(_.message)))
             }
           }
         }
@@ -272,8 +270,8 @@ class ProjectsController @javax.inject.Inject() (
               ).map { project =>
                 Redirect(routes.ProjectsController.show(project.id)).flashing("success" -> "Project updated")
               }.recover {
-                case response: io.flow.delta.v0.errors.GenericErrorResponse => {
-                  Ok(views.html.projects.edit(uiData(request), project, boundForm, orgs, response.genericError.messages))
+                case response: io.flow.delta.v0.errors.ErrorsResponse => {
+                  Ok(views.html.projects.edit(uiData(request), project, boundForm, orgs, response.errors.map(_.message)))
                 }
               }
             }

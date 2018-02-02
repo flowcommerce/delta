@@ -1,16 +1,14 @@
 package db
 
-import anorm._
-import io.flow.common.v0.models.{User, UserReference}
-import io.flow.delta.actors.MainActor
 import io.flow.delta.v0.models.UserForm
-import io.flow.postgresql.{OrderBy, Query}
+import io.flow.delta.actors.MainActor
+import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.common.v0.models.{Name, User, UserReference}
+import anorm._
 import play.api.db._
+import play.api.Play.current
 
-@javax.inject.Singleton
-class UsersDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
-) {
+object UsersDao {
 
   private[db] val SystemEmailAddress = "otto@flow.io"
   private[db] val AnonymousEmailAddress = "anonymous@flow.io"
@@ -55,7 +53,7 @@ class UsersDao @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[User] = {
-    db.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "users",
@@ -95,10 +93,7 @@ class UsersDao @javax.inject.Inject() (
 }
 
 case class UsersWriteDao @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
-  usersDao: UsersDao,
-  delete: Delete
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
   private[this] val InsertQuery = """
@@ -121,7 +116,7 @@ case class UsersWriteDao @javax.inject.Inject() (
           Seq("Please enter a valid email address")
 
         } else {
-          usersDao.findByEmail(email) match {
+          UsersDao.findByEmail(email) match {
             case None => Nil
             case Some(_) => Seq("Email is already registered")
           }
@@ -139,20 +134,20 @@ case class UsersWriteDao @javax.inject.Inject() (
       case Nil => {
         val id = io.flow.play.util.IdGenerator("usr").randomId()
 
-        db.withConnection { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'id -> id,
             'email -> form.email.map(_.trim),
             'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
             'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
-            'updated_by_user_id -> createdBy.getOrElse(usersDao.anonymousUser).id
+            'updated_by_user_id -> createdBy.getOrElse(UsersDao.anonymousUser).id
           ).execute()
         }
 
         mainActor ! MainActor.Messages.UserCreated(id.toString)
 
         Right(
-          usersDao.findById(id).getOrElse {
+          UsersDao.findById(id).getOrElse {
             sys.error("Failed to create user")
           }
         )

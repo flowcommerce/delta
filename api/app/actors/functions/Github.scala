@@ -1,16 +1,11 @@
 package io.flow.delta.actors.functions
 
-import javax.inject.Inject
-
-import io.flow.delta.actors.SupervisorResult
-import io.flow.delta.api.lib.GitHubHelper
 import io.flow.github.v0.Client
-
+import io.flow.delta.actors.SupervisorResult
+import io.flow.delta.api.lib.GithubHelper
 import scala.concurrent.Future
 
-class Github @Inject()(
-  gitHubHelper: GitHubHelper
-) {
+trait Github {
 
   def withGithubClient(
     userId: String
@@ -20,7 +15,7 @@ class Github @Inject()(
     implicit ec: scala.concurrent.ExecutionContext
   ): Future[SupervisorResult] = {
 
-    gitHubHelper.apiClientFromUser(userId) match {
+    GithubHelper.apiClientFromUser(userId) match {
       case None => {
         Future {
           SupervisorResult.Error(s"Could not get a client for the project's user[$userId]")

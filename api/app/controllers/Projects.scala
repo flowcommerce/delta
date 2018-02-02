@@ -1,30 +1,23 @@
 package controllers
 
-import db._
+import db.{BuildDesiredStatesDao, BuildLastStatesDao, BuildsDao, ImagesDao, ProjectsDao, ProjectsWriteDao}
+import io.flow.postgresql.Authorization
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
-import io.flow.delta.v0.models.json._
 import io.flow.delta.v0.models.{Build, BuildState, ProjectForm}
-import io.flow.error.v0.models.json._
-import io.flow.play.controllers.FlowControllerComponents
-import io.flow.play.util.Validation
-import io.flow.postgresql.Authorization
-import play.api.libs.json._
+import io.flow.delta.v0.models.json._
+import io.flow.play.util.{Config, Validation}
+import io.flow.common.v0.models.json._
 import play.api.mvc._
+import play.api.libs.json._
 
 @javax.inject.Singleton
 class Projects @javax.inject.Inject() (
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  buildsDao: BuildsDao,
-  buildDesiredStatesDao: BuildDesiredStatesDao,
-  buildLastStatesDao: BuildLastStatesDao,
-  helpers: Helpers,
-  imagesDao: ImagesDao,
-  projectsDao: ProjectsDao,
-  projectsWriteDao: ProjectsWriteDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends BaseIdentifiedRestController {
+  projectsWriteDao: ProjectsWriteDao
+) extends Controller with BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -34,10 +27,10 @@ class Projects @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    helpers.withOrderBy(sort) { orderBy =>
+    withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          projectsDao.findAll(
+          ProjectsDao.findAll(
             authorization(request),
             ids = optionals(id),
             name = name,
@@ -52,7 +45,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def getById(id: String) = Identified { request =>
-    helpers.withProject(request.user, id) { project =>
+    withProject(request.user, id) { project =>
       Ok(Json.toJson(project))
     }
   }
@@ -75,7 +68,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def putById(id: String) = Identified { request =>
-    helpers.withProject(request.user, id) { project =>
+    withProject(request.user, id) { project =>
       JsValue.sync(request.contentType, request.body) { js =>
         js.validate[ProjectForm] match {
           case e: JsError => {
@@ -93,22 +86,22 @@ class Projects @javax.inject.Inject() (
   }
 
   def deleteById(id: String) = Identified { request =>
-    helpers.withProject(request.user, id) { project =>
+    withProject(request.user, id) { project =>
       projectsWriteDao.delete(request.user, project)
       NoContent
     }
   }
  
   def getBuildsAndStatesById(id: String) = Identified { request =>
-    helpers.withProject(request.user, id) { project =>
+    withProject(request.user, id) { project =>
       Ok(
         Json.toJson(
-          buildsDao.findAllByProjectId(authorization(request), project.id).map { build =>
+          BuildsDao.findAllByProjectId(authorization(request), project.id).map { build =>
             BuildState(
               name = build.name,
-              desired = buildDesiredStatesDao.findByBuildId(authorization(request), build.id),
-              last = buildLastStatesDao.findByBuildId(authorization(request), build.id),
-              latestImage = imagesDao.findAll(buildId = Some(build.id)).headOption.map( i => s"${i.name}:${i.version}" )
+              desired = BuildDesiredStatesDao.findByBuildId(authorization(request), build.id),
+              last = BuildLastStatesDao.findByBuildId(authorization(request), build.id),
+              latestImage = ImagesDao.findAll(buildId = Some(build.id)).headOption.map( i => s"${i.name}:${i.version}" )
             )
           }.toSeq
         )
@@ -117,7 +110,7 @@ class Projects @javax.inject.Inject() (
   }
 
   def postEventsAndPursueDesiredStateById(id: String) = Identified { request =>
-    helpers.withProject(request.user, id) { project =>
+    withProject(request.user, id) { project =>
       mainActor ! MainActor.Messages.ProjectSync(project.id)
       NoContent
     }
@@ -132,7 +125,7 @@ class Projects @javax.inject.Inject() (
   def withBuild(user: UserReference, projectId: String, name: String)(
     f: Build => Result
   ): Result = {
-    buildsDao.findByProjectIdAndName(Authorization.User(user.id), projectId, name) match {
+    BuildsDao.findByProjectIdAndName(Authorization.User(user.id), projectId, name) match {
       case None => {
         Results.NotFound
       }

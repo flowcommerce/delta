@@ -1,56 +1,34 @@
 package db
 
-import java.util.UUID
-
-import io.flow.common.v0.models.{Name, User, UserReference}
-import io.flow.delta.api.lib.GitHubHelper
+import io.flow.postgresql.Authorization
+import io.flow.play.util.Random
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.lib.config.Defaults
 import io.flow.delta.v0.models._
-import io.flow.play.util.{Constants, Random}
-import io.flow.postgresql.Authorization
-import io.flow.test.utils.FlowPlaySpec
+import io.flow.common.v0.models.{Name, User, UserReference}
+import java.util.UUID
 
 trait Helpers {
-  self: FlowPlaySpec =>
 
   import scala.language.implicitConversions
+  implicit def toUserReference(user: User) = UserReference(id = user.id)
 
-  def injector = app.injector
+  lazy val systemUser = createUser()
 
-  lazy val database = init[play.api.db.Database]
-
-  lazy val buildDesiredStatesDao = init[BuildDesiredStatesDao]
-  lazy val buildLastStatesDao = init[BuildLastStatesDao]
-  lazy val buildsDao = init[BuildsDao]
-  lazy val buildsWriteDao = init[BuildsWriteDao]
-  lazy val configsDao = init[ConfigsDao]
-  lazy val dashboardBuildsDao = init[DashboardBuildsDao]
-  lazy val delete = init[Delete]
-  lazy val eventsDao = init[EventsDao]
-  lazy val githubHelper = init[GitHubHelper]
-  lazy val githubUsersDao = init[GithubUsersDao]
-  lazy val imagesDao = init[ImagesDao]
-  lazy val imagesWriteDao = init[ImagesWriteDao]
-  lazy val itemsDao = init[ItemsDao]
-  lazy val membershipsDao = init[MembershipsDao]
-  lazy val organizationsDao = init[OrganizationsDao]
-  lazy val organizationsWriteDao = init[OrganizationsWriteDao]
-  lazy val projectsDao = init[ProjectsDao]
-  lazy val projectsWriteDao = init[ProjectsWriteDao]
-  lazy val shasDao = init[ShasDao]
-  lazy val shasWriteDao = init[ShasWriteDao]
-  lazy val subscriptionsDao = init[SubscriptionsDao]
-  lazy val tagsDao = init[TagsDao]
-  lazy val tagsWriteDao = init[TagsWriteDao]
-  lazy val tokensDao = init[TokensDao]
-  lazy val userIdentifiersDao = init[UserIdentifiersDao]
-  lazy val usersDao = init[UsersDao]
-  lazy val usersWriteDao = init[UsersWriteDao]
-  lazy val variablesDao = init[VariablesDao]
+  lazy val buildDesiredStatesWriteDao = play.api.Play.current.injector.instanceOf[BuildDesiredStatesWriteDao]
+  lazy val buildLastStatesWriteDao = play.api.Play.current.injector.instanceOf[BuildLastStatesWriteDao]
+  
+  def injector = play.api.Play.current.injector
 
   val random = Random()
-  val systemUser = Constants.SystemUser
+
+  def createTestEmail(): String = {
+    s"$createTestKey@test.bryzek.com"
+  }
+
+  def createTestName(): String = {
+    s"Z Test ${UUID.randomUUID.toString}"
+  }
 
   def createTestKey(): String = {
     s"z-test-${UUID.randomUUID.toString.toLowerCase}"
@@ -58,6 +36,13 @@ trait Helpers {
 
   def createTestVersion(): String = {
     s"0.0.${scala.util.Random.nextInt(100)}"
+  }
+
+  def rightOrErrors[T](result: Either[Seq[String], T]): T = {
+    result match {
+      case Left(errors) => sys.error(errors.mkString(", "))
+      case Right(obj) => obj
+    }
   }
 
   /**
@@ -84,9 +69,9 @@ trait Helpers {
 
   def createOrganization(
     form: OrganizationForm = createOrganizationForm(),
-    user: UserReference = Constants.SystemUser
+    user: User = systemUser
   ): Organization = {
-    organizationsWriteDao.create(UserReference(user.id), form).right.getOrElse {
+    injector.instanceOf[OrganizationsWriteDao].create(user, form).right.getOrElse {
       sys.error("Failed to create organization")
     }
   }
@@ -104,13 +89,13 @@ trait Helpers {
   ) (
     implicit form: ProjectForm = createProjectForm(org)
   ): Project = {
-    val user = organizationsDao.findById(Authorization.All, form.organization).flatMap { org =>
-      usersDao.findById(org.user.id)
+    val user = OrganizationsDao.findById(Authorization.All, form.organization).flatMap { org =>
+      UsersDao.findById(org.user.id)
     }.getOrElse {
       sys.error("Could not find user that created org")
     }
 
-    rightOrErrors(projectsWriteDao.create(UserReference(user.id), form))
+    rightOrErrors(injector.instanceOf[ProjectsWriteDao].create(user, form))
   }
 
   def createProjectForm(
@@ -144,13 +129,7 @@ trait Helpers {
   def createUser(
     form: UserForm = createUserForm()
   ): User = {
-    rightOrErrors(usersWriteDao.create(None, form))
-  }
-
-  def createUserReference(
-    form: UserForm = createUserForm()
-  ): UserReference = {
-    UserReference(rightOrErrors(usersWriteDao.create(None, form)).id)
+    rightOrErrors(injector.instanceOf[UsersWriteDao].create(None, form))
   }
 
   def createUserForm(
@@ -164,11 +143,11 @@ trait Helpers {
   def createGithubUser(
     form: GithubUserForm = createGithubUserForm()
   ): GithubUser = {
-    githubUsersDao.create(None, form)
+    GithubUsersDao.create(None, form)
   }
 
   def createGithubUserForm(
-    user: UserReference = createUserReference(),
+    user: User = createUser(),
     githubUserId: Long = random.positiveLong(),
     login: String = createTestKey()
   ) = {
@@ -182,11 +161,11 @@ trait Helpers {
   def createToken(
     form: TokenForm = createTokenForm()
   ): Token = {
-    rightOrErrors(tokensDao.create(Constants.SystemUser, InternalTokenForm.UserCreated(form)))
+    rightOrErrors(TokensDao.create(systemUser, InternalTokenForm.UserCreated(form)))
   }
 
   def createTokenForm(
-    user: UserReference = createUserReference()
+    user: User = createUser()
   ):TokenForm = {
     TokenForm(
       userId = user.id,
@@ -197,12 +176,12 @@ trait Helpers {
   def createMembership(
     form: MembershipForm = createMembershipForm()
   ): Membership = {
-    rightOrErrors(membershipsDao.create(Constants.SystemUser, form))
+    rightOrErrors(MembershipsDao.create(systemUser, form))
   }
 
   def createMembershipForm(
     org: Organization = createOrganization(),
-    user: UserReference = createUserReference(),
+    user: User = createUser(),
     role: Role = Role.Member
   ) = {
     MembershipForm(
@@ -217,7 +196,7 @@ trait Helpers {
   ) (
     implicit form: ItemForm = createItemForm(org)
   ): Item = {
-    itemsDao.replace(Constants.SystemUser, form)
+    ItemsDao.replace(systemUser, form)
   }
 
   def createItemSummary(
@@ -259,11 +238,12 @@ trait Helpers {
      * is created in createSubscriptionForm above. When a user
      * is created, it will trigger auto subscription in UserActor.Messages.Created
      **/
-    subscriptionsDao.upsert(Constants.SystemUser, form)
+    //rightOrErrors(SubscriptionsDao.create(systemUser, form))
+    SubscriptionsDao.upsert(systemUser, form)
   }
 
   def createSubscriptionForm(
-    user: UserReference = createUserReference(),
+    user: User = createUser(),
     publication: Publication = Publication.Deployments
   ) = {
     SubscriptionForm(
@@ -276,9 +256,9 @@ trait Helpers {
     project: Project = createProject()
   ) (
     implicit cfg: config.Build = createBuildConfig(project),
-             user: UserReference = Constants.SystemUser
+             user: User = systemUser
   ): Build = {
-    buildsWriteDao.upsert(UserReference(user.id), project.id, Status.Enabled, cfg)
+    injector.instanceOf[BuildsWriteDao].upsert(user, project.id, Status.Enabled, cfg)
   }
 
   def createBuildConfig(
@@ -291,9 +271,9 @@ trait Helpers {
 
   def createSha(
     form: ShaForm = createShaForm(),
-    user: UserReference = Constants.SystemUser
+    user: User = systemUser
   ): Sha = {
-    rightOrErrors(injector.instanceOf[ShasWriteDao].create(UserReference(user.id), form))
+    rightOrErrors(injector.instanceOf[ShasWriteDao].create(user, form))
   }
 
   def createShaForm(
@@ -308,9 +288,9 @@ trait Helpers {
 
   def createTag(
     form: TagForm = createTagForm(),
-    user: UserReference = Constants.SystemUser
+    user: User = systemUser
   ): Tag = {
-    rightOrErrors(tagsWriteDao.create(UserReference(user.id), form))
+    rightOrErrors(injector.instanceOf[TagsWriteDao].create(user, form))
   }
 
   def createTagForm(
@@ -329,17 +309,17 @@ trait Helpers {
     summary: String = "test",
     ex: Option[Throwable] = None
   ): Event = {
-    val id = eventsDao.create(Constants.SystemUser, project.id, action, summary, ex)
-    eventsDao.findById(id).getOrElse {
+    val id = EventsDao.create(systemUser, project.id, action, summary, ex)
+    EventsDao.findById(id).getOrElse {
       sys.error("Failed to create event")
     }
   }
 
   def createImage(
    form: ImageForm = createImageForm(),
-   user: UserReference = Constants.SystemUser
+   user: User = systemUser
   ): Image = {
-    rightOrErrors(imagesWriteDao.create(UserReference(user.id), form))
+    rightOrErrors(injector.instanceOf[ImagesWriteDao].create(user, form))
   }
 
   def createImageForm(
@@ -366,7 +346,7 @@ trait Helpers {
 
   def setLastStates(build: Build, versions: Seq[Version]) {
     rightOrErrors(
-      buildLastStatesDao.upsert(Constants.SystemUser, build, StateForm(versions = versions))
+      buildLastStatesWriteDao.upsert(systemUser, build, StateForm(versions = versions))
     )
   }
 

@@ -1,33 +1,27 @@
 package io.flow.delta.actors
 
+import io.flow.postgresql.Authorization
 import java.util.concurrent.TimeUnit
 
-import akka.actor.{Actor, ActorSystem}
-import db.{OrganizationsDao, UsersDao, VariablesDao}
-import io.flow.delta.v0.models.VariableForm
 import io.flow.docker.hub.v0.Client
 import io.flow.docker.hub.v0.models.{Jwt, JwtForm}
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
-import io.flow.postgresql.Authorization
+import akka.actor.{Actor, ActorSystem}
+import io.flow.delta.v0.models.{Variable, VariableForm}
 import play.api.Logger
-import play.api.libs.ws.WSClient
 
-import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
+import scala.concurrent.duration.Duration
 import scala.util.{Failure, Success, Try}
 
 @javax.inject.Singleton
 class DockerHubToken @javax.inject.Inject() (
-  config: Config,
-  organizationsDao: OrganizationsDao,
-  usersDao: UsersDao,
-  variablesDao: VariablesDao,
-  wSClient: WSClient
+  config: Config
 ) {
 
   private[this] val tokenKey = "DOCKER_JWT_TOKEN"
-  private[this] val jwtClient = new Client(ws = wSClient)
+  private[this] val jwtClient = new Client()
   private[this] val auth = Authorization.All
 
   /**
@@ -37,12 +31,12 @@ class DockerHubToken @javax.inject.Inject() (
     */
   private[this] lazy val orgTokenMap = {
     val map = scala.collection.mutable.HashMap.empty[String, String]
-    organizationsDao.findAll(auth = auth).foreach { organization =>
-      val token = variablesDao.findByOrganizationAndKey(auth = auth, organization = organization.id, key = tokenKey) match {
+    db.OrganizationsDao.findAll(auth = auth).foreach { organization =>
+      val token = db.VariablesDao.findByOrganizationAndKey(auth = auth, organization = organization.id, key = tokenKey) match {
         case None => {
           val jwt = generate
           val form = VariableForm(organization.id, tokenKey, jwt)
-          variablesDao.upsert(Authorization.All, usersDao.systemUser, form)
+          db.VariablesDao.upsert(Authorization.All, db.UsersDao.systemUser, form)
           jwt
         }
         case Some(variable) => variable.value
@@ -84,10 +78,10 @@ class DockerHubToken @javax.inject.Inject() (
     * Should iterate through organizations and update their tokens
     */
   def refresh()(implicit ec: ExecutionContext) {
-    organizationsDao.findAll(Authorization.All).foreach { organization =>
+    db.OrganizationsDao.findAll(Authorization.All).foreach { organization =>
       generateTokenFuture.map { jwt =>
         val form = VariableForm(organization.id, tokenKey, jwt.token)
-        variablesDao.upsert(Authorization.All, usersDao.systemUser, form) match {
+        db.VariablesDao.upsert(Authorization.All, db.UsersDao.systemUser, form) match {
           case Left(errors) => Logger.error(s"Error refreshing docker hub JWT token: $errors")
           case Right(variable) => {
             orgTokenMap += (organization.id -> variable.value)

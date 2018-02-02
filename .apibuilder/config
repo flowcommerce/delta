@@ -3,38 +3,38 @@ code:
     common:
       version: 0.1.59
       generators:
-        anorm_2_6_parsers: api/app/generated
+        anorm_2_x_parsers: api/app/generated
         play_2_x_json: generated/app
     docker-registry:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_4_client: generated/app
     docker-hub:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_4_client: generated/app
     github:
       version: latest
       generators:
-        anorm_2_6_parsers: api/app/generated
-        play_2_6_client: generated/app
+        anorm_2_x_parsers: api/app/generated
+        play_2_4_client: generated/app
     github-oauth:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_4_client: generated/app
     delta:
       version: latest
       generators:
         play_2_x_routes: api/conf/delta.routes
-        anorm_2_6_parsers: api/app/generated
-        play_2_6_client: generated/app
+        anorm_2_x_parsers: api/app/generated
+        play_2_4_client: generated/app
     delta-config:
       version: latest
       generators:
-        anorm_2_6_parsers: api/app/generated      
+        anorm_2_x_parsers: api/app/generated      
         play_2_x_json: generated/app
     travis-ci:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_4_client: generated/app
 

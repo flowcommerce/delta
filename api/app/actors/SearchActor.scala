@@ -1,9 +1,11 @@
 package io.flow.delta.actors
 
-import akka.actor.Actor
-import db.{ItemsDao, ProjectsDao}
+import io.flow.delta.v0.models.ProjectSummary
 import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
+import db.{ItemForm, ItemsDao, ProjectsDao}
+import play.api.Logger
+import akka.actor.Actor
 
 object SearchActor {
 
@@ -15,17 +17,14 @@ object SearchActor {
 
 }
 
-class SearchActor(
-  projectsDao: ProjectsDao,
-  itemsDao: ItemsDao
-) extends Actor with ErrorHandler {
+class SearchActor extends Actor with ErrorHandler {
 
   def receive = {
 
     case msg @ SearchActor.Messages.SyncProject(id) => withErrorHandler(msg) {
-      projectsDao.findById(Authorization.All, id) match {
-        case None => itemsDao.deleteByObjectId(Authorization.All, MainActor.SystemUser, id)
-        case Some(project) => itemsDao.replaceProject(MainActor.SystemUser, project)
+      ProjectsDao.findById(Authorization.All, id) match {
+        case None => ItemsDao.deleteByObjectId(Authorization.All, MainActor.SystemUser, id)
+        case Some(project) => ItemsDao.replaceProject(MainActor.SystemUser, project)
       }
     }
 

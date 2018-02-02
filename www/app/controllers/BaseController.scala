@@ -1,15 +1,16 @@
 package controllers
 
-import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.Client
 import io.flow.delta.v0.models.Organization
 import io.flow.delta.www.lib.{DeltaClientProvider, Section, UiData}
-import io.flow.play.controllers._
+import io.flow.common.v0.models.UserReference
+import io.flow.play.controllers.IdentifiedController
+import scala.concurrent.ExecutionContext
 import play.api.i18n._
 import play.api.mvc._
 
+import scala.concurrent.{Await, Future}
 import scala.concurrent.duration.Duration
-import scala.concurrent.{Await, ExecutionContext, Future}
 
 object Helpers {
 
@@ -33,16 +34,17 @@ object Helpers {
 
 abstract class BaseController(
   val tokenClient: io.flow.token.v0.interfaces.Client,
-  val deltaClientProvider: DeltaClientProvider,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends FlowController with I18nSupport {
+  val deltaClientProvider: DeltaClientProvider
+) extends Controller
+    with IdentifiedController
+    with I18nSupport
+{
 
   private[this] lazy val client = deltaClientProvider.newClient(user = None)
 
   def section: Option[Section]
 
-  def unauthorized[A](request: Request[A]): Result = {
+  override def unauthorized[A](request: Request[A]): Result = {
     Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
   }
 
@@ -77,7 +79,7 @@ abstract class BaseController(
     )
   }
 
-  def user(
+  override def user(
     session: play.api.mvc.Session,
     headers: play.api.mvc.Headers,
     path: String,
@@ -110,7 +112,10 @@ abstract class BaseController(
   ) (
     implicit ec: ExecutionContext
   ): UiData = {
-    val userReferenceOption = request.user
+    val userReferenceOption = Await.result(
+      request.user,
+      Duration(1, "seconds")
+    )
 
     val user = userReferenceOption.flatMap { ref =>
       Await.result(

@@ -1,11 +1,17 @@
 package db
 
+import io.flow.postgresql.Authorization
+import org.scalatest._
+import play.api.test._
+import play.api.test.Helpers._
+import org.scalatestplus.play._
 import java.util.UUID
 
-import io.flow.postgresql.Authorization
-import io.flow.test.utils.FlowPlaySpec
+class ShasDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
-class ShasDaoSpec extends FlowPlaySpec with Helpers {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  lazy val shasWriteDao = app.injector.instanceOf[ShasWriteDao]
 
   "create" in {
     val project = createProject()
@@ -36,16 +42,16 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
   "delete" in {
     val sha = createSha()
     shasWriteDao.delete(systemUser, sha)
-    shasDao.findById(Authorization.All, sha.id) must be(None)
+    ShasDao.findById(Authorization.All, sha.id) must be(None)
   }
 
   "findById" in {
     val sha = createSha()
-    shasDao.findById(Authorization.All, sha.id).map(_.id) must be(
+    ShasDao.findById(Authorization.All, sha.id).map(_.id) must be(
       Some(sha.id)
     )
 
-    shasDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
+    ShasDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findByProjectIdAndBranch" in {
@@ -57,22 +63,22 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
     val fooForm = createShaForm(project).copy(branch = "foo")
     val foo = rightOrErrors(shasWriteDao.create(systemUser, fooForm))
 
-    shasDao.findByProjectIdAndBranch(Authorization.All, project.id, "master").map(_.hash) must be(Some(masterForm.hash))
-    shasDao.findByProjectIdAndBranch(Authorization.All, project.id, "foo").map(_.hash) must be(Some(fooForm.hash))
-    shasDao.findByProjectIdAndBranch(Authorization.All, project.id, "other") must be(None)
+    ShasDao.findByProjectIdAndBranch(Authorization.All, project.id, "master").map(_.hash) must be(Some(masterForm.hash))
+    ShasDao.findByProjectIdAndBranch(Authorization.All, project.id, "foo").map(_.hash) must be(Some(fooForm.hash))
+    ShasDao.findByProjectIdAndBranch(Authorization.All, project.id, "other") must be(None)
   }
 
   "findAll by ids" in {
     val sha1 = createSha()
     val sha2 = createSha()
 
-    shasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, sha2.id))).map(_.id).sorted must be(
+    ShasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, sha2.id))).map(_.id).sorted must be(
       Seq(sha1.id, sha2.id).sorted
     )
 
-    shasDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    shasDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    shasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(sha1.id))
+    ShasDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    ShasDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    ShasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(sha1.id))
   }
 
   "findAll by projectId" in {
@@ -82,15 +88,15 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
     val sha1 = createSha(createShaForm(project1))
     val sha2 = createSha(createShaForm(project2))
 
-    shasDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.id).sorted must be(
+    ShasDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.id).sorted must be(
       Seq(sha1.id)
     )
 
-    shasDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.id).sorted must be(
+    ShasDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.id).sorted must be(
       Seq(sha2.id)
     )
 
-    shasDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
+    ShasDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
   }
 
   "validate" must {
@@ -129,17 +135,17 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
   "authorization for shas" in {
     val org = createOrganization()
     val project = createProject(org)
-    val user = createUserReference()
+    val user = createUser()
     createMembership(createMembershipForm(org = org, user = user))
 
     val sha = createSha(createShaForm(project), user = user)
 
-    shasDao.findAll(Authorization.PublicOnly, ids = Some(Seq(sha.id))) must be(Nil)
-    shasDao.findAll(Authorization.All, ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
-    shasDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
-    shasDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(sha.id))) must be(Nil)
-    shasDao.findAll(Authorization.User(user.id), ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
-    shasDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(sha.id))) must be(Nil)
+    ShasDao.findAll(Authorization.PublicOnly, ids = Some(Seq(sha.id))) must be(Nil)
+    ShasDao.findAll(Authorization.All, ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
+    ShasDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
+    ShasDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(sha.id))) must be(Nil)
+    ShasDao.findAll(Authorization.User(user.id), ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
+    ShasDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(sha.id))) must be(Nil)
   }
 
 }

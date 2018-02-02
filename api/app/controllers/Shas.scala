@@ -4,19 +4,17 @@ import db.{ShasDao, ShasWriteDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.Sha
 import io.flow.delta.v0.models.json._
-import io.flow.play.controllers.FlowControllerComponents
+import io.flow.play.util.Config
 import io.flow.postgresql.Authorization
-import play.api.libs.json._
 import play.api.mvc._
+import play.api.libs.json._
 
 @javax.inject.Singleton
 class Shas @javax.inject.Inject() (
-  helpers: Helpers,
-  shasDao: ShasDao,
-  shasWriteDao: ShasWriteDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends BaseIdentifiedRestController {
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client,
+  shasWriteDao: ShasWriteDao
+) extends Controller with BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -27,10 +25,10 @@ class Shas @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    helpers.withOrderBy(sort) { orderBy =>
+    withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          shasDao.findAll(
+          ShasDao.findAll(
             authorization(request),
             ids = optionals(id),
             projectId = project,
@@ -61,7 +59,7 @@ class Shas @javax.inject.Inject() (
   def withSha(user: UserReference, id: String)(
     f: Sha => Result
   ): Result = {
-    shasDao.findById(Authorization.User(user.id), id) match {
+    ShasDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }

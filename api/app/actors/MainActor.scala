@@ -2,18 +2,19 @@ package io.flow.delta.actors
 
 import java.util.UUID
 
-import akka.actor._
-import db.{BuildsDao, ItemsDao, ProjectsDao}
+import db.{BuildsDao, ProjectsDao}
 import io.flow.delta.api.lib.StateDiff
 import io.flow.play.actors.{ErrorHandler, Scheduler}
-import io.flow.play.util.Constants
 import io.flow.postgresql.{Authorization, Pager}
+import play.api.libs.concurrent.Akka
+import akka.actor._
+import play.api.{Application, Environment, Logger, Mode}
+import play.api.Play.current
 import play.api.libs.concurrent.InjectedActorSupport
-import play.api.{Environment, Logger, Mode}
 
 object MainActor {
 
-  lazy val SystemUser = Constants.SystemUser
+  lazy val SystemUser = db.UsersDao.systemUser
 
   object Messages {
 
@@ -61,17 +62,14 @@ class MainActor @javax.inject.Inject() (
   projectFactory: ProjectActor.Factory,
   override val config: io.flow.play.util.Config,
   system: ActorSystem,
-  playEnv: Environment,
-  buildsDao: BuildsDao,
-  projectsDao: ProjectsDao,
-  itemsDao: ItemsDao
-) extends Actor with ActorLogging with ErrorHandler with Scheduler with InjectedActorSupport {
+  playEnv: Environment
+) extends Actor with ActorLogging with ErrorHandler with Scheduler with InjectedActorSupport{
 
   private[this] implicit val ec = system.dispatchers.lookup("main-actor-context")
 
   private[this] val name = "main"
 
-  private[this] val searchActor = system.actorOf(Props[SearchActor](new SearchActor(projectsDao, itemsDao)), name = s"$name:SearchActor")
+  private[this] val searchActor = system.actorOf(Props[SearchActor], name = s"$name:SearchActor")
   private[this] val dockerHubTokenActor = injectedChild(dockerHubTokenFactory(), name = s"main:DockerHubActor")
 
   private[this] val buildActors = scala.collection.mutable.Map[String, ActorRef]()
@@ -93,7 +91,7 @@ class MainActor @javax.inject.Inject() (
 
       scheduleRecurring(system, "main.actor.ensure.container.agent.health.seconds") {
         Pager.create { offset =>
-          buildsDao.findAll(Authorization.All, offset = offset)
+          BuildsDao.findAll(Authorization.All, offset = offset)
         }.foreach { build =>
           self ! MainActor.Messages.EnsureContainerAgentHealth(build.id)
         }
@@ -101,7 +99,7 @@ class MainActor @javax.inject.Inject() (
 
       scheduleRecurring(system, "main.actor.update.container.agent.seconds") {
         Pager.create { offset =>
-          buildsDao.findAll(Authorization.All, offset = offset)
+          BuildsDao.findAll(Authorization.All, offset = offset)
         }.foreach { build =>
           self ! MainActor.Messages.UpdateContainerAgent(build.id)
         }
@@ -109,7 +107,7 @@ class MainActor @javax.inject.Inject() (
 
       scheduleRecurring(system, "main.actor.remove.old.services.seconds") {
         Pager.create { offset =>
-          buildsDao.findAll(Authorization.All, offset = offset)
+          BuildsDao.findAll(Authorization.All, offset = offset)
         }.foreach { build =>
           self ! MainActor.Messages.RemoveOldServices(build.id)
         }
@@ -117,7 +115,7 @@ class MainActor @javax.inject.Inject() (
 
       scheduleRecurring(system, "main.actor.project.sync.seconds") {
         Pager.create { offset =>
-          projectsDao.findAll(Authorization.All, offset = offset)
+          ProjectsDao.findAll(Authorization.All, offset = offset)
         }.foreach { project =>
           self ! MainActor.Messages.ProjectSync(project.id)
         }
@@ -125,7 +123,7 @@ class MainActor @javax.inject.Inject() (
 
       scheduleRecurring(system, "main.actor.project.inactive.check.seconds") {
         Pager.create { offset =>
-          projectsDao.findAll(Authorization.All, offset = offset, minutesSinceLastEvent = Some(15))
+          ProjectsDao.findAll(Authorization.All, offset = offset, minutesSinceLastEvent = Some(15))
         }.foreach { project =>
           Logger.info(s"Sending ProjectSync(${project.id}) - no events found in last 15 minutes")
           self ! MainActor.Messages.ProjectSync(project.id)

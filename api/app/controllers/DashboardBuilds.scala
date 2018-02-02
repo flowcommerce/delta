@@ -2,16 +2,15 @@ package controllers
 
 import db.DashboardBuildsDao
 import io.flow.delta.v0.models.json._
-import io.flow.play.controllers.FlowControllerComponents
-import play.api.libs.json._
+import io.flow.play.util.Config
 import play.api.mvc._
+import play.api.libs.json._
 
 @javax.inject.Singleton
 class DashboardBuilds @javax.inject.Inject() (
-  dashboardBuildsDao: DashboardBuildsDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends BaseIdentifiedRestController {
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
+) extends Controller with BaseIdentifiedRestController {
 
   def get(
     limit: Long,
@@ -19,7 +18,7 @@ class DashboardBuilds @javax.inject.Inject() (
   ) = Identified { request =>
     Ok(
       Json.toJson(
-        dashboardBuildsDao.findAll(
+        DashboardBuildsDao.findAll(
           authorization(request),
           limit = limit,
           offset = offset

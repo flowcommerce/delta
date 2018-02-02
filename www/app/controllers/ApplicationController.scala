@@ -3,8 +3,7 @@ package controllers
 import io.flow.delta.v0.models.Version
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.controllers.FlowControllerComponents
-import io.flow.play.util.{PaginatedCollection, Pagination}
+import io.flow.play.util.{Pagination, PaginatedCollection}
 import org.joda.time.DateTime
 import play.api.i18n.MessagesApi
 import play.api.mvc._
@@ -81,12 +80,10 @@ case class BuildView(val dashboardBuild: io.flow.delta.v0.models.DashboardBuild)
 }
 
 class ApplicationController @javax.inject.Inject() (
-  override val messagesApi: MessagesApi,
+  val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
+  override val deltaClientProvider: DeltaClientProvider
+) extends BaseController(tokenClient, deltaClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
  

@@ -1,16 +1,15 @@
 package db
 
-import anorm._
-import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.UserIdentifier
-import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.common.v0.models.UserReference
+import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.play.util.UrlKey
+import anorm._
 import play.api.db._
+import play.api.Play.current
+import play.api.libs.json._
 
-@javax.inject.Singleton
-class UserIdentifiersDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
-  delete: Delete
-) {
+object UserIdentifiersDao {
 
   val GithubOauthUserIdentifierValue = "github_oauth"
 
@@ -43,7 +42,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
   }
 
   def createForUser(createdBy: UserReference, user: UserReference): UserIdentifier = {
-    db.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       createWithConnection(createdBy, user)
     }
   }
@@ -83,7 +82,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, identifier: UserIdentifier) {
-    delete.delete("user_identifiers", deletedBy.id, identifier.id)
+    Delete.delete("user_identifiers", deletedBy.id, identifier.id)
   }
 
   def findById(auth: Authorization, id: String): Option[UserIdentifier] = {
@@ -99,7 +98,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
     limit: Long = 25,
     offset: Long = 0
   ): Seq[UserIdentifier] = {
-    db.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       findAllWithConnection(
         auth,
         id = id,

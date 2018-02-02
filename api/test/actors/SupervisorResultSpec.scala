@@ -1,8 +1,13 @@
 package io.flow.delta.actors
 
-import io.flow.test.utils.FlowPlaySpec
+import org.scalatest._
+import play.api.test._
+import play.api.test.Helpers._
+import org.scalatestplus.play._
 
-class SupervisorResultSpec extends FlowPlaySpec with db.Helpers {
+class SupervisorResultSpec extends PlaySpec with OneAppPerSuite with db.Helpers {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   "merge requires at least 1 result" in {
     intercept[Exception] {

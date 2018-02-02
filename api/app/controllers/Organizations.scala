@@ -1,21 +1,20 @@
 package controllers
 
 import db.{OrganizationsDao, OrganizationsWriteDao}
+import io.flow.play.util.{Config, Validation}
 import io.flow.delta.v0.models.OrganizationForm
 import io.flow.delta.v0.models.json._
-import io.flow.error.v0.models.json._
-import io.flow.play.controllers.FlowControllerComponents
-import io.flow.play.util.Validation
-import play.api.libs.json._
+import io.flow.common.v0.models.json._
 import play.api.mvc._
+import play.api.libs.json._
 
 class Organizations @javax.inject.Inject() (
-  helpers: Helpers,
-  organizationsDao: OrganizationsDao,
-  organizationsWriteDao: OrganizationsWriteDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends BaseIdentifiedRestController {
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client,
+  organizationsWriteDao: OrganizationsWriteDao
+) extends Controller with BaseIdentifiedRestController {
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def get(
     id: Option[Seq[String]],
@@ -24,10 +23,10 @@ class Organizations @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    helpers.withOrderBy(sort) { orderBy =>
+    withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          organizationsDao.findAll(
+          OrganizationsDao.findAll(
             authorization(request),
             ids = optionals(id),
             userId = userId,
@@ -41,7 +40,7 @@ class Organizations @javax.inject.Inject() (
   }
 
   def getById(id: String) = Identified { request =>
-    helpers.withOrganization(request.user, id) { organization =>
+    withOrganization(request.user, id) { organization =>
       Ok(Json.toJson(organization))
     }
   }
@@ -61,7 +60,7 @@ class Organizations @javax.inject.Inject() (
   }
 
   def putById(id: String) = Identified(parse.json) { request =>
-    helpers.withOrganization(request.user, id) { organization =>
+    withOrganization(request.user, id) { organization =>
       request.body.validate[OrganizationForm] match {
         case e: JsError => {
           UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
@@ -77,7 +76,7 @@ class Organizations @javax.inject.Inject() (
   }
 
   def deleteById(id: String) = Identified { request =>
-    helpers.withOrganization(request.user, id) { organization =>
+    withOrganization(request.user, id) { organization =>
       organizationsWriteDao.delete(request.user, organization)
       NoContent
     }

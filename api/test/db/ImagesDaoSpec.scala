@@ -1,10 +1,11 @@
 package db
 
+import org.scalatestplus.play._
 import java.util.UUID
 
-import io.flow.test.utils.FlowPlaySpec
+class ImagesDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
-class ImagesDaoSpec extends FlowPlaySpec with Helpers {
+  lazy val imagesWriteDao = app.injector.instanceOf[ImagesWriteDao]
 
   "create" in {
     val build = upsertBuild()
@@ -15,7 +16,7 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
     image.version must be(form.version)
 
     imagesWriteDao.delete(systemUser, image)
-    imagesDao.findById(image.id) must be(None)
+    ImagesDao.findById(image.id) must be(None)
   }
 
   "upsert" in {
@@ -46,16 +47,16 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
   "delete" in {
     val image = createImage()
     imagesWriteDao.delete(systemUser, image)
-    imagesDao.findById(image.id) must be(None)
+    ImagesDao.findById(image.id) must be(None)
   }
 
   "findById" in {
     val image = createImage()
-    imagesDao.findById(image.id).map(_.id) must be(
+    ImagesDao.findById(image.id).map(_.id) must be(
       Some(image.id)
     )
 
-    imagesDao.findById(UUID.randomUUID.toString) must be(None)
+    ImagesDao.findById(UUID.randomUUID.toString) must be(None)
 
     imagesWriteDao.delete(systemUser, image)
   }
@@ -69,12 +70,12 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
     val form2 = createImageForm(build).copy(version = "0.0.3")
     val tag2 = rightOrErrors(imagesWriteDao.create(systemUser, form2))
 
-    val image = imagesDao.findByBuildIdAndVersion(build.id, "0.0.2")
-    val image2 = imagesDao.findByBuildIdAndVersion(build.id, "0.0.3")
+    val image = ImagesDao.findByBuildIdAndVersion(build.id, "0.0.2")
+    val image2 = ImagesDao.findByBuildIdAndVersion(build.id, "0.0.3")
 
     image.map(_.id) must be(Some(tag1.id))
     image2.map(_.id) must be(Some(tag2.id))
-    imagesDao.findByBuildIdAndVersion(build.id, "other") must be(None)
+    ImagesDao.findByBuildIdAndVersion(build.id, "other") must be(None)
 
     imagesWriteDao.delete(systemUser, image.get)
     imagesWriteDao.delete(systemUser, image2.get)
@@ -84,13 +85,13 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
     val image1 = createImage()
     val image2 = createImage()
 
-    imagesDao.findAll(ids = Some(Seq(image1.id, image2.id))).map(_.id).sorted must be(
+    ImagesDao.findAll(ids = Some(Seq(image1.id, image2.id))).map(_.id).sorted must be(
       Seq(image1.id, image2.id).sorted
     )
 
-    imagesDao.findAll(ids = Some(Nil)) must be(Nil)
-    imagesDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    imagesDao.findAll(ids = Some(Seq(image1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(image1.id))
+    ImagesDao.findAll(ids = Some(Nil)) must be(Nil)
+    ImagesDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    ImagesDao.findAll(ids = Some(Seq(image1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(image1.id))
 
     imagesWriteDao.delete(systemUser, image1)
     imagesWriteDao.delete(systemUser, image2)
@@ -103,15 +104,15 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
     val image1 = createImage(createImageForm(build1))
     val image2 = createImage(createImageForm(build2))
 
-    imagesDao.findAll(buildId = Some(build1.id)).map(_.id).sorted must be(
+    ImagesDao.findAll(buildId = Some(build1.id)).map(_.id).sorted must be(
       Seq(image1.id)
     )
 
-    imagesDao.findAll(buildId = Some(build2.id)).map(_.id).sorted must be(
+    ImagesDao.findAll(buildId = Some(build2.id)).map(_.id).sorted must be(
       Seq(image2.id)
     )
 
-    imagesDao.findAll(buildId = Some(createTestKey())) must be(Nil)
+    ImagesDao.findAll(buildId = Some(createTestKey())) must be(Nil)
 
     imagesWriteDao.delete(systemUser, image1)
     imagesWriteDao.delete(systemUser, image2)

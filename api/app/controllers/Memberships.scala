@@ -2,22 +2,19 @@ package controllers
 
 import db.MembershipsDao
 import io.flow.common.v0.models.UserReference
-import io.flow.delta.v0.models.json._
 import io.flow.delta.v0.models.{Membership, MembershipForm, Role}
-import io.flow.error.v0.models.json._
-import io.flow.play.controllers.FlowControllerComponents
-import io.flow.play.util.Validation
+import io.flow.delta.v0.models.json._
+import io.flow.play.util.{Config, Validation}
 import io.flow.postgresql.Authorization
-import play.api.libs.json._
+import io.flow.common.v0.models.json._
 import play.api.mvc._
+import play.api.libs.json._
 
 @javax.inject.Singleton
 class Memberships @javax.inject.Inject() (
-  helpers: Helpers,
-  membershipsDao: MembershipsDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends BaseIdentifiedRestController {
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client
+) extends Controller with BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -28,10 +25,10 @@ class Memberships @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    helpers.withOrderBy(sort) { orderBy =>
+    withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          membershipsDao.findAll(
+          MembershipsDao.findAll(
             authorization(request),
             ids = optionals(id),
             organizationId = organization,
@@ -58,7 +55,7 @@ class Memberships @javax.inject.Inject() (
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[MembershipForm] => {
-        membershipsDao.create(request.user, s.get) match {
+        MembershipsDao.create(request.user, s.get) match {
           case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(membership) => Created(Json.toJson(membership))
         }
@@ -68,7 +65,7 @@ class Memberships @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     withMembership(request.user, id) { membership =>
-      membershipsDao.delete(request.user, membership)
+      MembershipsDao.delete(request.user, membership)
       NoContent
     }
   }
@@ -76,7 +73,7 @@ class Memberships @javax.inject.Inject() (
   def withMembership(user: UserReference, id: String)(
     f: Membership => Result
   ): Result = {
-    membershipsDao.findById(Authorization.User(user.id), id) match {
+    MembershipsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }

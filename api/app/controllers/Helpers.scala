@@ -1,21 +1,15 @@
 package controllers
 
-import javax.inject.Inject
-
 import db.{OrganizationsDao, ProjectsDao, UsersDao}
 import io.flow.common.v0.models.{User, UserReference}
+import io.flow.common.v0.models.json._
 import io.flow.delta.v0.models.{Organization, Project}
-import io.flow.error.v0.models.json._
 import io.flow.play.util.Validation
 import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.libs.json.Json
 import play.api.mvc.{Result, Results}
 
-class Helpers @Inject()(
-  organizationsDao: OrganizationsDao,
-  projectsDao: ProjectsDao,
-  usersDao: UsersDao
-) {
+trait Helpers {
 
   def withOrderBy(sort: String)(
     f: OrderBy => Result
@@ -33,7 +27,7 @@ class Helpers @Inject()(
   def withOrganization(user: UserReference, id: String)(
     f: Organization => Result
   ) = {
-    organizationsDao.findById(Authorization.User(user.id), id) match {
+    OrganizationsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }
@@ -46,7 +40,7 @@ class Helpers @Inject()(
   def withProject(user: UserReference, id: String)(
     f: Project => Result
   ): Result = {
-    projectsDao.findById(Authorization.User(user.id), id) match {
+    ProjectsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }
@@ -59,7 +53,7 @@ class Helpers @Inject()(
   def withUser(id: String)(
     f: User => Result
   ) = {
-    usersDao.findById(id) match {
+    UsersDao.findById(id) match {
       case None => {
         Results.NotFound
       }

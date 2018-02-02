@@ -1,22 +1,18 @@
 package controllers
 
-import db.ProjectsDao
 import io.flow.delta.actors.MainActor
-import io.flow.play.controllers.{FlowController, FlowControllerComponents}
 import io.flow.postgresql.Authorization
-import play.api.libs.json._
+import db.ProjectsDao
 import play.api.mvc._
+import play.api.libs.json._
 
 @javax.inject.Singleton
 class GithubWebhooks @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  projectsDao: ProjectsDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends FlowController {
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
+) extends Controller {
 
   def postByProjectId(projectId: String) = Action { request =>
-    projectsDao.findById(Authorization.All, projectId) match {
+    ProjectsDao.findById(Authorization.All, projectId) match {
       case None => {
         NotFound
       }

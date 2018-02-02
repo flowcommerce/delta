@@ -1,8 +1,7 @@
 package io.flow.delta.api.lib
 
-import io.flow.play.clients.DefaultTokenClient
+import play.api.{Environment, Configuration, Mode}
 import play.api.inject.Module
-import play.api.{Configuration, Environment, Mode}
 
 class TokenClientModule extends Module {
 

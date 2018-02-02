@@ -1,15 +1,14 @@
 package io.flow.delta.actors
 
-import javax.inject.Inject
-
-import akka.actor.{Actor, ActorSystem}
-import db.{BuildsDao, ConfigsDao, OrganizationsDao, ProjectsDao}
-import io.flow.delta.api.lib.EventLogProcessor
-import io.flow.delta.config.v0.models.ConfigProject
-import io.flow.delta.v0.models.Project
+import akka.actor.Actor
+import db.{BuildsDao, BuildDesiredStatesDao, ConfigsDao}
+import io.flow.delta.api.lib.StateDiff
+import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
+import io.flow.delta.v0.models.{Project, Version}
 import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
-import play.api.{Application, Logger}
+import play.api.Logger
+import play.libs.Akka
 
 object ProjectSupervisorActor {
 
@@ -30,17 +29,11 @@ object ProjectSupervisorActor {
 
 }
 
-class ProjectSupervisorActor @Inject()(
-  override val buildsDao: BuildsDao,
-  override val configsDao: ConfigsDao,
-  override val projectsDao: ProjectsDao,
-  override val organizationsDao: OrganizationsDao,
-  eventLogProcessor: EventLogProcessor,
-  system: ActorSystem,
-  implicit val app: Application
-) extends Actor with ErrorHandler with DataBuild with DataProject with EventLog {
+class ProjectSupervisorActor extends Actor with ErrorHandler with DataProject with EventLog {
 
-  private[this] implicit val ec = system.dispatchers.lookup("supervisor-actor-context")
+  private[this] implicit val ec = Akka.system.dispatchers.lookup("supervisor-actor-context")
+
+  override lazy val configsDao = play.api.Play.current.injector.instanceOf[ConfigsDao]
 
   def receive = {
 
@@ -53,10 +46,10 @@ class ProjectSupervisorActor @Inject()(
         Logger.info(s"PursueDesiredState project[${project.id}]")
         withConfig { config =>
           Logger.info(s"  - config: $config")
-          eventLogProcessor.runSync("PursueDesiredState", log = log) {
+          log.runSync("PursueDesiredState") {
             run(project, config, ProjectSupervisorActor.Functions)
 
-            buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
+            BuildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
               sender ! MainActor.Messages.BuildSync(build.id)
             }
           }
@@ -66,7 +59,7 @@ class ProjectSupervisorActor @Inject()(
 
     case msg @ ProjectSupervisorActor.Messages.CheckTag(name: String) => withErrorHandler(msg) {
       withProject { project =>
-        buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
+        BuildsDao.findAllByProjectId(Authorization.All, project.id).map { build =>
           sender ! MainActor.Messages.BuildCheckTag(build.id, name)
         }
       }
@@ -86,32 +79,37 @@ class ProjectSupervisorActor @Inject()(
         SupervisorResult.Ready("All functions returned without modification")
       }
       case Some(f) => {
-        if (config.stages.contains(f.stage)) {
-          eventLogProcessor.started(format(f), log = log)
-          f.run(project, config).map {
-            case SupervisorResult.Change(desc) => {
-              eventLogProcessor.changed(format(f, desc), log = log)
-            }
-            case SupervisorResult.Checkpoint(desc) => {
-              eventLogProcessor.checkpoint(format(f, desc), log = log)
-            }
-            case SupervisorResult.Error(desc, ex)=> {
-              val err = ex.getOrElse {
-                new Exception(desc)
-              }
-              eventLogProcessor.completed(format(f, desc), Some(err), log = log)
-            }
-            case SupervisorResult.Ready(desc)=> {
-              eventLogProcessor.completed(format(f, desc), log = log)
-              run(project, config, functions.drop(1))
-            }
-
-          }.recover {
-            case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log)
+        config.stages.contains(f.stage) match {
+          case false => {
+            log.skipped(s"Stage ${f.stage} is disabled")
+            run(project, config, functions.drop(1))
           }
-        } else {
-          eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log)
-          run(project, config, functions.drop(1))
+          case true => {
+            log.started(format(f))
+            f.run(project, config).map { result =>
+              result match {
+                case SupervisorResult.Change(desc) => {
+                  log.changed(format(f, desc))
+                }
+                case SupervisorResult.Checkpoint(desc) => {
+                  log.checkpoint(format(f, desc))
+                }
+                case SupervisorResult.Error(desc, ex)=> {
+                  val err = ex.getOrElse {
+                    new Exception(desc)
+                  }
+                  log.completed(format(f, desc), Some(err))
+                }
+                case SupervisorResult.Ready(desc)=> {
+                  log.completed(format(f, desc))
+                  run(project, config, functions.drop(1))
+                }
+              }
+
+            }.recover {
+              case ex: Throwable => log.completed(format(f, ex.getMessage), Some(ex))
+            }
+          }
         }
       }
     }

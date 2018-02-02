@@ -1,17 +1,24 @@
 package controllers
 
-import io.flow.healthcheck.v0.Client
-import io.flow.healthcheck.v0.models.Healthcheck
-import io.flow.test.utils.FlowPlaySpec
+import io.flow.common.v0.Client
+import io.flow.common.v0.models.Healthcheck
 
-class HealthchecksSpec extends FlowPlaySpec {
+import play.api.libs.ws._
+import play.api.test._
+
+class HealthchecksSpec extends PlaySpecification {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
-  lazy val client = new Client(wsClient, s"http://localhost:$port")
+  private val port = 9010
+  lazy val client = new Client(s"http://localhost:$port")
 
-  "GET /_internal_/healthcheck" in {
-    await(client.healthchecks.getHealthcheck()) must be (Healthcheck("healthy"))
+  "GET /_internal_/healthcheck" in new WithServer(port=port) {
+    await(
+      client.healthchecks.getHealthcheck()
+    ) must beEqualTo(
+      Healthcheck("healthy")
+    )
   }
 
 }

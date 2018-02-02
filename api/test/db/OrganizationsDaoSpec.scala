@@ -1,12 +1,19 @@
 package db
 
+import io.flow.postgresql.Authorization
+import io.flow.delta.v0.models._
+import io.flow.common.v0.models.Name
+import org.scalatest._
+import play.api.test._
+import play.api.test.Helpers._
+import org.scalatestplus.play._
 import java.util.UUID
 
-import io.flow.delta.v0.models._
-import io.flow.postgresql.Authorization
-import io.flow.test.utils.FlowPlaySpec
+class OrganizationsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
-class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  lazy val organizationsWriteDao = app.injector.instanceOf[OrganizationsWriteDao]
 
   "create" in {
     val form = createOrganizationForm()
@@ -51,12 +58,12 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
   }
 
   "creation users added as admin of org" in {
-    val user = createUserReference()
+    val user = createUser()
     val form = createOrganizationForm()
     val org = organizationsWriteDao.create(user, form).right.getOrElse {
       sys.error("Failed to create org")
     }
-    val membership = membershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, user.id).getOrElse {
+    val membership = MembershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, user.id).getOrElse {
       sys.error("Failed to create membership record")
     }
     membership.role must be(Role.Admin)
@@ -65,29 +72,29 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
   "delete" in {
     val org = createOrganization()
     organizationsWriteDao.delete(systemUser, org)
-    organizationsDao.findById(Authorization.All, org.id) must be(None)
+    OrganizationsDao.findById(Authorization.All, org.id) must be(None)
   }
 
   "findById" in {
     val organization = createOrganization()
-    organizationsDao.findById(Authorization.All, organization.id).map(_.id) must be(
+    OrganizationsDao.findById(Authorization.All, organization.id).map(_.id) must be(
       Some(organization.id)
     )
 
-    organizationsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
+    OrganizationsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findAll by ids" in {
     val organization1 = createOrganization()
     val organization2 = createOrganization()
 
-    organizationsDao.findAll(Authorization.All, ids = Some(Seq(organization1.id, organization2.id))).map(_.id).sorted must be(
+    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(organization1.id, organization2.id))).map(_.id).sorted must be(
       Seq(organization1.id, organization2.id).sorted
     )
 
-    organizationsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    organizationsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    organizationsDao.findAll(Authorization.All, ids = Some(Seq(organization1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(organization1.id))
+    OrganizationsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, ids = Some(Seq(organization1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(organization1.id))
   }
 
   "validate" must {
@@ -115,15 +122,15 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
   }
 
   "authorization for organizations" in {
-    val user = createUserReference()
+    val user = createUser()
     val org = createOrganization(user = user)
 
-    organizationsDao.findAll(Authorization.PublicOnly, id = Some(org.id)) must be(Nil)
-    organizationsDao.findAll(Authorization.All, id = Some(org.id)).map(_.id) must be(Seq(org.id))
-    organizationsDao.findAll(Authorization.Organization(org.id), id = Some(org.id)).map(_.id) must be(Seq(org.id))
-    organizationsDao.findAll(Authorization.Organization(createOrganization().id), id = Some(org.id)) must be(Nil)
-    organizationsDao.findAll(Authorization.User(user.id), id = Some(org.id)).map(_.id) must be(Seq(org.id))
-    organizationsDao.findAll(Authorization.User(createUser().id), id = Some(org.id)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.PublicOnly, id = Some(org.id)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.All, id = Some(org.id)).map(_.id) must be(Seq(org.id))
+    OrganizationsDao.findAll(Authorization.Organization(org.id), id = Some(org.id)).map(_.id) must be(Seq(org.id))
+    OrganizationsDao.findAll(Authorization.Organization(createOrganization().id), id = Some(org.id)) must be(Nil)
+    OrganizationsDao.findAll(Authorization.User(user.id), id = Some(org.id)).map(_.id) must be(Seq(org.id))
+    OrganizationsDao.findAll(Authorization.User(createUser().id), id = Some(org.id)) must be(Nil)
   }
 
 }

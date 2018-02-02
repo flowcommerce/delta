@@ -1,11 +1,10 @@
 package io.flow.delta.lib.config
 
+import io.flow.delta.config.v0.models.{Branch, Build, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType, InstanceType, ProjectStage}
 import java.io.File
+import org.specs2.mutable._
 
-import io.flow.delta.config.v0.models._
-import org.scalatestplus.play.PlaySpec
-
-class ParserSpec extends PlaySpec {
+class ParserSpec extends Specification {
 
   private[this] lazy val parser = new Parser()
   private[this] val ConfigSampleDir = new File("lib/src/test/resources/config")
@@ -27,9 +26,9 @@ class ParserSpec extends PlaySpec {
   }
 
   "Samples" in {
-    configProject(read("empty.txt")) must be(Defaults.Config)
+    configProject(read("empty.txt")) must beEqualTo(Defaults.Config)
 
-    configProject(read("location.txt")) must be(
+    configProject(read("location.txt")) must beEqualTo(
       Defaults.Config.copy(
         builds = Seq(
           Defaults.Build.copy(
@@ -40,7 +39,7 @@ class ParserSpec extends PlaySpec {
       )
     )
 
-    configProject(read("delta.txt")) must be(
+    configProject(read("delta.txt")) must beEqualTo(
       Defaults.Config.copy(
         builds = Seq(
           Defaults.Build.copy(
@@ -60,7 +59,7 @@ class ParserSpec extends PlaySpec {
       )
     )
 
-    configProject(read("complete.txt")) must be(
+    configProject(read("complete.txt")) must beEqualTo(
       Defaults.Config.copy(
         branches = Seq(Branch(name = "master"), Branch(name = "release")),
         stages = Seq(ProjectStage.SyncShas, ProjectStage.SyncTags),
@@ -90,7 +89,7 @@ class ParserSpec extends PlaySpec {
         case ConfigUndefinedType(other) => sys.error(s"Invalid project config[$other]")
       }
     }
-    true must be(true)
+    true must beTrue
   }
 
   "Empty file" in {
@@ -100,7 +99,7 @@ class ParserSpec extends PlaySpec {
 
   "Invalid file" in {
     parser.parse("!@#$lkasdu4d") match {
-      case ConfigError(errors) => errors.isEmpty must be(false)
+      case ConfigError(errors) => errors.isEmpty must beFalse
       case _ => sys.error("No error when parsing invalid yaml")
     }
   }
@@ -112,33 +111,33 @@ class ParserSpec extends PlaySpec {
 stages:
   enable:
     - tag
-    """).stages must be(Seq(ProjectStage.Tag))
+    """).stages must beEqualTo(Seq(ProjectStage.Tag))
 
     configProject("""
 stages:
   disable:
     - tag
-    """).stages must be(Seq(ProjectStage.SyncShas, ProjectStage.SyncTags))
+    """).stages must beEqualTo(Seq(ProjectStage.SyncShas, ProjectStage.SyncTags))
   }
 
   "Branches" in {
     configProject("""
 branches:
   - master
-    """) must be(Defaults.Config)
+    """) must beEqualTo(Defaults.Config)
 
     configProject("""
 branches:
   - master
   - release
-    """).branches.map(_.name) must be(Seq("master", "release"))
+    """).branches.map(_.name) must beEqualTo(Seq("master", "release"))
   }
 
   "Builds" in {
     configProject("""
 builds:
   - root
-    """) must be(Defaults.Config)
+    """) must beEqualTo(Defaults.Config)
 
     configProject("""
 builds:
@@ -146,8 +145,8 @@ builds:
   - www
     """).builds.toList match {
       case api :: www :: Nil => {
-        api must be(Defaults.Build.copy(name = "api"))
-        www must be(Defaults.Build.copy(name = "www"))
+        api must beEqualTo(Defaults.Build.copy(name = "api"))
+        www must beEqualTo(Defaults.Build.copy(name = "www"))
       }
 
       case _ => sys.error("Expected two branches")
@@ -172,7 +171,7 @@ builds:
         - api
     """).builds.toList match {
       case api :: www :: Nil => {
-        api must be(
+        api must beEqualTo(
           Defaults.Build.copy(
             name = "api",
             dockerfile = "api/Dockerfile",
@@ -182,7 +181,7 @@ builds:
             stages = Seq(BuildStage.SetDesiredState, BuildStage.SyncDockerImage, BuildStage.BuildDockerImage)
           )
         )
-        www must be(
+        www must beEqualTo(
           Defaults.Build.copy(
             name = "www",
             dockerfile = "www/Dockerfile",
@@ -203,7 +202,7 @@ builds:
       memory: 1000
     """).builds.toList match {
       case build :: Nil => {
-        build must be(
+        build must beEqualTo(
           Defaults.Build.copy(instanceType = InstanceType.T2Medium, memory = Some(1000))
         )
       }
@@ -218,7 +217,7 @@ builds:
       port.host: 6021
     """).builds.toList match {
       case build :: Nil => {
-        build must be(
+        build must beEqualTo(
           Defaults.Build.copy(portContainer = 9000, portHost = 6021)
         )
       }

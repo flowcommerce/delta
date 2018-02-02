@@ -1,47 +1,42 @@
 package io.flow.delta.actors.functions
 
-import javax.inject.Inject
-
-import db.{BuildDesiredStatesDao, ConfigsDao, TagsDao}
+import db.{BuildLastStatesDao, BuildDesiredStatesDao, BuildDesiredStatesWriteDao, ConfigsDao, TagsDao, UsersDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
 import io.flow.delta.config.v0.models.{BuildStage, ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.lib.StateFormatter
-import io.flow.delta.v0.models.{Build, StateForm, Version}
-import io.flow.play.util.Constants
+import io.flow.delta.v0.models.{Build, State, StateForm, Version}
 import io.flow.postgresql.{Authorization, OrderBy}
-import play.api.Application
-
 import scala.concurrent.Future
 
+/**
+  * For builds that have auto deploy turned on, we set the desired
+  * state to 100% of traffic on the latest tag.
+  */
 object SetDesiredState extends BuildSupervisorFunction {
+
+  val DefaultNumberInstances = 2
 
   override val stage = BuildStage.SetDesiredState
 
   override def run(
     build: Build
   ) (
-    implicit ec: scala.concurrent.ExecutionContext, app: Application
-  ): Future[SupervisorResult] = Future {
-    val setDesiredState = app.injector.instanceOf[SetDesiredState]
-    setDesiredState.run(build)
+    implicit ec: scala.concurrent.ExecutionContext
+  ): Future[SupervisorResult] = {
+    Future {
+      SetDesiredState(build).run
+    }
   }
 
 }
 
-/**
-  * For builds that have auto deploy turned on, we set the desired
-  * state to 100% of traffic on the latest tag.
-  */
-class SetDesiredState @Inject()(
-  buildDesiredStatesDao: BuildDesiredStatesDao,
-  configsDao: ConfigsDao,
-  tagsDao: TagsDao
-) {
+case class SetDesiredState(build: Build) extends Github {
 
-  val DefaultNumberInstances = 2
+  private[this] val buildDesiredStatesWriteDao = play.api.Play.current.injector.instanceOf[BuildDesiredStatesWriteDao]
+  private[this] val configsDao = play.api.Play.current.injector.instanceOf[ConfigsDao]
 
-  def run(build: Build): SupervisorResult = {
-    tagsDao.findAll(
+  def run(): SupervisorResult = {
+    TagsDao.findAll(
       Authorization.All,
       projectId = Some(build.project.id),
       orderBy = OrderBy("-tags.sort_key"),
@@ -52,9 +47,9 @@ class SetDesiredState @Inject()(
       }
 
       case Some(latestTag) => {
-        buildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
+        BuildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
           case None => {
-            setVersions(Seq(Version(latestTag.name, instances = numberInstances(build))), build)
+            setVersions(Seq(Version(latestTag.name, instances = numberInstances(build))))
           }
 
           case Some(state) => {
@@ -63,7 +58,7 @@ class SetDesiredState @Inject()(
             if (state.versions == targetVersions) {
               SupervisorResult.Ready("Desired versions remain: " + targetVersions.map(_.name).mkString(", "))
             } else {
-              setVersions(targetVersions, build)
+              setVersions(targetVersions)
             }
           }
         }
@@ -71,11 +66,11 @@ class SetDesiredState @Inject()(
     }
   }
 
-  def setVersions(versions: Seq[Version], build: Build): SupervisorResult = {
+  def setVersions(versions: Seq[Version]): SupervisorResult = {
     assert(!versions.isEmpty, "Must have at least one version")
 
-    buildDesiredStatesDao.upsert(
-      Constants.SystemUser,
+    buildDesiredStatesWriteDao.upsert(
+      UsersDao.systemUser,
       build,
       StateForm(
         versions = versions
@@ -91,16 +86,16 @@ class SetDesiredState @Inject()(
     */
   def numberInstances(build: Build): Long = {
     configsDao.findByProjectId(Authorization.All, build.project.id).map(_.config) match {
-      case None => DefaultNumberInstances
+      case None => SetDesiredState.DefaultNumberInstances
       case Some(config) => {
         config match {
           case cfg: ConfigProject => {
             cfg.builds.find(_.name == build.name) match {
-              case None => DefaultNumberInstances
+              case None => SetDesiredState.DefaultNumberInstances
               case Some(bc) => bc.initialNumberInstances
             }
           }
-          case ConfigError(_) | ConfigUndefinedType(_) => DefaultNumberInstances
+          case ConfigError(_) | ConfigUndefinedType(_) => SetDesiredState.DefaultNumberInstances
         }
       }
     }

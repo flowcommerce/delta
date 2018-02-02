@@ -1,12 +1,14 @@
 package db
 
-import anorm._
-import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.lib.Semver
-import io.flow.delta.v0.models.Tag
-import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.delta.v0.models.{OrganizationSummary, ProjectSummary, Tag}
+import io.flow.postgresql.{Authorization, Query, OrderBy}
+import io.flow.common.v0.models.UserReference
+import anorm._
 import play.api.db._
+import play.api.Play.current
+import play.api.libs.json._
 
 case class TagForm(
   projectId: String,
@@ -14,10 +16,7 @@ case class TagForm(
   hash: String
 )
 
-@javax.inject.Singleton
-class TagsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
-) {
+object TagsDao {
 
   private[this] val BaseQuery = Query(s"""
     select tags.id,
@@ -55,7 +54,7 @@ class TagsDao @javax.inject.Inject() (
     offset: Long = 0
   ): Seq[Tag] = {
 
-    db.withConnection { implicit c =>
+    DB.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "tags",
@@ -80,11 +79,7 @@ class TagsDao @javax.inject.Inject() (
 }
 
 case class TagsWriteDao @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
-  projectsDao: ProjectsDao,
-  tagsDao: TagsDao,
-  delete: Delete
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
  
   private[this] val InsertQuery = """
@@ -124,12 +119,12 @@ case class TagsWriteDao @javax.inject.Inject() (
       Nil
     }
 
-    val projectErrors = projectsDao.findById(Authorization.All, form.projectId) match {
+    val projectErrors = ProjectsDao.findById(Authorization.All, form.projectId) match {
       case None => Seq("Project not found")
       case Some(project) => Nil
     }
 
-    val existingErrors = tagsDao.findByProjectIdAndName(Authorization.All, form.projectId, form.name) match {
+    val existingErrors = TagsDao.findByProjectIdAndName(Authorization.All, form.projectId, form.name) match {
       case None => Nil
       case Some(found) => {
         existing.map(_.id) == Some(found.id) match {
@@ -152,7 +147,7 @@ case class TagsWriteDao @javax.inject.Inject() (
       name = tag,
       hash = hash
     )
-    tagsDao.findByProjectIdAndName(Authorization.All, projectId, tag) match {
+    TagsDao.findByProjectIdAndName(Authorization.All, projectId, tag) match {
       case None => {
         create(createdBy, form) match {
           case Left(errors) => sys.error(errors.mkString(", "))
@@ -176,7 +171,7 @@ case class TagsWriteDao @javax.inject.Inject() (
       case Nil => {
         val id = io.flow.play.util.IdGenerator("tag").randomId()
 
-        db.withConnection { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(InsertQuery).on(
             'id -> id,
             'project_id -> form.projectId,
@@ -190,7 +185,7 @@ case class TagsWriteDao @javax.inject.Inject() (
         mainActor ! MainActor.Messages.TagCreated(form.projectId, id, form.name.trim)
 
         Right(
-          tagsDao.findById(Authorization.All, id).getOrElse {
+          TagsDao.findById(Authorization.All, id).getOrElse {
             sys.error("Failed to create tag")
           }
         )
@@ -204,7 +199,7 @@ case class TagsWriteDao @javax.inject.Inject() (
   private[this] def update(createdBy: UserReference, tag: Tag, form: TagForm): Either[Seq[String], Tag] = {
     validate(createdBy, form, Some(tag)) match {
       case Nil => {
-        db.withConnection { implicit c =>
+        DB.withConnection { implicit c =>
           SQL(UpdateQuery).on(
             'id -> tag.id,
             'project_id -> form.projectId,
@@ -218,7 +213,7 @@ case class TagsWriteDao @javax.inject.Inject() (
         mainActor ! MainActor.Messages.TagUpdated(form.projectId, tag.id, form.name.trim)
 
         Right(
-          tagsDao.findById(Authorization.All, tag.id).getOrElse {
+          TagsDao.findById(Authorization.All, tag.id).getOrElse {
             sys.error("Failed to create tag")
           }
         )
@@ -230,7 +225,7 @@ case class TagsWriteDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, tag: Tag) {
-    delete.delete("tags", deletedBy.id, tag.id)
+    Delete.delete("tags", deletedBy.id, tag.id)
   }
 
 }

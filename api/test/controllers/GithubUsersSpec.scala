@@ -1,10 +1,18 @@
 package controllers
 
+import db.GithubUsersDao
 import io.flow.delta.api.lib.MockGithubData
+import io.flow.delta.v0.Client
 import io.flow.delta.v0.models.GithubAuthenticationForm
-import io.flow.github.v0.models.{OwnerType, User => GithubUser}
+import io.flow.play.util.Validation
+import io.flow.github.v0.models.OwnerType
+import io.flow.github.v0.models.{User => GithubUser}
 
-class GithubUsersSpec extends MockClient {
+import java.util.UUID
+import play.api.libs.ws._
+import play.api.test._
+
+class GithubUsersSpec extends PlaySpecification with MockClient {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -23,24 +31,23 @@ class GithubUsersSpec extends MockClient {
     )
   }
 
-  "POST /authentications/github with valid token" in {
+  "POST /authentications/github with valid token" in new WithServer(port=port) {
     val githubUser = createLocalGithubUser()
     val code = "test"
 
     MockGithubData.addUser(githubUser, code)
 
     val user = await(anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code)))
+    user.email must beEqualTo(githubUser.email)
 
-    user.email must be(githubUser.email)
-
-    githubUsersDao.findAll(userId = Some(user.id), limit = 1).headOption.map(_.user.id) must be(Some(user.id))
+    GithubUsersDao.findAll(userId = Some(user.id), limit = 1).headOption.map(_.user.id) must beEqualTo(Some(user.id))
 
     // Test idempotence
     val user2 = await(anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code)))
-    user2.email must be(githubUser.email)
+    user2.email must beEqualTo(githubUser.email)
   }
 
-  "POST /authentications/github accepts account w/out email" in {
+  "POST /authentications/github accepts account w/out email" in new WithServer(port=port) {
     val githubUser = createLocalGithubUser().copy(email = None)
     val code = "test"
 
@@ -48,8 +55,8 @@ class GithubUsersSpec extends MockClient {
     val user = await(
       anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code))
     )
-    user.email must be(None)
-    usersDao.findByGithubUserId(githubUser.id).map(_.id) must be(Some(user.id))
+    user.email should be(None)
+    db.UsersDao.findByGithubUserId(githubUser.id).map(_.id) must beEqualTo(Some(user.id))
   }
 
 }

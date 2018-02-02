@@ -1,14 +1,17 @@
 package io.flow.delta.aws
 
-import akka.actor.ActorSystem
 import com.amazonaws.services.ec2.AmazonEC2Client
+import com.amazonaws.services.ec2.model.TerminateInstancesRequest
+import io.flow.delta.v0.models.Version
 import com.amazonaws.services.ecs.AmazonECSClient
 import com.amazonaws.services.ecs.model._
-import io.flow.delta.v0.models.Version
-import org.joda.time.DateTime
-import play.api.Logger
 
-import scala.collection.JavaConverters._
+import collection.JavaConverters._
+import play.api.libs.concurrent.Akka
+import play.api.Logger
+import play.api.Play.current
+import org.joda.time.DateTime
+
 import scala.concurrent.Future
 
 object EC2ContainerService {
@@ -16,8 +19,9 @@ object EC2ContainerService {
   /**
     * Name creation helper functions
     **/
-  def getClusterName(projectId: String): String =
-     s"${projectId.replaceAll("_","-")}-cluster"
+  def getClusterName(projectId: String): String = {
+    return s"${projectId.replaceAll("_","-")}-cluster"
+  }
 
 }
 
@@ -26,11 +30,10 @@ object EC2ContainerService {
 case class EC2ContainerService @javax.inject.Inject() (
   credentials: Credentials,
   configuration: Configuration,
-  elb: ElasticLoadBalancer,
-  system: ActorSystem
+  elb: ElasticLoadBalancer
 ) {
 
-  private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
+  private[this] implicit val executionContext = Akka.system.dispatchers.lookup("ec2-context")
 
   private[this] lazy val ec2Client = new AmazonEC2Client(credentials.aws, configuration.aws)
 
@@ -192,13 +195,10 @@ case class EC2ContainerService @javax.inject.Inject() (
     */
   private[this] case class ElbHealthyInstances(projectId: String) {
 
-    @volatile
     private[this] var initialized = false
-
-    @volatile
     private[this] var instances: Seq[String] = Nil
 
-    def getInstances(): Seq[String] = {
+    def instances(): Seq[String] = {
       this.synchronized {
         if (!initialized) {
           instances = elb.getHealthyInstances(projectId)
@@ -209,7 +209,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     }
 
     def contains(name: String): Boolean = {
-      getInstances().contains(name)
+      instances().contains(name)
     }
 
   }

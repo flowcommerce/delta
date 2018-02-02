@@ -1,22 +1,12 @@
 package io.flow.delta.api.lib
 
-import java.io.{PrintWriter, StringWriter}
-import javax.inject.Inject
-
-import db.EventsDao
-import io.flow.common.v0.models.UserReference
+import db.{EventsDao, UsersDao}
 import io.flow.delta.v0.models.{EventType, Project}
-import io.flow.play.util.Constants
+import io.flow.common.v0.models.UserReference
+import java.io.{PrintWriter, StringWriter}
 import org.joda.time.DateTime
-
 import scala.concurrent.{ExecutionContext, Future}
-
-
-case class EventLog (
-  user: UserReference,
-  project: Project,
-  prefix: String
-)
+import scala.util.{Failure, Success, Try}
 
 object EventLog {
 
@@ -24,45 +14,48 @@ object EventLog {
     project: Project,
     prefix: String
   ): EventLog = {
-    EventLog(Constants.SystemUser, project, prefix)
+    EventLog(UsersDao.systemUser, project, prefix)
   }
 
 }
 
-class EventLogProcessor @Inject()(
-  eventsDao: EventsDao
+case class EventLog(
+  user: UserReference,
+  project: Project,
+  prefix: String
 ) {
-  def changed(message: String, log: EventLog) = {
-    process(EventType.Change, message, log = log)
+
+  def changed(message: String) = {
+    process(EventType.Change, message)
   }
 
-  def skipped(message: String, log: EventLog) = {
-    process(EventType.Info, s"skipped $message", log = log)
+  def skipped(message: String) = {
+    process(EventType.Info, s"skipped $message")
   }
 
-  def message(message: String, log: EventLog) = {
-    process(EventType.Info, message, log = log)
+  def message(message: String) = {
+    process(EventType.Info, message)
   }
 
   /**
     * Indicates a start event. Should be followed by a completed event
     * when the function is complete.
     */
-  def started(message: String, log: EventLog) = {
-    process(EventType.Info, s"started $message", log = log)
+  def started(message: String) = {
+    process(EventType.Info, s"started $message")
   }
 
   /**
     * Indicates completion. If there was an error, include the
     * exception. If no exception, we assume successful completion.
     */
-  def completed(message: String, error: Option[Throwable] = None, log: EventLog) = {
+  def completed(message: String, error: Option[Throwable] = None) = {
     error match {
       case None => {
-        process(EventType.Info, s"completed $message", log = log)
+        process(EventType.Info, s"completed $message")
       }
       case Some(ex) => {
-        process(EventType.Info, s"error $message", Some(ex), log = log)
+        process(EventType.Info, s"error $message", Some(ex))
       }
     }
   }
@@ -70,8 +63,8 @@ class EventLogProcessor @Inject()(
   /**
     * Logs an error
     */
-  def error(message: String, error: Option[Throwable] = None, log: EventLog) = {
-    process(EventType.Info, s"error $message", error, log = log)
+  def error(message: String, error: Option[Throwable] = None) = {
+    process(EventType.Info, s"error $message", error)
   }
 
   /**
@@ -81,8 +74,8 @@ class EventLogProcessor @Inject()(
     * functions should periodically checkpoint to track info in
     * the log.
     */
-  def checkpoint(message: String, log: EventLog) = {
-    process(EventType.Info, s"checkpoint $message", log = log)
+  def checkpoint(message: String) = {
+    process(EventType.Info, s"checkpoint $message")
   }
 
   /**
@@ -91,58 +84,56 @@ class EventLogProcessor @Inject()(
     */
   def runSync[T](
     message: String,
-    quiet: Boolean = false,
-    log: EventLog
+    quiet: Boolean = false
   ) (
     f: => T
   ) (
     implicit ec: ExecutionContext
   ): Future[T] = {
-    runAsync(message, quiet, log = log) {
+    runAsync(message, quiet) {
       Future { f }
     }
   }
 
   def runAsync[T](
     message: String,
-    quiet: Boolean = false,
-    log: EventLog
+    quiet: Boolean = false
   ) (
     f: => Future[T]
   ) (
     implicit ec: ExecutionContext
   ): Future[T] = {
     if (!quiet) {
-      started(message, log = log)
+      started(message)
     }
 
     f.map { result =>
       if (!quiet) {
-        completed(message + ": " + result, log = log)
+        completed(message + ": " + result)
       }
       result
     }.recover {
       case ex: Throwable => {
-        completed(message, Some(ex), log = log)
+        completed(message, Some(ex))
         throw ex
       }
     }
   }
 
-  private[this] def process(typ: EventType, message: String, ex: Option[Throwable] = None, log: EventLog) {
-    val formatted = s"${log.prefix}: $message"
+  private[this] def process(typ: EventType, message: String, ex: Option[Throwable] = None) {
+    val formatted = s"$prefix: $message"
     val ts = new DateTime()
 
     ex match {
       case None => {
-        println(s"[$ts] ${log.project.id} $typ $formatted")
-        eventsDao.create(log.user, log.project.id, typ, formatted, ex = None)
+        println(s"[$ts] ${project.id} $typ $formatted")
+        EventsDao.create(user, project.id, typ, formatted, ex = None)
       }
       case Some(error) =>
         val sw = new StringWriter
         error.printStackTrace(new PrintWriter(sw))
-        println(s"[$ts] ${log.project.id} error $formatted: ${error.getMessage}\n\n$sw")
-        eventsDao.create(log.user, log.project.id, EventType.Info, s"error $message", ex = Some(error))
+        println(s"[$ts] ${project.id} error $formatted: ${error.getMessage}\n\n$sw")
+        EventsDao.create(user, project.id, EventType.Info, s"error $message", ex = Some(error))
     }
   }
 

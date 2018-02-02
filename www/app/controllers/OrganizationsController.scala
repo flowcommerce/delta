@@ -3,22 +3,18 @@ package controllers
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.v0.models.{Docker, DockerProvider, OrganizationForm, Travis}
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.{PaginatedCollection, Pagination}
 
 import scala.concurrent.Future
 import play.api.i18n.MessagesApi
 import play.api.data._
 import play.api.data.Forms._
-import play.api.mvc.ControllerComponents
 
 class OrganizationsController @javax.inject.Inject() (
-  override val messagesApi: MessagesApi,
+  val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
+  override val deltaClientProvider: DeltaClientProvider
+) extends BaseController(tokenClient, deltaClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -101,8 +97,8 @@ class OrganizationsController @javax.inject.Inject() (
           }
           Redirect(url).flashing("success" -> "Organization created")
         }.recover {
-          case response: io.flow.delta.v0.errors.GenericErrorResponse => {
-            Ok(views.html.organizations.create(uiData(request), boundForm, response.genericError.messages))
+          case response: io.flow.delta.v0.errors.ErrorsResponse => {
+            Ok(views.html.organizations.create(uiData(request), boundForm, response.errors.map(_.message)))
           }
         }
       }
@@ -143,8 +139,8 @@ class OrganizationsController @javax.inject.Inject() (
           deltaClient(request).organizations.putById(organization.id, uiForm.organizationForm).map { updated =>
             Redirect(routes.OrganizationsController.show(updated.id)).flashing("success" -> "Organization updated")
           }.recover {
-            case response: io.flow.delta.v0.errors.GenericErrorResponse => {
-              Ok(views.html.organizations.edit(uiData(request), organization, boundForm, response.genericError.messages))
+            case response: io.flow.delta.v0.errors.ErrorsResponse => {
+              Ok(views.html.organizations.edit(uiData(request), organization, boundForm, response.errors.map(_.message)))
             }
           }
         }

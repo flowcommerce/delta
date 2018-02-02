@@ -2,18 +2,14 @@ package controllers
 
 import io.flow.delta.v0.models.EventType
 import io.flow.delta.www.lib.DeltaClientProvider
-import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.PaginatedCollection
 import play.api.i18n.MessagesApi
-import play.api.mvc.ControllerComponents
 
 class EventsController @javax.inject.Inject() (
-  override val messagesApi: MessagesApi,
+  val messagesApi: MessagesApi,
   override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
+  override val deltaClientProvider: DeltaClientProvider
+) extends BaseController(tokenClient, deltaClientProvider) {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

@@ -4,19 +4,17 @@ import db.{TagsDao, TagsWriteDao}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.Tag
 import io.flow.delta.v0.models.json._
-import io.flow.play.controllers.FlowControllerComponents
+import io.flow.play.util.Config
 import io.flow.postgresql.Authorization
-import play.api.libs.json._
 import play.api.mvc._
+import play.api.libs.json._
 
 @javax.inject.Singleton
 class Tags @javax.inject.Inject() (
-  helpers: Helpers,
-  tagsDao: TagsDao,
-  tagsWriteDao: TagsWriteDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends BaseIdentifiedRestController {
+  override val config: Config,
+  override val tokenClient: io.flow.token.v0.interfaces.Client,
+  tagsWriteDao: TagsWriteDao  
+) extends Controller with BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -26,10 +24,10 @@ class Tags @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    helpers.withOrderBy(sort) { orderBy =>
+    withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          tagsDao.findAll(
+          TagsDao.findAll(
             authorization(request),
             ids = optionals(id),
             projectId = project,
@@ -59,7 +57,7 @@ class Tags @javax.inject.Inject() (
   def withTag(user: UserReference, id: String)(
     f: Tag => Result
   ): Result = {
-    tagsDao.findById(Authorization.User(user.id), id) match {
+    TagsDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }

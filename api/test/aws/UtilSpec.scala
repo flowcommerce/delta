@@ -1,13 +1,13 @@
 package io.flow.delta.aws
 
-import org.scalatestplus.play.PlaySpec
+import org.specs2.mutable._
 
-class UtilSpec extends PlaySpec {
+class UtilSpec extends Specification {
 
   "parseImage" in {
-    Util.parseImage("flow/user:0.0.1") must be(Some(Util.DockerImage("flow", "user", "0.0.1")))
-    Util.parseImage("flow-commerce/delta-api:0.0.1") must be(Some(Util.DockerImage("flow-commerce", "delta-api", "0.0.1")))
-    Util.parseImage("flow") must be(None)
+    Util.parseImage("flow/user:0.0.1") must beEqualTo(Some(Util.DockerImage("flow", "user", "0.0.1")))
+    Util.parseImage("flow-commerce/delta-api:0.0.1") must beEqualTo(Some(Util.DockerImage("flow-commerce", "delta-api", "0.0.1")))
+    Util.parseImage("flow") must beEqualTo(None)
 
   }
 

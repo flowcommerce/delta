@@ -1,22 +1,18 @@
 package io.flow.delta.actors.functions
 
-import java.util.concurrent.TimeoutException
-import javax.inject.Inject
-
-import db._
-import io.flow.delta.actors.{BuildEventLog, DataBuild, DataProject}
-import io.flow.delta.api.lib.{BuildLockUtil, EventLogProcessor}
+import db.EventsDao
+import io.flow.delta.actors.BuildEventLog
+import io.flow.delta.api.lib.BuildLockUtil
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
-import io.flow.delta.v0.models.{Build, Organization, Project, Visibility, EventType => DeltaEventType}
+import io.flow.delta.v0.models.{Organization, Project, Build, EventType => DeltaEventType, Visibility}
 import io.flow.play.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
-import play.api.libs.ws.WSClient
-
-import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Await
 import scala.concurrent.duration._
+import java.util.concurrent.TimeoutException
 
 case class TravisCiBuild(
     version: String,
@@ -24,8 +20,11 @@ case class TravisCiBuild(
     project: Project,
     build: Build,
     buildConfig: BuildConfig,
-    wSClient: WSClient
-) {
+    config: Config
+) extends BuildEventLog {
+
+  private[this] val client = createClient()
+
   def withProject[T](f: Project => T): Option[T] = {
     Option(f(project))
   }
@@ -33,61 +32,47 @@ case class TravisCiBuild(
   def withBuild[T](f: Build => T): Option[T] = {
     Option(f(build))
   }
-}
 
-class TravisCiDockerImageBuilder @Inject()(
-  override val buildsDao: BuildsDao,
-  override val configsDao: ConfigsDao,
-  override val projectsDao: ProjectsDao,
-  override val organizationsDao: OrganizationsDao,
-  buildLockUtil: BuildLockUtil,
-  config: Config,
-  eventsDao: EventsDao,
-  eventLogProcessor: EventLogProcessor,
-  wSClient: WSClient
-) extends DataBuild with DataProject with BuildEventLog {
+  def buildDockerImage() {
+    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
-  def buildDockerImage(travisCiBuild: TravisCiBuild) {
-    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
-
-    buildLockUtil.withLock(travisCiBuild.build.id) ({
+    BuildLockUtil().withLock(build.id) ({
 
       try {
-        val client = createClient(travisCiBuild)
 
         val response = client.requests.get(
-            repositorySlug = travisRepositorySlug(travisCiBuild),
+            repositorySlug = travisRepositorySlug(),
             limit = Some(20)
         )
         val requestGetResponse = Await.result(response, 5.seconds)
 
         val requests = requestGetResponse.requests
           .filter(_.eventType == EventType.Api)
-          .filter(_.branchName.name.getOrElse("") == travisCiBuild.version)
+          .filter(_.branchName.name.getOrElse("") == version)
           .filter(_.commit.message.getOrElse("").contains(dockerImageName))
 
         requests match {
           case Nil => {
             // No matching builds from Travis. Check the Event log to see
             // if we tried to submit a build, otherwise submit a new build.
-            eventsDao.findAll(
-              projectId = Some(travisCiBuild.project.id),
+            EventsDao.findAll(
+              projectId = Some(project.id),
               `type` = Some(DeltaEventType.Change),
-              summaryKeywords = Some(travisChangedMessage(dockerImageName, travisCiBuild.version)),
+              summaryKeywords = Some(travisChangedMessage(dockerImageName, version)),
               limit = 1
             ).headOption match {
               case None => {
-                postBuildRequest(travisCiBuild, client)
+                postBuildRequest()
               }
               case Some(_) => {
-                eventLogProcessor.checkpoint(s"Waiting for triggered build [${dockerImageName}:${travisCiBuild.version}]", log = log)
+                log.checkpoint(s"Waiting for triggered build [${dockerImageName}:${version}]")
               }
             }
           }
           case requests => {
             requests.foreach { request =>
               request.builds.foreach { build =>
-                eventLogProcessor.checkpoint(s"Travis CI build [${dockerImageName}:${travisCiBuild.version}], number: ${build.number}, state: ${build.state}", log = log)
+                log.checkpoint(s"Travis CI build [${dockerImageName}:${version}], number: ${build.number}, state: ${build.state}")
               }
             }
           }
@@ -95,56 +80,56 @@ class TravisCiDockerImageBuilder @Inject()(
 
       } catch {
         case err: TimeoutException => {
-          eventLogProcessor.error(s"Timeout expired fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]", log = log)
+          log.error(s"Timeout expired fetching Travis CI requests [${dockerImageName}:${version}]")
         }
         case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
-          eventLogProcessor.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${travisCiBuild.version}]", log = log)
+          log.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${version}]")
         }
         case err: Throwable => {
           err.printStackTrace(System.err)
-          eventLogProcessor.error(s"Error fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]: $err", log = log)
+          log.error(s"Error fetching Travis CI requests [${dockerImageName}:${version}]: $err")
         }
       }
     })
   }
 
-  private def postBuildRequest(travisCiBuild: TravisCiBuild, client: Client) {
-    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
+  private def postBuildRequest() {
+    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
     try {
 
       val response = client.requests.post(
-        repositorySlug = travisRepositorySlug(travisCiBuild),
-        requestPostForm = createRequestPostForm(travisCiBuild)
+        repositorySlug = travisRepositorySlug(),
+        requestPostForm = createRequestPostForm()
       )
       Await.result(response, 5.seconds)
-      eventLogProcessor.changed(travisChangedMessage(dockerImageName, travisCiBuild.version), log = log)
+      log.changed(travisChangedMessage(dockerImageName, version))
 
     } catch {
       case err: TimeoutException => {
-        eventLogProcessor.error(s"Timeout expired triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]", log = log)
+        log.error(s"Timeout expired triggering Travis CI build [${dockerImageName}:${version}]")
       }
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
           case _ => {
-            eventLogProcessor.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${travisCiBuild.version}]", log = log)
+            log.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${version}]")
           }
         }
       }
       case err: Throwable => {
         err.printStackTrace(System.err)
-        eventLogProcessor.error(s"Error triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]: $err", log = log)
+        log.error(s"Error triggering Travis CI build [${dockerImageName}:${version}]: $err")
       }
     }
   }
 
-  private def createRequestPostForm(travisCiBuild: TravisCiBuild): RequestPostForm = {
-    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
+  private def createRequestPostForm(): RequestPostForm = {
+    val dockerImageName = BuildNames.dockerImageName(org.docker, build)
 
     RequestPostForm(
       request = RequestPostFormData(
-        branch = travisCiBuild.version,
-        message = Option(travisCommitMessage(dockerImageName, travisCiBuild.version)),
+        branch = version,
+        message = Option(travisCommitMessage(dockerImageName, version)),
         config = RequestConfigData(
           mergeMode = Option(MergeMode.Merge),
           branches = Option(RequestConfigBranchesData(
@@ -165,7 +150,7 @@ class TravisCiDockerImageBuilder @Inject()(
           script = Option(Seq(
             "docker --version",
             "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
-            s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} -f ${travisCiBuild.buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
+            s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} -f ${buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
             "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
             s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
           )),
@@ -180,8 +165,8 @@ class TravisCiDockerImageBuilder @Inject()(
     )
   }
 
-  private def createRequestHeaders(travisCiBuild: TravisCiBuild): Seq[(String, String)] = {
-    val token = if (travisCiBuild.project.visibility == Visibility.Public) {
+  private def createRequestHeaders(): Seq[(String, String)] = {
+    val token = if (project.visibility == Visibility.Public) {
       config.requiredString("travis.delta.auth.token.public")
     } else {
       config.requiredString("travis.delta.auth.token.private")
@@ -193,19 +178,19 @@ class TravisCiDockerImageBuilder @Inject()(
     )
   }
 
-  private def createClient(travisCiBuild: TravisCiBuild): Client = {
+  private def createClient(): Client = {
     // Travis separates public and private projects into separate domains
-    val baseUrl = if (travisCiBuild.project.visibility == Visibility.Public) {
+    val baseUrl = if (project.visibility == Visibility.Public) {
       "https://api.travis-ci.org"
     } else {
       "https://api.travis-ci.com"
     }
 
-    new Client(wSClient, baseUrl, None, createRequestHeaders(travisCiBuild))
+    new Client(baseUrl, None, createRequestHeaders())
   }
 
-  private def travisRepositorySlug(travisCiBuild: TravisCiBuild): String = {
-    travisCiBuild.org.travis.organization + "/" + travisCiBuild.project.id
+  private def travisRepositorySlug(): String = {
+    org.travis.organization + "/" + project.id
   }
 
   private def travisChangedMessage(dockerImageName: String, version: String): String = {

@@ -1,17 +1,17 @@
 package controllers
 
-import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.delta.www.lib.{DeltaClientProvider, UiData}
-import io.flow.play.controllers.{FlowController, FlowControllerComponents}
+import io.flow.delta.v0.models.GithubAuthenticationForm
+import play.api._
 import play.api.i18n._
-import play.api.mvc.ControllerComponents
+import play.api.mvc._
 
 class LoginController @javax.inject.Inject() (
-  override val messagesApi: MessagesApi,
-  val provider: DeltaClientProvider,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
-) extends FlowController with I18nSupport {
+  val messagesApi: MessagesApi,
+  val provider: DeltaClientProvider
+) extends Controller
+    with I18nSupport
+{
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -40,8 +40,8 @@ class LoginController @javax.inject.Inject() (
       }
       Redirect(url).withSession { "user_id" -> user.id.toString }
     }.recover {
-      case response: io.flow.delta.v0.errors.GenericErrorResponse => {
-        Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl, response.genericError.messages))
+      case response: io.flow.delta.v0.errors.ErrorsResponse => {
+        Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl, response.errors.map(_.message)))
       }
     }
   }

@@ -1,11 +1,17 @@
 package db
 
+import io.flow.postgresql.Authorization
+import org.scalatest._
+import play.api.test._
+import play.api.test.Helpers._
+import org.scalatestplus.play._
 import java.util.UUID
 
-import io.flow.postgresql.Authorization
-import io.flow.test.utils.FlowPlaySpec
+class TagsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
 
-class TagsDaoSpec extends FlowPlaySpec with Helpers {
+  import scala.concurrent.ExecutionContext.Implicits.global
+
+  lazy val tagsWriteDao = app.injector.instanceOf[TagsWriteDao]
 
   "create" in {
     val project = createProject()
@@ -41,27 +47,27 @@ class TagsDaoSpec extends FlowPlaySpec with Helpers {
   "delete" in {
     val tag = createTag()
     tagsWriteDao.delete(systemUser, tag)
-    tagsDao.findById(Authorization.All, tag.id) must be(None)
+    TagsDao.findById(Authorization.All, tag.id) must be(None)
   }
 
   "findById" in {
     val tag = createTag()
-    tagsDao.findById(Authorization.All, tag.id).map(_.id) must be(
+    TagsDao.findById(Authorization.All, tag.id).map(_.id) must be(
       Some(tag.id)
     )
 
-    tagsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
+    TagsDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
   }
 
   "findLatestByProjectId" in {
     val project = createProject()
-    tagsDao.findLatestByProjectId(Authorization.All, project.id) must be(None)
+    TagsDao.findLatestByProjectId(Authorization.All, project.id) must be(None)
 
     val tag1 = createTag(createTagForm(project).copy(name = "0.0.1"))
-    tagsDao.findLatestByProjectId(Authorization.All, project.id).map(_.id) must be(Some(tag1.id))
+    TagsDao.findLatestByProjectId(Authorization.All, project.id).map(_.id) must be(Some(tag1.id))
 
     val tag2 = createTag(createTagForm(project).copy(name = "0.0.2"))
-    tagsDao.findLatestByProjectId(Authorization.All, project.id).map(_.id) must be(Some(tag2.id))
+    TagsDao.findLatestByProjectId(Authorization.All, project.id).map(_.id) must be(Some(tag2.id))
   }
   
   "findByProjectIdAndName" in {
@@ -73,22 +79,22 @@ class TagsDaoSpec extends FlowPlaySpec with Helpers {
     val form2 = createTagForm(project).copy(name = "0.0.3")
     val tag2 = rightOrErrors(tagsWriteDao.create(systemUser, form2))
 
-    tagsDao.findByProjectIdAndName(Authorization.All, project.id, "0.0.2").map(_.id) must be(Some(tag1.id))
-    tagsDao.findByProjectIdAndName(Authorization.All, project.id, "0.0.3").map(_.id) must be(Some(tag2.id))
-    tagsDao.findByProjectIdAndName(Authorization.All, project.id, "other") must be(None)
+    TagsDao.findByProjectIdAndName(Authorization.All, project.id, "0.0.2").map(_.id) must be(Some(tag1.id))
+    TagsDao.findByProjectIdAndName(Authorization.All, project.id, "0.0.3").map(_.id) must be(Some(tag2.id))
+    TagsDao.findByProjectIdAndName(Authorization.All, project.id, "other") must be(None)
   }
 
   "findAll by ids" in {
     val tag1 = createTag()
     val tag2 = createTag()
 
-    tagsDao.findAll(Authorization.All, ids = Some(Seq(tag1.id, tag2.id))).map(_.id).sorted must be(
+    TagsDao.findAll(Authorization.All, ids = Some(Seq(tag1.id, tag2.id))).map(_.id).sorted must be(
       Seq(tag1.id, tag2.id).sorted
     )
 
-    tagsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    tagsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    tagsDao.findAll(Authorization.All, ids = Some(Seq(tag1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(tag1.id))
+    TagsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    TagsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+    TagsDao.findAll(Authorization.All, ids = Some(Seq(tag1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(tag1.id))
   }
 
   "findAll by projectId" in {
@@ -98,15 +104,15 @@ class TagsDaoSpec extends FlowPlaySpec with Helpers {
     val tag1 = createTag(createTagForm(project1))
     val tag2 = createTag(createTagForm(project2))
 
-    tagsDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.id).sorted must be(
+    TagsDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.id).sorted must be(
       Seq(tag1.id)
     )
 
-    tagsDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.id).sorted must be(
+    TagsDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.id).sorted must be(
       Seq(tag2.id)
     )
 
-    tagsDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
+    TagsDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
   }
 
   "validate" must {
@@ -151,17 +157,17 @@ class TagsDaoSpec extends FlowPlaySpec with Helpers {
   "authorization for tags" in {
     val org = createOrganization()
     val project = createProject(org)
-    val user = createUserReference()
+    val user = createUser()
     createMembership(createMembershipForm(org = org, user = user))
 
     val tag = createTag(createTagForm(project), user = user)
 
-    tagsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(tag.id))) must be(Nil)
-    tagsDao.findAll(Authorization.All, ids = Some(Seq(tag.id))).map(_.id) must be(Seq(tag.id))
-    tagsDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(tag.id))).map(_.id) must be(Seq(tag.id))
-    tagsDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(tag.id))) must be(Nil)
-    tagsDao.findAll(Authorization.User(user.id), ids = Some(Seq(tag.id))).map(_.id) must be(Seq(tag.id))
-    tagsDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(tag.id))) must be(Nil)
+    TagsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(tag.id))) must be(Nil)
+    TagsDao.findAll(Authorization.All, ids = Some(Seq(tag.id))).map(_.id) must be(Seq(tag.id))
+    TagsDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(tag.id))).map(_.id) must be(Seq(tag.id))
+    TagsDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(tag.id))) must be(Nil)
+    TagsDao.findAll(Authorization.User(user.id), ids = Some(Seq(tag.id))).map(_.id) must be(Seq(tag.id))
+    TagsDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(tag.id))) must be(Nil)
   }
 
 }

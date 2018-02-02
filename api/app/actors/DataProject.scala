@@ -3,6 +3,7 @@ package io.flow.delta.actors
 import db.{ConfigsDao, OrganizationsDao, ProjectsDao}
 import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
+import io.flow.delta.lib.config.Defaults
 import io.flow.delta.v0.models.{Organization, Project}
 import io.flow.postgresql.Authorization
 import play.api.Logger
@@ -10,8 +11,6 @@ import play.api.Logger
 trait DataProject {
 
   def configsDao: ConfigsDao
-  def organizationsDao: OrganizationsDao
-  def projectsDao: ProjectsDao
 
   private[this] var dataProject: Option[Project] = None
 
@@ -20,7 +19,7 @@ trait DataProject {
     * dataProject var to that project
     */
   def setProjectId(id: String) {
-    dataProject = projectsDao.findById(Authorization.All, id)
+    dataProject = ProjectsDao.findById(Authorization.All, id)
     if (dataProject.isEmpty) {
       Logger.warn(s"Could not find project with id[$id]")
     }
@@ -40,7 +39,7 @@ trait DataProject {
     */
   def withOrganization[T](f: Organization => T): Option[T] = {
     dataProject.flatMap { project =>
-      organizationsDao.findById(Authorization.All, project.organization.id).map { org =>
+      OrganizationsDao.findById(Authorization.All, project.organization.id).map { org =>
         f(org)
       }
     }

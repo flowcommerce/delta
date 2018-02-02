@@ -1,21 +1,18 @@
 package io.flow.delta.api.lib
 
-import javax.inject.Inject
-
-import db._
+import db.{GithubUsersDao, InternalTokenForm, TokensDao, UsersDao, UsersWriteDao}
+import io.flow.delta.v0.models.{GithubUserForm, UserForm, Visibility}
 import io.flow.common.v0.models.{Name, User, UserReference}
-import io.flow.delta.v0.models.{GithubUserForm, UserForm}
-import io.flow.github.oauth.v0.models.AccessTokenForm
-import io.flow.github.oauth.v0.{Client => GithubOauthClient}
-import io.flow.github.v0.errors.UnitResponse
-import io.flow.github.v0.models.{Contents, Encoding, Repository => GithubRepository, User => GithubUser}
-import io.flow.github.v0.{Client => GithubClient}
 import io.flow.play.util.{Config, IdGenerator}
+import io.flow.github.oauth.v0.{Client => GithubOauthClient}
+import io.flow.github.oauth.v0.models.AccessTokenForm
+import io.flow.github.v0.{Client => GithubClient}
+import io.flow.github.v0.errors.UnitResponse
+import io.flow.github.v0.models.{Repository => GithubRepository, User => GithubUser, Contents, Encoding}
 import org.apache.commons.codec.binary.Base64
-import play.api.Logger
-import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
+import play.api.Logger
 
 case class GithubUserData(
   githubId: Long,
@@ -26,19 +23,14 @@ case class GithubUserData(
   avatarUrl: Option[String]
 )
 
-class GitHubHelper @javax.inject.Inject() (
-  tokensDao: TokensDao,
-  usersDao: UsersDao,
-  wsClient: WSClient
-) {
-
+object GithubHelper {
 
   /**
     * Looks up this user's oauth token, and if found, returns an instance of the github client.
     */
   def apiClientFromUser(userId: String): Option[GithubClient] = {
-    usersDao.findById(userId).flatMap { u =>
-      tokensDao.getCleartextGithubOauthTokenByUserId(u.id)
+    UsersDao.findById(userId).flatMap { u =>
+      TokensDao.getCleartextGithubOauthTokenByUserId(u.id)
     } match {
       case None => {
         Logger.warn(s"No oauth token for user[${userId}]")
@@ -52,7 +44,6 @@ class GitHubHelper @javax.inject.Inject() (
 
   def apiClient(oauthToken: String): GithubClient = {
     new GithubClient(
-      ws = wsClient,
       baseUrl = "https://api.github.com",
       defaultHeaders = Seq(
         ("Authorization" -> s"token $oauthToken")
@@ -83,10 +74,65 @@ trait Github {
     * Given an auth validation code, pings the github UI to access the
     * user data, upserts that user with the delta database, and
     * returns the user (or a list of errors).
-    *
+    * 
     * @param code The oauth authorization code from github
     */
-  def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]]
+  def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
+    getGithubUserFromCode(code).map {
+      case Left(errors) => Left(errors)
+      case Right(githubUserWithToken) => {
+        val userResult: Either[Seq[String], User] = UsersDao.findByGithubUserId(githubUserWithToken.githubId) match {
+          case Some(user) => {
+            Right(user)
+          }
+          case None => {
+            githubUserWithToken.emails.headOption flatMap { email =>
+              UsersDao.findByEmail(email)
+            } match {
+              case Some(user) => {
+                Right(user)
+              }
+              case None => {
+                play.api.Play.current.injector.instanceOf[UsersWriteDao].create(
+                  createdBy = None,
+                  form = UserForm(
+                    email = githubUserWithToken.emails.headOption,
+                    name = githubUserWithToken.name.map(GithubHelper.parseName(_))
+                  )
+                )
+              }
+            }
+          }
+        }
+
+        userResult match {
+          case Left(errors) => {
+            Left(errors)
+          }
+          case Right(user) => {
+            GithubUsersDao.upsertById(
+              createdBy = None,
+              form = GithubUserForm(
+                userId = user.id,
+                githubUserId = githubUserWithToken.githubId,
+                login = githubUserWithToken.login
+              )
+            )
+
+            TokensDao.setLatestByTag(
+              createdBy = UserReference(id = user.id),
+              form = InternalTokenForm.GithubOauth(
+                userId = user.id,
+                token = githubUserWithToken.token
+              )
+            )
+
+            Right(user)
+          }
+        }
+      }
+    }
+  }
 
   /**
     * Fetches github user from an oauth code
@@ -106,7 +152,7 @@ trait Github {
   ) (
     implicit ec: ExecutionContext
   ): Future[Option[String]]
-
+  
   /**
     * Fetches the specified file, if it exists, from this repo
     */
@@ -115,7 +161,7 @@ trait Github {
   ) (
     implicit ec: ExecutionContext
   ) = file(user, owner, repo, DotDeltaPath)
-
+  
   /**
     * Recursively calls the github API until we either:
     *  - consume all records
@@ -149,7 +195,7 @@ trait Github {
       }
     }
   }
-
+  
   /**
     * For this user, returns the oauth token if available
     */
@@ -159,82 +205,18 @@ trait Github {
 
 @javax.inject.Singleton
 class DefaultGithub @javax.inject.Inject() (
-  config: Config,
-  gitHubHelper: GitHubHelper,
-  githubUsersDao: GithubUsersDao,
-  tokensDao: TokensDao,
-  usersDao: UsersDao,
-  usersWriteDao: UsersWriteDao,
-  wSClient: WSClient
+  config: Config
 ) extends Github {
 
   private[this] lazy val clientId = config.requiredString("github.delta.client.id")
   private[this] lazy val clientSecret = config.requiredString("github.delta.client.secret")
 
   private[this] lazy val oauthClient = new GithubOauthClient(
-    wSClient,
     baseUrl = "https://github.com",
     defaultHeaders = Seq(
       ("Accept" -> "application/json")
     )
   )
-
-  override def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
-    getGithubUserFromCode(code).map {
-      case Left(errors) => Left(errors)
-      case Right(githubUserWithToken) => {
-        val userResult: Either[Seq[String], User] = usersDao.findByGithubUserId(githubUserWithToken.githubId) match {
-          case Some(user) => {
-            Right(user)
-          }
-          case None => {
-            githubUserWithToken.emails.headOption flatMap { email =>
-              usersDao.findByEmail(email)
-            } match {
-              case Some(user) => {
-                Right(user)
-              }
-              case None => {
-                usersWriteDao.create(
-                  createdBy = None,
-                  form = UserForm(
-                    email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(gitHubHelper.parseName(_))
-                  )
-                )
-              }
-            }
-          }
-        }
-
-        userResult match {
-          case Left(errors) => {
-            Left(errors)
-          }
-          case Right(user) => {
-            githubUsersDao.upsertById(
-              createdBy = None,
-              form = GithubUserForm(
-                userId = user.id,
-                githubUserId = githubUserWithToken.githubId,
-                login = githubUserWithToken.login
-              )
-            )
-
-            tokensDao.setLatestByTag(
-              createdBy = UserReference(id = user.id),
-              form = InternalTokenForm.GithubOauth(
-                userId = user.id,
-                token = githubUserWithToken.token
-              )
-            )
-
-            Right(user)
-          }
-        }
-      }
-    }
-  }
 
   override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserData]] = {
     oauthClient.accessTokens.postAccessToken(
@@ -244,7 +226,7 @@ class DefaultGithub @javax.inject.Inject() (
         code = code
       )
     ).flatMap { response =>
-      val client = gitHubHelper.apiClient(response.accessToken)
+      val client = GithubHelper.apiClient(response.accessToken)
       for {
         githubUser <- client.users.getUser()
         emails <- client.userEmails.get()
@@ -270,7 +252,7 @@ class DefaultGithub @javax.inject.Inject() (
     oauthToken(user) match {
       case None => Future { Nil }
       case Some(token) => {
-        gitHubHelper.apiClient(token).repositories.getUserAndRepos(page)
+        GithubHelper.apiClient(token).repositories.getUserAndRepos(page)
       }
     }
   }
@@ -283,7 +265,7 @@ class DefaultGithub @javax.inject.Inject() (
     oauthToken(user) match {
       case None => Future { None }
       case Some(token) => {
-        gitHubHelper.apiClient(token).contents.getContentsByPath(
+        GithubHelper.apiClient(token).contents.getContentsByPath(
           owner = owner,
           repo = repo,
           path = path
@@ -314,77 +296,14 @@ class DefaultGithub @javax.inject.Inject() (
       }
     }
   }
-
+  
   override def oauthToken(user: UserReference): Option[String] = {
-    tokensDao.getCleartextGithubOauthTokenByUserId(user.id)
+    TokensDao.getCleartextGithubOauthTokenByUserId(user.id)
   }
 
 }
 
-class MockGithub @Inject()(
-  gitHubHelper: GitHubHelper,
-  githubUsersDao: GithubUsersDao,
-  tokensDao: TokensDao,
-  usersDao: UsersDao,
-  usersWriteDao: UsersWriteDao
-) extends Github {
-
-  override def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
-    getGithubUserFromCode(code).map {
-      case Left(errors) => Left(errors)
-      case Right(githubUserWithToken) => {
-        val userResult: Either[Seq[String], User] = usersDao.findByGithubUserId(githubUserWithToken.githubId) match {
-          case Some(user) => {
-            Right(user)
-          }
-          case None => {
-            githubUserWithToken.emails.headOption flatMap { email =>
-              usersDao.findByEmail(email)
-            } match {
-              case Some(user) => {
-                Right(user)
-              }
-              case None => {
-                usersWriteDao.create(
-                  createdBy = None,
-                  form = UserForm(
-                    email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(gitHubHelper.parseName(_))
-                  )
-                )
-              }
-            }
-          }
-        }
-
-        userResult match {
-          case Left(errors) => {
-            Left(errors)
-          }
-          case Right(user) => {
-            githubUsersDao.upsertById(
-              createdBy = None,
-              form = GithubUserForm(
-                userId = user.id,
-                githubUserId = githubUserWithToken.githubId,
-                login = githubUserWithToken.login
-              )
-            )
-
-            tokensDao.setLatestByTag(
-              createdBy = UserReference(id = user.id),
-              form = InternalTokenForm.GithubOauth(
-                userId = user.id,
-                token = githubUserWithToken.token
-              )
-            )
-
-            Right(user)
-          }
-        }
-      }
-    }
-  }
+class MockGithub() extends Github {
 
   override def getGithubUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], GithubUserData]] = {
     Future {
@@ -416,6 +335,7 @@ class MockGithub @Inject()(
 }
 
 object MockGithubData {
+
   private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUserData]()
   private[this] var userTokens = scala.collection.mutable.Map[String, String]()
   private[this] var repositories = scala.collection.mutable.Map[String, GithubRepository]()

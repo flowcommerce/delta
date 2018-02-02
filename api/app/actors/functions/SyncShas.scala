@@ -1,16 +1,11 @@
 package io.flow.delta.actors.functions
 
-import javax.inject.Inject
-
-import db.{ShasDao, ShasWriteDao}
 import io.flow.delta.actors.{ProjectSupervisorFunction, SupervisorResult}
 import io.flow.delta.api.lib.GithubUtil
 import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
 import io.flow.delta.v0.models.Project
-import io.flow.play.util.Constants
 import io.flow.postgresql.Authorization
-import play.api.Application
-
+import db.{ShasDao, ShasWriteDao, UsersDao}
 import scala.concurrent.Future
 
 object SyncShas extends ProjectSupervisorFunction {
@@ -21,24 +16,28 @@ object SyncShas extends ProjectSupervisorFunction {
     project: Project,
     config: ConfigProject
   ) (
-    implicit ec: scala.concurrent.ExecutionContext, app: Application
+    implicit ec: scala.concurrent.ExecutionContext
   ): Future[SupervisorResult] = {
-    val syncShas = app.injector.instanceOf[SyncShas]
     Future.sequence {
       config.branches.map { branch =>
-        syncShas.run(project, branch.name)
+        SyncShas(project, branch.name).run
       }
-    }.map(SupervisorResult.merge)
+    }.map {
+      SupervisorResult.merge(_)
+    }
   }
+
 }
 
-class SyncShas @Inject()(
-  github: Github,
-  shasDao: ShasDao,
-  shasWriteDao: ShasWriteDao,
-) {
+/**
+  * Look up the sha for the master branch from github, and record it
+  * in the shas table.
+  */
+case class SyncShas(project: Project, branchName: String) extends Github {
 
-  def run(project: Project, branchName: String)(
+  private[this] lazy val shasWriteDao = play.api.Play.current.injector.instanceOf[ShasWriteDao]
+
+  def run(
     implicit ec: scala.concurrent.ExecutionContext
   ): Future[SupervisorResult] = {
     GithubUtil.parseUri(project.uri) match {
@@ -49,8 +48,8 @@ class SyncShas @Inject()(
       }
 
       case Right(repo) => {
-        github.withGithubClient(project.user.id) { client =>
-          val existing = shasDao.findByProjectIdAndBranch(Authorization.All, project.id, branchName).map(_.hash)
+        withGithubClient(project.user.id) { client =>
+          val existing = ShasDao.findByProjectIdAndBranch(Authorization.All, project.id, branchName).map(_.hash)
 
           client.refs.getByRef(repo.owner, repo.project, s"heads/$branchName").map { branch =>
             val branchSha = branch.`object`.sha
@@ -59,7 +58,7 @@ class SyncShas @Inject()(
                 SupervisorResult.Ready(s"Shas table already records that branch[$branchName] is at $branchSha")
               }
               case false => {
-                shasWriteDao.upsertBranch(Constants.SystemUser, project.id, branchName, branchSha)
+                shasWriteDao.upsertBranch(UsersDao.systemUser, project.id, branchName, branchSha)
                 SupervisorResult.Change(s"Updated branch[$branchName] sha to $branchSha")
               }
             }
