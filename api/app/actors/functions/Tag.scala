@@ -1,15 +1,19 @@
 package io.flow.delta.actors.functions
 
-import db.{ShasDao, TagsDao, TagsWriteDao, UsersDao}
+import javax.inject.Inject
+
+import db.{ShasDao, TagsWriteDao}
 import io.flow.delta.actors.{ProjectSupervisorFunction, SupervisorResult}
+import io.flow.delta.api.lib.{Email, GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
-import io.flow.delta.api.lib.{Email, GithubUtil}
 import io.flow.delta.lib.Semver
 import io.flow.delta.v0.models.Project
 import io.flow.github.v0.models.{RefForm, TagForm, Tagger}
+import io.flow.play.util.Constants
 import io.flow.postgresql.Authorization
 import org.joda.time.DateTime
-import play.api.Logger
+import play.api.Application
+
 import scala.concurrent.Future
 
 /**
@@ -26,35 +30,35 @@ object Tag extends ProjectSupervisorFunction {
     project: Project,
     config: ConfigProject
   ) (
-    implicit ec: scala.concurrent.ExecutionContext
+    implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = {
+    val tag = app.injector.instanceOf[Tag]
     Future.sequence {
       config.branches.map { branch =>
-        Tag(project, branch.name).run
+        tag.run(project, branch.name)
       }
-    }.map {
-      SupervisorResult.merge(_)
-    }
+    }.map(SupervisorResult.merge)
   }
 
 }
 
-case class Tag(project: Project, branchName: String) extends Github {
-
-  private[this] lazy val tagsWriteDao = play.api.Play.current.injector.instanceOf[TagsWriteDao]
+class Tag @Inject()(
+  github: Github,
+  shasDao: ShasDao,
+  tagsWriteDao: TagsWriteDao,
+  email: Email
+) {
 
   private[this] case class Tag(semver: Semver, sha: String)
 
-  private[this] val repo = GithubUtil.parseUri(project.uri).right.getOrElse {
+  private[this] def projectRepo(project: Project): Repo = GithubUtil.parseUri(project.uri).right.getOrElse {
     sys.error(s"Project id[${project.id}] uri[${project.uri}]: Could not parse")
   }
 
-  private[this] val email = play.api.Play.current.injector.instanceOf[Email]
-
-  def run(
+  def run(project: Project, branchName: String)(
     implicit ec: scala.concurrent.ExecutionContext
   ): Future[SupervisorResult] = {
-    ShasDao.findByProjectIdAndBranch(Authorization.All, project.id, branchName).map(_.hash) match {
+    shasDao.findByProjectIdAndBranch(Authorization.All, project.id, branchName).map(_.hash) match {
 
       case None => {
         Future {
@@ -63,11 +67,13 @@ case class Tag(project: Project, branchName: String) extends Github {
       }
 
       case Some(sha) => {
-        withGithubClient(project.user.id) { client =>
+        github.withGithubClient(project.user.id) { client =>
+          val repo: Repo = projectRepo(project)
+
           client.tags.getTags(repo.owner, repo.project).flatMap { tags =>
             GithubUtil.toTags(tags).reverse.headOption match {
               case None => {
-                createTag(io.flow.delta.actors.functions.Tag.InitialTag, sha)
+                createTag(io.flow.delta.actors.functions.Tag.InitialTag, sha, project, repo)
               }
               case Some(tag) => {
                 tag.sha == sha match {
@@ -77,7 +83,7 @@ case class Tag(project: Project, branchName: String) extends Github {
                     }
                   }
                   case false => {
-                    createTag(tag.semver.next.label, sha)
+                    createTag(tag.semver.next.label, sha, project, repo)
                   }
                 }
               }
@@ -96,13 +102,13 @@ case class Tag(project: Project, branchName: String) extends Github {
     * @param sha e.g. ff731cfdad6e5b05ec40535fd7db03c91bbcb8ff
     */
   private[this] def createTag(
-    name: String, sha: String
+    name: String, sha: String, project: Project, repo: Repo
   ) (
       implicit ec: scala.concurrent.ExecutionContext
   ): Future[SupervisorResult] = {
     assert(Semver.isSemver(name), s"Tag[$name] must be in semver format")
 
-    withGithubClient(project.user.id) { client =>
+    github.withGithubClient(project.user.id) { client =>
       client.tags.postGitAndTags(
         repo.owner,
         repo.project,
@@ -125,7 +131,7 @@ case class Tag(project: Project, branchName: String) extends Github {
             sha = sha
           )
         ).map { githubRef =>
-          tagsWriteDao.upsert(UsersDao.systemUser, project.id, name, sha)
+          tagsWriteDao.upsert(Constants.SystemUser, project.id, name, sha)
           SupervisorResult.Change(s"Created tag $name for sha[$sha]")
         }.recover {
           case e: io.flow.github.v0.errors.UnprocessableEntityResponse => {

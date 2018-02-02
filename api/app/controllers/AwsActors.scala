@@ -1,18 +1,22 @@
 package controllers
 
-import io.flow.delta.actors.MainActor
-import io.flow.postgresql.Authorization
 import db.BuildsDao
-import play.api.mvc._
+import io.flow.delta.actors.MainActor
+import io.flow.play.controllers.FlowControllerComponents
+import io.flow.postgresql.Authorization
 import play.api.libs.json._
+import play.api.mvc._
 
 @javax.inject.Singleton
 class AwsActors @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
-) extends Controller {
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+  buildsDao: BuildsDao,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends BaseIdentifiedRestController {
 
   def postByBuildId(buildId: String) = Action { request =>
-    BuildsDao.findById(Authorization.All, buildId) match {
+    buildsDao.findById(Authorization.All, buildId) match {
       case None => {
         NotFound
       }

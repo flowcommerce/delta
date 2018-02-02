@@ -1,21 +1,22 @@
 package controllers
 
 import db.{InternalTokenForm, TokensDao}
-import io.flow.delta.v0.models.{Token, TokenForm}
-import io.flow.delta.v0.models.json._
 import io.flow.common.v0.models.UserReference
-import io.flow.common.v0.models.json._
-import io.flow.play.util.{Config, Validation}
+import io.flow.delta.v0.models.json._
+import io.flow.delta.v0.models.{Token, TokenForm}
+import io.flow.error.v0.models.json._
+import io.flow.play.controllers.FlowControllerComponents
+import io.flow.play.util.Validation
 import io.flow.postgresql.Authorization
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
 
 class Tokens @javax.inject.Inject() (
-  override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
-) extends Controller with BaseIdentifiedRestController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+  helpers: Helpers,
+  tokensDao: TokensDao,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -24,10 +25,10 @@ class Tokens @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    withOrderBy(sort) { orderBy =>
+    helpers.withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          TokensDao.findAll(
+          tokensDao.findAll(
             authorization(request),
             ids = optionals(id),
             userId = userId,
@@ -42,7 +43,7 @@ class Tokens @javax.inject.Inject() (
 
   def getById(id: String) = Identified { request =>
     withToken(request.user, id) { token =>
-      Ok(Json.toJson(TokensDao.addCleartextIfAvailable(request.user, token)))
+      Ok(Json.toJson(tokensDao.addCleartextIfAvailable(request.user, token)))
     }
   }
 
@@ -52,7 +53,7 @@ class Tokens @javax.inject.Inject() (
         UnprocessableEntity(Json.toJson(Validation.invalidJson(e)))
       }
       case s: JsSuccess[TokenForm] => {
-        TokensDao.create(request.user, InternalTokenForm.UserCreated(s.get)) match {
+        tokensDao.create(request.user, InternalTokenForm.UserCreated(s.get)) match {
           case Left(errors) => UnprocessableEntity(Json.toJson(Validation.errors(errors)))
           case Right(token) => Created(Json.toJson(token))
         }
@@ -62,7 +63,7 @@ class Tokens @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     withToken(request.user, id) { token =>
-      TokensDao.delete(request.user, token)
+      tokensDao.delete(request.user, token)
       NoContent
     }
   }
@@ -70,7 +71,7 @@ class Tokens @javax.inject.Inject() (
   def withToken(user: UserReference, id: String)(
     f: Token => Result
   ) = {
-    TokensDao.findById(Authorization.User(user.id), id) match {
+    tokensDao.findById(Authorization.User(user.id), id) match {
       case None => {
         Results.NotFound
       }

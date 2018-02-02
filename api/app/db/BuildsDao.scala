@@ -1,16 +1,19 @@
 package db
 
+import javax.inject.{Inject, Singleton}
+
+import anorm._
+import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.v0.models.{Build, Status}
-import io.flow.postgresql.{Authorization, Query, OrderBy, Pager}
-import io.flow.common.v0.models.UserReference
-import anorm._
+import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
-object BuildsDao {
+@Singleton
+class BuildsDao @Inject()(
+  @NamedDatabase("default") db: Database
+) {
 
   private[db] val Master = "master"
 
@@ -50,7 +53,7 @@ object BuildsDao {
     offset: Long = 0
   ): Seq[Build] = {
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "builds",
@@ -77,9 +80,13 @@ object BuildsDao {
 
 case class BuildsWriteDao @javax.inject.Inject() (
   imagesWriteDao: ImagesWriteDao,
-  buildDesiredStatesDao: BuildDesiredStatesWriteDao,
-  buildLastStatesDao: BuildLastStatesWriteDao,
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
+  buildsDao: BuildsDao,
+  buildDesiredStatesDao: BuildDesiredStatesDao,
+  buildLastStatesDao: BuildLastStatesDao,
+  delete: Delete,
+  imagesDao: ImagesDao,
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+  @NamedDatabase("default") db: Database
 ) {
 
   private[this] val UpsertQuery = """
@@ -103,11 +110,11 @@ case class BuildsWriteDao @javax.inject.Inject() (
   private[this] val idGenerator = io.flow.play.util.IdGenerator("bld")
 
   def upsert(createdBy: UserReference, projectId: String, status: Status, config: BuildConfig): Build = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       upsert(c, createdBy, projectId, status, config)
     }
 
-    val build = BuildsDao.findByProjectIdAndName(Authorization.All, projectId, config.name).getOrElse {
+    val build = buildsDao.findByProjectIdAndName(Authorization.All, projectId, config.name).getOrElse {
       sys.error(s"Failed to create build for projectId[$projectId] name[${config.name}]")
     }
 
@@ -127,7 +134,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
   }
 
   def updateStatus(createdBy: UserReference, build: Build, status: Status): Build = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(UpdateStatusQuery).on(
         'id -> build.id,
         'status -> status.toString,
@@ -137,14 +144,14 @@ case class BuildsWriteDao @javax.inject.Inject() (
 
     mainActor ! MainActor.Messages.BuildUpdated(build.id)
 
-    BuildsDao.findById(Authorization.All, build.id).getOrElse {
+    buildsDao.findById(Authorization.All, build.id).getOrElse {
       sys.error("Failed to update build")
     }
   }
 
   def delete(deletedBy: UserReference, build: Build) {
     Pager.create { offset =>
-      ImagesDao.findAll(buildId = Some(build.id), offset = offset)
+      imagesDao.findAll(buildId = Some(build.id), offset = offset)
     }.foreach { image =>
       imagesWriteDao.delete(deletedBy, image)
     }
@@ -153,7 +160,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
 
     buildLastStatesDao.delete(deletedBy, build)
 
-    Delete.delete("builds", deletedBy.id, build.id)
+    delete.delete("builds", deletedBy.id, build.id)
 
     mainActor ! MainActor.Messages.BuildDeleted(build.id)
   }

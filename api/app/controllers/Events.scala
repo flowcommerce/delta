@@ -1,17 +1,19 @@
 package controllers
 
 import db.EventsDao
-import io.flow.delta.v0.models.{Event, EventType}
 import io.flow.delta.v0.models.json._
-import io.flow.play.util.Config
-import play.api.mvc._
+import io.flow.delta.v0.models.{Event, EventType}
+import io.flow.play.controllers.FlowControllerComponents
 import play.api.libs.json._
+import play.api.mvc._
 
 @javax.inject.Singleton
 class Events @javax.inject.Inject() (
-  override val config: Config,
-  override val tokenClient: io.flow.token.v0.interfaces.Client
-) extends Controller with BaseIdentifiedRestController {
+  eventsDao: EventsDao,
+  helpers: Helpers,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends BaseIdentifiedRestController {
 
   def get(
     id: Option[Seq[String]],
@@ -23,10 +25,10 @@ class Events @javax.inject.Inject() (
     offset: Long,
     sort: String
   ) = Identified { request =>
-    withOrderBy(sort) { orderBy =>
+    helpers.withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
-          EventsDao.findAll(
+          eventsDao.findAll(
             ids = optionals(id),
             projectId = project,
             `type` = `type`,
@@ -50,7 +52,7 @@ class Events @javax.inject.Inject() (
   def withEvent(id: String)(
     f: Event => Result
   ): Result = {
-    EventsDao.findById(id) match {
+    eventsDao.findById(id) match {
       case None => {
         Results.NotFound
       }

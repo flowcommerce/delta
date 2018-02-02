@@ -1,14 +1,13 @@
 package db
 
-import io.flow.delta.v0.models.{Item, ItemSummary, ItemSummaryUndefinedType}
-import io.flow.delta.v0.models.{OrganizationSummary, Project, ProjectSummary, Visibility}
-import io.flow.delta.v0.models.json._
-import io.flow.common.v0.models.UserReference
-import io.flow.postgresql.{Authorization, Query, OrderBy}
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models._
+import io.flow.delta.v0.models.json._
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
+
 import scala.util.{Failure, Success, Try}
 
 case class ItemForm(
@@ -18,7 +17,12 @@ case class ItemForm(
   contents: String
 )
 
-object ItemsDao {
+@javax.inject.Singleton
+class ItemsDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database,
+  projectsDao: ProjectsDao,
+  delete: Delete
+) {
 
   private[this] val BaseQuery = Query(s"""
     select items.id,
@@ -59,7 +63,7 @@ object ItemsDao {
   private[this] def visibility(summary: ItemSummary): Visibility = {
     summary match {
       case ProjectSummary(id, org, name, uri) => {
-        ProjectsDao.findById(Authorization.All, id).map(_.visibility).getOrElse(Visibility.Private)
+        projectsDao.findById(Authorization.All, id).map(_.visibility).getOrElse(Visibility.Private)
       }
       case ItemSummaryUndefinedType(name) => {
         Visibility.Private
@@ -88,7 +92,7 @@ object ItemsDao {
   }
 
   private[db] def replace(user: UserReference, form: ItemForm): Item = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       findByObjectId(Authorization.All, objectId(form.summary)).map { item =>
         deleteWithConnection(user, item)(c)
       }
@@ -125,7 +129,7 @@ object ItemsDao {
   }
 
   def delete(deletedBy: UserReference, item: Item) {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       deleteWithConnection(deletedBy, item)(c)
     }
   }
@@ -133,7 +137,7 @@ object ItemsDao {
   private[this] def deleteWithConnection(deletedBy: UserReference, item: Item)(
     implicit c: java.sql.Connection
   ) {
-    Delete.delete("items", deletedBy.id, item.id)
+    delete.delete("items", deletedBy.id, item.id)
   }
 
   def deleteByObjectId(auth: Authorization, deletedBy: UserReference, objectId: String) {
@@ -160,7 +164,7 @@ object ItemsDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Item] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         and(Filters(auth).organizations("items.organization_id", Some("items.visibility")).sql).
         equals("items.id", id).

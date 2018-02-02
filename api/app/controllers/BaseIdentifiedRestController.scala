@@ -1,11 +1,9 @@
 package controllers
 
+import io.flow.play.controllers.{FlowController, IdentifiedRequest}
 import io.flow.postgresql.Authorization
-import io.flow.play.controllers.IdentifiedRestController
 
-trait BaseIdentifiedRestController extends IdentifiedRestController with Helpers {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+trait BaseIdentifiedRestController extends FlowController {
 
   def authorization[T](request: IdentifiedRequest[T]): Authorization = {
     Authorization.User(request.user.id)

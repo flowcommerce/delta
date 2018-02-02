@@ -1,13 +1,11 @@
 package db
 
-import io.flow.delta.v0.models.{Token, TokenForm}
-import io.flow.common.v0.models.UserReference
-import io.flow.play.util.Random
-import io.flow.postgresql.{Authorization, Query, OrderBy}
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{Token, TokenForm}
+import io.flow.play.util.Random
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
-import play.api.libs.json._
 
 sealed trait InternalTokenForm {
 
@@ -41,7 +39,12 @@ object InternalTokenForm {
 }
 
 
-object TokensDao {
+@javax.inject.Singleton
+class TokensDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database,
+  usersDao: UsersDao,
+  delete: Delete
+) {
 
   private[this] val BaseQuery = Query(s"""
     select tokens.id,
@@ -77,8 +80,8 @@ object TokensDao {
         }
       }
       case Some(existing) => {
-        DB.withTransaction { implicit c =>
-          Delete.delete(c, "tokens", createdBy.id, existing.id)
+        db.withTransaction { implicit c =>
+          delete.delete(c, "tokens", createdBy.id, existing.id)
           createWithConnection(createdBy, form) match {
             case Left(errors) => sys.error("Failed to create token: " + errors.mkString(", "))
             case Right(token) => token
@@ -89,7 +92,7 @@ object TokensDao {
   }
 
   def create(createdBy: UserReference, form: InternalTokenForm): Either[Seq[String], Token] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       createWithConnection(createdBy, form)
     }
   }
@@ -100,7 +103,7 @@ object TokensDao {
     form match {
       case InternalTokenForm.GithubOauth(userId, token) => Nil
       case InternalTokenForm.UserCreated(f) => {
-        UsersDao.findById(f.userId) match {
+        usersDao.findById(f.userId) match {
           case None => Seq("User not found")
           case Some(_) => Nil
         }
@@ -133,7 +136,7 @@ object TokensDao {
   }
 
   def addCleartextIfAvailable(user: UserReference, token: Token): Token = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SelectCleartextTokenQuery.equals("tokens.id", Some(token.id)).as(
         cleartextTokenParser().*
       ).headOption match {
@@ -163,13 +166,13 @@ object TokensDao {
   }
 
   def delete(deletedBy: UserReference, token: Token) {
-    Delete.delete("tokens", deletedBy.id, token.id)
+    delete.delete("tokens", deletedBy.id, token.id)
   }
 
   def getCleartextGithubOauthTokenByUserId(
     userId: String
   ): Option[String] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SelectCleartextTokenQuery.
         equals("tokens.user_id", Some(userId)).
         optionalText("tokens.tag", Some(InternalTokenForm.GithubOauthTag)).
@@ -205,7 +208,7 @@ object TokensDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Token] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       findAllWithConnection(
         auth,
         id = id,

@@ -1,18 +1,22 @@
 package controllers
 
+import io.flow.common.v0.models.json._
 import io.flow.delta.api.lib.Github
 import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.delta.v0.models.json._
-import io.flow.common.v0.models.json._
+import io.flow.play.controllers.{FlowController, FlowControllerComponents}
 import io.flow.play.util.Validation
-import play.api.mvc._
 import play.api.libs.json._
+import play.api.mvc._
+import io.flow.error.v0.models.json._
+
 import scala.concurrent.Future
 
 class GithubUsers @javax.inject.Inject() (
-  val tokenClient: io.flow.token.v0.interfaces.Client,
-  val github: Github
-) extends Controller {
+  val github: Github,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
+) extends FlowController {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 

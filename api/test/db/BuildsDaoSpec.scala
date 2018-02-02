@@ -1,17 +1,10 @@
 package db
 
-import io.flow.postgresql.Authorization
 import io.flow.delta.v0.models.Status
-import org.scalatest._
-import play.api.test._
-import play.api.test.Helpers._
-import org.scalatestplus.play._
+import io.flow.postgresql.Authorization
+import io.flow.test.utils.FlowPlaySpec
 
-class BuildsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  lazy val buildsWriteDao = app.injector.instanceOf[BuildsWriteDao]
+class BuildsDaoSpec extends FlowPlaySpec with Helpers {
 
   "create" in {
     val project = createProject()
@@ -25,16 +18,16 @@ class BuildsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "delete" in {
     val build = upsertBuild()
     buildsWriteDao.delete(systemUser, build)
-    BuildsDao.findById(Authorization.All, build.id) must be(None)
+    buildsDao.findById(Authorization.All, build.id) must be(None)
   }
 
   "findById" in {
     val build = upsertBuild()
-    BuildsDao.findById(Authorization.All, build.id).map(_.id) must be(
+    buildsDao.findById(Authorization.All, build.id).map(_.id) must be(
       Some(build.id)
     )
 
-    BuildsDao.findById(Authorization.All, createTestKey) must be(None)
+    buildsDao.findById(Authorization.All, createTestKey) must be(None)
   }
 
   "findByProjectIdAndName" in {
@@ -46,22 +39,22 @@ class BuildsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val wwwConfig = createBuildConfig(project).copy(name = "www")
     val www = buildsWriteDao.upsert(systemUser, project.id, Status.Enabled, wwwConfig)
 
-    BuildsDao.findByProjectIdAndName(Authorization.All, project.id, "api").map(_.id) must be(Some(api.id))
-    BuildsDao.findByProjectIdAndName(Authorization.All, project.id, "www").map(_.id) must be(Some(www.id))
-    BuildsDao.findByProjectIdAndName(Authorization.All, project.id, "other") must be(None)
+    buildsDao.findByProjectIdAndName(Authorization.All, project.id, "api").map(_.id) must be(Some(api.id))
+    buildsDao.findByProjectIdAndName(Authorization.All, project.id, "www").map(_.id) must be(Some(www.id))
+    buildsDao.findByProjectIdAndName(Authorization.All, project.id, "other") must be(None)
   }
 
   "findAll by ids" in {
     val build1 = upsertBuild()
     val build2 = upsertBuild()
 
-    BuildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, build2.id))).map(_.id).sorted must be(
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, build2.id))).map(_.id).sorted must be(
       Seq(build1.id, build2.id).sorted
     )
 
-    BuildsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    BuildsDao.findAll(Authorization.All, ids = Some(Seq(createTestKey))) must be(Nil)
-    BuildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, createTestKey))).map(_.id) must be(Seq(build1.id))
+    buildsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(createTestKey))) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, createTestKey))).map(_.id) must be(Seq(build1.id))
   }
 
   "findAll by projectId" in {
@@ -71,15 +64,15 @@ class BuildsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val build1 = upsertBuild(project1)
     val build2 = upsertBuild(project2)
 
-    BuildsDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.project.id).distinct must be(
+    buildsDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.project.id).distinct must be(
       Seq(project1.id)
     )
 
-    BuildsDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.project.id).distinct must be(
+    buildsDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.project.id).distinct must be(
       Seq(project2.id)
     )
 
-    BuildsDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
+    buildsDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
   }
 
   "findAllByProjectId" in {
@@ -87,7 +80,7 @@ class BuildsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
     val build1 = upsertBuild(project)
     val build2 = upsertBuild(project)
 
-    BuildsDao.findAllByProjectId(Authorization.All, project.id).toSeq.map(_.project.id).distinct must be(
+    buildsDao.findAllByProjectId(Authorization.All, project.id).toSeq.map(_.project.id).distinct must be(
       Seq(project.id)
     )
   }
@@ -95,17 +88,17 @@ class BuildsDaoSpec extends PlaySpec with OneAppPerSuite with Helpers {
   "authorization for builds" in {
     val org = createOrganization()
     val project = createProject(org)
-    val user = createUser()
+    val user = createUserReference()
     createMembership(createMembershipForm(org = org, user = user))
 
     val build = upsertBuild(project)(createBuildConfig(project), user = user)
 
-    BuildsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(build.id))) must be(Nil)
-    BuildsDao.findAll(Authorization.All, ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
-    BuildsDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
-    BuildsDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(build.id))) must be(Nil)
-    BuildsDao.findAll(Authorization.User(user.id), ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
-    BuildsDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(build.id))) must be(Nil)
+    buildsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(build.id))) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
+    buildsDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
+    buildsDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(build.id))) must be(Nil)
+    buildsDao.findAll(Authorization.User(user.id), ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
+    buildsDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(build.id))) must be(Nil)
   }
 
 }

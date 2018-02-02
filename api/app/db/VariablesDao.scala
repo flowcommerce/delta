@@ -1,14 +1,16 @@
 package db
 
-import io.flow.delta.v0.models.{Variable, VariableForm}
-import io.flow.common.v0.models.UserReference
-import io.flow.postgresql.{Authorization, OrderBy, Query}
 import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{Variable, VariableForm}
 import io.flow.play.util.IdGenerator
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
-import play.api.Play.current
 
-object VariablesDao {
+@javax.inject.Singleton
+class VariablesDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database
+) {
 
   private[this] val idGenerator = IdGenerator("var")
 
@@ -56,7 +58,7 @@ object VariablesDao {
           case Some(variable) => variable.id
         }
 
-        DB.withConnection { implicit c =>
+        db.withConnection { implicit c =>
           SQL(UpsertQuery).on(
             'id -> id,
             'organization_id -> organization,
@@ -91,7 +93,7 @@ object VariablesDao {
     limit: Long = 25,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("-created_at", Some("variables"))
-  ): Seq[Variable] = DB.withConnection { implicit c =>
+  ): Seq[Variable] = db.withConnection { implicit c =>
     Standards.query(
       BaseQuery,
       tableName = "variables",

@@ -1,16 +1,18 @@
 package db
 
-import anorm._
-import io.flow.delta.v0.models.{Event, EventType}
-import io.flow.delta.actors.MainActor
-import io.flow.postgresql.{Query, OrderBy}
-import io.flow.common.v0.models.UserReference
 import java.io.{PrintWriter, StringWriter}
-import play.api.db._
-import play.api.libs.json._
-import play.api.Play.current
 
-object EventsDao {
+import anorm._
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{Event, EventType}
+import io.flow.postgresql.{OrderBy, Query}
+import play.api.db._
+
+@javax.inject.Singleton
+class EventsDao @javax.inject.Inject() (
+  @NamedDatabase("default") db: Database,
+  delete: Delete
+) {
 
   private[this] val BaseQuery = Query(s"""
     select events.id,
@@ -50,7 +52,7 @@ object EventsDao {
 
     val id = io.flow.play.util.IdGenerator("evt").randomId()
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       SQL(InsertQuery).on(
         'id -> id,
         'project_id -> projectId,
@@ -65,7 +67,7 @@ object EventsDao {
   }
 
   def delete(deletedBy: UserReference, event: Event) {
-    Delete.delete("events", deletedBy.id, event.id)
+    delete.delete("events", deletedBy.id, event.id)
   }
 
   def findById(id: String): Option[Event] = {
@@ -87,7 +89,7 @@ object EventsDao {
     limit: Long = 25,
     offset: Long = 0
   ): Seq[Event] = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       BaseQuery.
         optionalIn(s"events.id", ids).
         equals(s"events.project_id", projectId).

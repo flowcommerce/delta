@@ -1,6 +1,5 @@
 package io.flow.delta.api.lib
 
-import io.flow.delta.actors.SupervisorResult
 import io.flow.delta.v0.models.Version
 
 /**

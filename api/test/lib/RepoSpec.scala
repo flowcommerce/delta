@@ -1,12 +1,11 @@
 package io.flow.delta.api.lib
 
-import io.flow.common.v0.models.Name
-import org.specs2.mutable._
+import org.scalatestplus.play.PlaySpec
 
-class RepoSpec extends Specification {
+class RepoSpec extends PlaySpec {
 
   "toString" in {
-    Repo("mbryzek", "apidoc").toString must beEqualTo("mbryzek/apidoc")
+    Repo("mbryzek", "apidoc").toString must be("mbryzek/apidoc")
   }
 
 }

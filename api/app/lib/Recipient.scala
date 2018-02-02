@@ -1,5 +1,7 @@
 package io.flow.delta.api.lib
 
+import javax.inject.Inject
+
 import db.{UserIdentifiersDao, UsersDao}
 import io.flow.common.v0.models.{Name, User, UserReference}
 
@@ -21,7 +23,10 @@ case class Recipient(
   }
 }
 
-object Recipient {
+class RecipientHelper @Inject()(
+  usersDao: UsersDao,
+  userIdentifiersDao: UserIdentifiersDao
+){
 
   def fromUser(user: User): Option[Recipient] = {
     user.email.map { email =>
@@ -29,7 +34,7 @@ object Recipient {
         email = email,
         name = user.name,
         userId = user.id,
-        identifier = UserIdentifiersDao.latestForUser(UsersDao.systemUser, UserReference(id = user.id)).value
+        identifier = userIdentifiersDao.latestForUser(usersDao.systemUser, UserReference(id = user.id)).value
       )
     }
   }

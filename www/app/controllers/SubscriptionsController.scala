@@ -1,15 +1,13 @@
 package controllers
 
+import io.flow.common.v0.models.User
 import io.flow.delta.v0.models.{Publication, SubscriptionForm}
 import io.flow.delta.www.lib.{DeltaClientProvider, UiData}
-import io.flow.common.v0.models.User
-import scala.concurrent.Future
-
-import play.api._
+import io.flow.play.controllers.FlowControllerComponents
 import play.api.i18n._
 import play.api.mvc._
-import play.api.data._
-import play.api.data.Forms._
+
+import scala.concurrent.Future
 
 object Subscriptions {
 
@@ -23,18 +21,21 @@ object Subscriptions {
 }
 
 class SubscriptionsController @javax.inject.Inject() (
-  val messagesApi: MessagesApi,
-  val tokenClient: io.flow.token.v0.interfaces.Client,
-  val deltaClientProvider: DeltaClientProvider
-) extends Controller
-    with I18nSupport
-{
+  override val messagesApi: MessagesApi,
+  override val tokenClient: io.flow.token.v0.interfaces.Client,
+  override val deltaClientProvider: DeltaClientProvider,
+  override val controllerComponents: ControllerComponents,
+  override val flowControllerComponents: FlowControllerComponents,
+  actionBuilder: DefaultActionBuilder
+) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) with I18nSupport {
 
   import scala.concurrent.ExecutionContext.Implicits.global
 
+  override def section = Some(io.flow.delta.www.lib.Section.Events)
+
   lazy val client = deltaClientProvider.newClient(user = None)
 
-  def index() = Action.async { implicit request =>
+  def index() = actionBuilder.async { implicit request =>
     Helpers.userFromSession(tokenClient, request.session).flatMap { userOption =>
       userOption match {
         case None => Future {
@@ -49,7 +50,7 @@ class SubscriptionsController @javax.inject.Inject() (
     }
   }
 
-  def identifier(identifier: String) = Action.async { implicit request =>
+  def identifier(identifier: String) = actionBuilder.async { implicit request =>
     for {
       users <- client.users.get(
         identifier = Some(identifier)
@@ -69,7 +70,7 @@ class SubscriptionsController @javax.inject.Inject() (
     }
   }
 
-  def postToggle(identifier: String, publication: Publication) = Action.async { implicit request =>
+  def postToggle(identifier: String, publication: Publication) = actionBuilder.async { implicit request =>
     client.users.get(identifier = Some(identifier)).flatMap { users =>
       users.headOption match {
         case None => Future {

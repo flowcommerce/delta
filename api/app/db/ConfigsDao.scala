@@ -1,16 +1,14 @@
 package db
 
+import anorm._
 import io.flow.common.v0.models.UserReference
-import io.flow.delta.lib.config.{Defaults, Parser}
-import io.flow.delta.v0.models.Reference
 import io.flow.delta.config.v0.models.Config
 import io.flow.delta.config.v0.models.json._
+import io.flow.delta.v0.models.Reference
 import io.flow.play.util.IdGenerator
-import io.flow.postgresql.{Authorization, Query, OrderBy}
-import anorm._
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.Logger
 import play.api.db._
-import play.api.Play.current
 import play.api.libs.json._
 
 case class InternalConfig(
@@ -21,7 +19,8 @@ case class InternalConfig(
 
 @javax.inject.Singleton
 class ConfigsDao @javax.inject.Inject() (
-  parser: Parser
+  @NamedDatabase("default") db: Database,
+  delete: Delete
 ) {
 
   private[this] val BaseQuery = Query(s"""
@@ -62,7 +61,7 @@ class ConfigsDao @javax.inject.Inject() (
     offset: Long = 0
   ): Seq[InternalConfig] = {
 
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
         tableName = "configs",
@@ -119,7 +118,7 @@ class ConfigsDao @javax.inject.Inject() (
   }
 
   def upsert(createdBy: UserReference, projectId: String, config: Config): InternalConfig = {
-    DB.withConnection { implicit c =>
+    db.withConnection { implicit c =>
       upsertWithConnection(c, createdBy, projectId, config)
     }
 
@@ -144,7 +143,7 @@ class ConfigsDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, internal: InternalConfig) {
-    Delete.delete("configs", deletedBy.id, internal.id)
+    delete.delete("configs", deletedBy.id, internal.id)
   }
 
 }

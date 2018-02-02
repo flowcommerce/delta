@@ -1,12 +1,12 @@
 package io.flow.delta.actors.functions
 
-import io.flow.delta.actors.{MainActor, MainActorProvider, SupervisorResult}
-import io.flow.delta.lib.{StateFormatter, Text}
+import akka.actor.ActorRef
+import io.flow.delta.actors.{MainActor, SupervisorResult}
 import io.flow.delta.api.lib.StateDiff
+import io.flow.delta.lib.{StateFormatter, Text}
 import io.flow.delta.v0.models.{Build, State, Version}
-import org.joda.time.DateTime
 
-case class Deployer(build: Build, last: State, desired: State) {
+case class Deployer(build: Build, last: State, desired: State, mainActor: ActorRef) {
 
   /**
     * Scales up or down the build instances to move last state
@@ -62,13 +62,13 @@ case class Deployer(build: Build, last: State, desired: State) {
             )
           }
           case diffs => {
-            MainActorProvider.ref() ! MainActor.Messages.Scale(build.id, diffs)
+            mainActor ! MainActor.Messages.Scale(build.id, diffs)
             SupervisorResult.Change("Scale Down: " + toLabel(diffs))
           }
         }
       }
       case diffs => {
-        MainActorProvider.ref() ! MainActor.Messages.Scale(build.id, diffs)
+        mainActor ! MainActor.Messages.Scale(build.id, diffs)
         SupervisorResult.Change("Scale Up: " + toLabel(diffs))
       }
     }
@@ -78,7 +78,7 @@ case class Deployer(build: Build, last: State, desired: State) {
     * Scales down all instances of the versions specified.
     */
   private[this] def scaleDown(versions: Seq[Version]): SupervisorResult = {
-    assert(!versions.isEmpty, "Must have at least one version")
+    assert(versions.nonEmpty, "Must have at least one version")
     val diffs = versions.map { v =>
       StateDiff(
         versionName = v.name,
@@ -86,7 +86,7 @@ case class Deployer(build: Build, last: State, desired: State) {
         desiredInstances = 0
       )
     }
-    MainActorProvider.ref() ! MainActor.Messages.Scale(build.id, diffs)
+    mainActor ! MainActor.Messages.Scale(build.id, diffs)
     SupervisorResult.Change(s"Scale Down Extras: " + toLabel(diffs))
   }
 
