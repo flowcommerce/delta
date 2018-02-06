@@ -148,6 +148,7 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withMinSize(settings.asgMinSize)
           .withMaxSize(settings.asgMaxSize)
           .withDesiredCapacity(settings.asgDesiredSize)
+          .withHealthCheckType("ELB")
       )
       // Add an opsworks_stack_id tag to the instance which is used by a lambda
       // function attached to SNS to deregister from Opsworks.
