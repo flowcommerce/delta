@@ -1,7 +1,9 @@
 package controllers
 
+import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.delta.www.lib.{DeltaClientProvider, UiData}
+import io.flow.play.controllers.IdentifiedCookie._
 import io.flow.play.controllers.{FlowController, FlowControllerComponents}
 import play.api.Logger
 import play.api.i18n._
@@ -40,7 +42,7 @@ class LoginController @javax.inject.Inject() (
         }
       }
       Logger.info(s"Redirecting to url [$url]")
-      Redirect(url).withSession { "user_id" -> user.id.toString }
+      Redirect(url).withIdentifiedCookieUser(UserReference(user.id.toString))
     }.recover {
       case response: io.flow.delta.v0.errors.GenericErrorResponse => {
         Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl, response.genericError.messages))
