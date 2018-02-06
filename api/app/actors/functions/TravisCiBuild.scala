@@ -49,6 +49,7 @@ class TravisCiDockerImageBuilder @Inject()(
 
   def buildDockerImage(travisCiBuild: TravisCiBuild) {
     val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
+    val projectId = travisCiBuild.project.id
 
     buildLockUtil.withLock(travisCiBuild.build.id) ({
 
@@ -80,14 +81,14 @@ class TravisCiDockerImageBuilder @Inject()(
                 postBuildRequest(travisCiBuild, client)
               }
               case Some(_) => {
-                eventLogProcessor.checkpoint(s"Waiting for triggered build [${dockerImageName}:${travisCiBuild.version}]", log = log)
+                eventLogProcessor.checkpoint(s"Waiting for triggered build [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
               }
             }
           }
           case requests => {
             requests.foreach { request =>
               request.builds.foreach { build =>
-                eventLogProcessor.checkpoint(s"Travis CI build [${dockerImageName}:${travisCiBuild.version}], number: ${build.number}, state: ${build.state}", log = log)
+                eventLogProcessor.checkpoint(s"Travis CI build [${dockerImageName}:${travisCiBuild.version}], number: ${build.number}, state: ${build.state}", log = log(projectId))
               }
             }
           }
@@ -95,14 +96,14 @@ class TravisCiDockerImageBuilder @Inject()(
 
       } catch {
         case err: TimeoutException => {
-          eventLogProcessor.error(s"Timeout expired fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]", log = log)
+          eventLogProcessor.error(s"Timeout expired fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
         }
         case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
-          eventLogProcessor.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${travisCiBuild.version}]", log = log)
+          eventLogProcessor.error(s"Travis CI returned HTTP $code when fetching requests [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
         }
         case err: Throwable => {
           err.printStackTrace(System.err)
-          eventLogProcessor.error(s"Error fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]: $err", log = log)
+          eventLogProcessor.error(s"Error fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]: $err", log = log(projectId))
         }
       }
     })
@@ -110,7 +111,8 @@ class TravisCiDockerImageBuilder @Inject()(
 
   private def postBuildRequest(travisCiBuild: TravisCiBuild, client: Client) {
     val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
-
+    val projectId = travisCiBuild.project.id
+    
     try {
 
       val response = client.requests.post(
@@ -118,22 +120,22 @@ class TravisCiDockerImageBuilder @Inject()(
         requestPostForm = createRequestPostForm(travisCiBuild)
       )
       Await.result(response, 5.seconds)
-      eventLogProcessor.changed(travisChangedMessage(dockerImageName, travisCiBuild.version), log = log)
+      eventLogProcessor.changed(travisChangedMessage(dockerImageName, travisCiBuild.version), log = log(projectId))
 
     } catch {
       case err: TimeoutException => {
-        eventLogProcessor.error(s"Timeout expired triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]", log = log)
+        eventLogProcessor.error(s"Timeout expired triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
       }
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
           case _ => {
-            eventLogProcessor.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${travisCiBuild.version}]", log = log)
+            eventLogProcessor.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
           }
         }
       }
       case err: Throwable => {
         err.printStackTrace(System.err)
-        eventLogProcessor.error(s"Error triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]: $err", log = log)
+        eventLogProcessor.error(s"Error triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]: $err", log = log(projectId))
       }
     }
   }

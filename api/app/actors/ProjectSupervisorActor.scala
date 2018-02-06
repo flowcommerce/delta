@@ -59,7 +59,7 @@ class ProjectSupervisorActor @Inject()(
         Logger.info(s"PursueDesiredState project[${project.id}]")
         withConfig { config =>
           Logger.info(s"  - config: $config")
-          eventLogProcessor.runSync("PursueDesiredState", log = log) {
+          eventLogProcessor.runSync("PursueDesiredState", log = log(id)) {
             run(project, config, ProjectSupervisorActor.Functions)
 
             buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
@@ -93,30 +93,30 @@ class ProjectSupervisorActor @Inject()(
       }
       case Some(f) => {
         if (config.stages.contains(f.stage)) {
-          eventLogProcessor.started(format(f), log = log)
+          eventLogProcessor.started(format(f), log = log(project.id))
           f.run(project, config).map {
             case SupervisorResult.Change(desc) => {
-              eventLogProcessor.changed(format(f, desc), log = log)
+              eventLogProcessor.changed(format(f, desc), log = log(project.id))
             }
             case SupervisorResult.Checkpoint(desc) => {
-              eventLogProcessor.checkpoint(format(f, desc), log = log)
+              eventLogProcessor.checkpoint(format(f, desc), log = log(project.id))
             }
             case SupervisorResult.Error(desc, ex)=> {
               val err = ex.getOrElse {
                 new Exception(desc)
               }
-              eventLogProcessor.completed(format(f, desc), Some(err), log = log)
+              eventLogProcessor.completed(format(f, desc), Some(err), log = log(project.id))
             }
             case SupervisorResult.Ready(desc)=> {
-              eventLogProcessor.completed(format(f, desc), log = log)
+              eventLogProcessor.completed(format(f, desc), log = log(project.id))
               run(project, config, functions.drop(1))
             }
 
           }.recover {
-            case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log)
+            case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log(project.id))
           }
         } else {
-          eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log)
+          eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log(project.id))
           run(project, config, functions.drop(1))
         }
       }

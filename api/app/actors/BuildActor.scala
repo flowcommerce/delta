@@ -140,7 +140,7 @@ class BuildActor @javax.inject.Inject() (
   }
 
   def removeAwsResources(build: Build): Future[Unit] = {
-    eventLogProcessor.runAsync(s"removeAwsResources(${BuildNames.projectName(build)})", log = log) {
+    eventLogProcessor.runAsync(s"removeAwsResources(${BuildNames.projectName(build)})", log = log(build.project.id)) {
       for {
         cluster <- deleteCluster(build)
         asg <- deleteAutoScalingGroup(build)
@@ -153,31 +153,31 @@ class BuildActor @javax.inject.Inject() (
   }
 
   def deleteCluster(build: Build): Future[String] = {
-    eventLogProcessor.runSync("Deleting cluster", log = log) {
+    eventLogProcessor.runSync("Deleting cluster", log = log(build.project.id)) {
       ecs.deleteCluster(BuildNames.projectName(build))
     }
   }
 
   def deleteAutoScalingGroup(build: Build): Future[String] = {
-    eventLogProcessor.runSync("Deleting ASG", log = log) {
+    eventLogProcessor.runSync("Deleting ASG", log = log(build.project.id)) {
       asg.deleteAutoScalingGroup(BuildNames.projectName(build))
     }
   }
 
   def deleteLoadBalancer(build: Build): Future[String] = {
-    eventLogProcessor.runSync("Deleting ELB", log = log) {
+    eventLogProcessor.runSync("Deleting ELB", log = log(build.project.id)) {
       elb.deleteLoadBalancer(BuildNames.projectName(build))
     }
   }
 
   def deleteLaunchConfiguration(build: Build): Future[String] = {
-    eventLogProcessor.runSync("Deleting launch configuration", log = log) {
+    eventLogProcessor.runSync("Deleting launch configuration", log = log(build.project.id)) {
       asg.deleteLaunchConfiguration(awsSettings, BuildNames.projectName(build))
     }
   }
 
   def configureAWS(build: Build): Future[Unit] = {
-    eventLogProcessor.runAsync("configureAWS", log = log) {
+    eventLogProcessor.runAsync("configureAWS", log = log(build.project.id)) {
       for {
         cluster <- createCluster(build)
         lc <- createLaunchConfiguration(build)
@@ -190,19 +190,19 @@ class BuildActor @javax.inject.Inject() (
   }
 
   def ensureContainerAgentHealth(build: Build): Unit = {
-    eventLogProcessor.runAsync("ECS ensure container agent health", log = log) {
+    eventLogProcessor.runAsync("ECS ensure container agent health", log = log(build.project.id)) {
       ecs.ensureContainerAgentHealth(BuildNames.projectName(build))
     }
   }
 
   def updateContainerAgent(build: Build) {
-    eventLogProcessor.runAsync("ECS updating container agent", log = log) {
+    eventLogProcessor.runAsync("ECS updating container agent", log = log(build.project.id)) {
       ecs.updateContainerAgent(BuildNames.projectName(build))
     }
   }
 
   def removeOldServices(build: Build): Unit = {
-    eventLogProcessor.runAsync("ECS cleanup old services", log = log) {
+    eventLogProcessor.runAsync("ECS cleanup old services", log = log(build.project.id)) {
       ecs.removeOldServices(BuildNames.projectName(build))
     }
   }
@@ -219,7 +219,7 @@ class BuildActor @javax.inject.Inject() (
 
       Logger.info(s"PaoloDeltaDebug project ${build.name}, scale up ${diff.desiredInstances} of ${diff.versionName}")
 
-      eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log) {
+      eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log(build.project.id)) {
         ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
       }
     }
@@ -238,25 +238,25 @@ class BuildActor @javax.inject.Inject() (
   }
 
   def createLaunchConfiguration(build: Build): Future[String] = {
-    eventLogProcessor.runSync("EC2 auto scaling group launch configuration", log = log) {
+    eventLogProcessor.runSync("EC2 auto scaling group launch configuration", log = log(build.project.id)) {
       asg.createLaunchConfiguration(awsSettings, BuildNames.projectName(build))
     }
   }
 
   def createLoadBalancer(build: Build): Future[String] = {
-    eventLogProcessor.runAsync("EC2 load balancer", log = log) {
+    eventLogProcessor.runAsync("EC2 load balancer", log = log(build.project.id)) {
       elb.createLoadBalancerAndHealthCheck(awsSettings, BuildNames.projectName(build))
     }
   }
 
   def upsertAutoScalingGroup(build: Build, launchConfigName: String, loadBalancerName: String): Future[String] = {
-    eventLogProcessor.runSync("EC2 auto scaling group", log = log) {
+    eventLogProcessor.runSync("EC2 auto scaling group", log = log(build.project.id)) {
       asg.upsertAutoScalingGroup(awsSettings, BuildNames.projectName(build), launchConfigName, loadBalancerName)
     }
   }
 
   def createCluster(build: Build): Future[String] = {
-    eventLogProcessor.runSync("Create cluster", log = log) {
+    eventLogProcessor.runSync("Create cluster", log = log(build.project.id)) {
        ecs.createCluster(BuildNames.projectName(build))
     }
   }

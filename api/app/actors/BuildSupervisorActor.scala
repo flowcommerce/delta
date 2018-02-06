@@ -60,7 +60,7 @@ class BuildSupervisorActor @Inject()(
     case msg @ BuildSupervisorActor.Messages.PursueDesiredState => withErrorHandler(msg) {
       withEnabledBuild { build =>
         withBuildConfig { buildConfig =>
-          eventLogProcessor.runSync("PursueDesiredState", log = log) {
+          eventLogProcessor.runSync("PursueDesiredState", log = log(build.project.id)) {
             run(build, buildConfig.stages, BuildSupervisorActor.Functions)
           }
         }
@@ -109,35 +109,37 @@ class BuildSupervisorActor @Inject()(
         SupervisorResult.Ready("All functions returned without modification")
       }
       case Some(f) => {
+        val projectId = build.project.id
+        
         stages.contains(f.stage) match {
           case false => {
-            eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log)
+            eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log(projectId))
             run(build, stages, functions.drop(1))
           }
           case true => {
-            eventLogProcessor.started(format(f), log = log)
+            eventLogProcessor.started(format(f), log = log(projectId))
             f.run(build).map { result =>
               result match {
                 case SupervisorResult.Change(desc) => {
-                  eventLogProcessor.changed(format(f, desc), log = log)
+                  eventLogProcessor.changed(format(f, desc), log = log(projectId))
                 }
                 case SupervisorResult.Checkpoint(desc) => {
-                  eventLogProcessor.checkpoint(format(f, desc), log = log)
+                  eventLogProcessor.checkpoint(format(f, desc), log = log(projectId))
                 }
                 case SupervisorResult.Error(desc, ex)=> {
                   val err = ex.getOrElse {
                     new Exception(desc)
                   }
-                  eventLogProcessor.completed(format(f, desc), Some(err), log = log)
+                  eventLogProcessor.completed(format(f, desc), Some(err), log = log(projectId))
                 }
                case SupervisorResult.Ready(desc)=> {
-                 eventLogProcessor.completed(format(f, desc), log = log)
+                 eventLogProcessor.completed(format(f, desc), log = log(projectId))
                   run(build, stages, functions.drop(1))
                 }
               }
 
             }.recover {
-              case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log)
+              case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log(projectId))
             }
           }
         }

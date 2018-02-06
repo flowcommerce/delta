@@ -39,12 +39,6 @@ trait EventLog {
     **/
   def withProject[T](f: Project => T): Option[T]
 
-  lazy val log: io.flow.delta.api.lib.EventLog = {
-    withProject {
-      io.flow.delta.api.lib.EventLog.withSystemUser(_, logPrefix)
-    }.getOrElse {
-      sys.error("Cannot access event log without a project")
-    }
-  }
+  def log(projectId: String): io.flow.delta.api.lib.EventLog = io.flow.delta.api.lib.EventLog.withSystemUser(projectId, logPrefix)
 
 }

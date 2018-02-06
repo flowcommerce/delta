@@ -5,7 +5,7 @@ import javax.inject.Inject
 
 import db.EventsDao
 import io.flow.common.v0.models.UserReference
-import io.flow.delta.v0.models.{EventType, Project}
+import io.flow.delta.v0.models.EventType
 import io.flow.play.util.Constants
 import org.joda.time.DateTime
 
@@ -14,17 +14,17 @@ import scala.concurrent.{ExecutionContext, Future}
 
 case class EventLog (
   user: UserReference,
-  project: Project,
+  projectId: String,
   prefix: String
 )
 
 object EventLog {
 
   def withSystemUser(
-    project: Project,
+    projectId: String,
     prefix: String
   ): EventLog = {
-    EventLog(Constants.SystemUser, project, prefix)
+    EventLog(Constants.SystemUser, projectId, prefix)
   }
 
 }
@@ -135,14 +135,14 @@ class EventLogProcessor @Inject()(
 
     ex match {
       case None => {
-        println(s"[$ts] ${log.project.id} $typ $formatted")
-        eventsDao.create(log.user, log.project.id, typ, formatted, ex = None)
+        println(s"[$ts] ${log.projectId} $typ $formatted")
+        eventsDao.create(log.user, log.projectId, typ, formatted, ex = None)
       }
       case Some(error) =>
         val sw = new StringWriter
         error.printStackTrace(new PrintWriter(sw))
-        println(s"[$ts] ${log.project.id} error $formatted: ${error.getMessage}\n\n$sw")
-        eventsDao.create(log.user, log.project.id, EventType.Info, s"error $message", ex = Some(error))
+        println(s"[$ts] ${log.projectId} error $formatted: ${error.getMessage}\n\n$sw")
+        eventsDao.create(log.user, log.projectId, EventType.Info, s"error $message", ex = Some(error))
     }
   }
 

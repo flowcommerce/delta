@@ -95,9 +95,11 @@ class DockerHubActor @javax.inject.Inject() (
             Duration.Inf
           )
 
+          val projectId = build.project.id
+
           imagesDao.findByBuildIdAndVersion(build.id, version) match {
             case Some(image) => {
-              eventLogProcessor.completed(s"Docker hub image $imageFullName is ready - id[${image.id}]", log = log)
+              eventLogProcessor.completed(s"Docker hub image $imageFullName is ready - id[${image.id}]", log = log(projectId))
               // Don't fire an event; the ImagesDao will already have
               // raised ImageCreated
             }
@@ -105,10 +107,10 @@ class DockerHubActor @javax.inject.Inject() (
             case None => {
               if (start.plusSeconds(TimeoutSeconds).isBefore(new DateTime)) {
                 val ex = new java.util.concurrent.TimeoutException()
-                eventLogProcessor.error(s"Timeout after $TimeoutSeconds seconds. Docker image $imageFullName was not built", log = log)
+                eventLogProcessor.error(s"Timeout after $TimeoutSeconds seconds. Docker image $imageFullName was not built", log = log(projectId))
 
               } else {
-                eventLogProcessor.checkpoint(s"Docker hub image $imageFullName is not ready. Will check again in $IntervalSeconds seconds", log = log)
+                eventLogProcessor.checkpoint(s"Docker hub image $imageFullName is not ready. Will check again in $IntervalSeconds seconds", log = log(projectId))
                 system.scheduler.scheduleOnce(Duration(IntervalSeconds, "seconds")) {
                   self ! DockerHubActor.Messages.Monitor(version, start)
                 }
@@ -130,19 +132,19 @@ class DockerHubActor @javax.inject.Inject() (
       requestHeaders = dockerHubToken.requestHeaders(org.id)
     ).map { dockerHubBuild =>
       // TODO: Log the docker hub URL and not the VCS url
-      eventLogProcessor.completed(s"Docker Hub repository and automated build [${dockerHubBuild.repoWebUrl}] created.", log = log)
+      eventLogProcessor.completed(s"Docker Hub repository and automated build [${dockerHubBuild.repoWebUrl}] created.", log = log(project.id))
     }.recover {
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
         code match {
           case 400 => // automated build already exists
           case _ => {
-            eventLogProcessor.completed(s"Docker Hub returned HTTP $code when trying to create automated build", log = log)
+            eventLogProcessor.completed(s"Docker Hub returned HTTP $code when trying to create automated build", log = log(project.id))
           }
         }
       }
       case err => {
         err.printStackTrace(System.err)
-        eventLogProcessor.completed(s"Error creating Docker Hub repository and automated build: $err", Some(err), log = log)
+        eventLogProcessor.completed(s"Error creating Docker Hub repository and automated build: $err", Some(err), log = log(project.id))
       }
     }
   }
