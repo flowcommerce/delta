@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.4"
 
-val awsVersion = "1.11.267"
+val awsVersion = "1.11.273"
 
 lazy val generated = project
   .in(file("generated"))
@@ -42,13 +42,13 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play26" % "0.0.60",
+      "io.flow" %% "lib-postgresql-play26" % "0.0.62",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.1.2",
-      "org.postgresql" % "postgresql" % "42.2.0",
+      "org.postgresql" % "postgresql" % "42.2.1",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8"
     )
   )
@@ -66,9 +66,9 @@ lazy val www = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       "org.webjars" %% "webjars-play" % "2.6.3",
-      "org.webjars" % "bootstrap" % "3.3.7",
+      "org.webjars" % "bootstrap" % "4.0.0",
       "org.webjars.bower" % "bootstrap-social" % "5.1.1",
-      "org.webjars" % "font-awesome" % "5.0.2",
+      "org.webjars" % "font-awesome" % "5.0.6",
       "org.webjars" % "jquery" % "2.1.4"
     )
   )
@@ -84,8 +84,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.4.37-rc1",
-    "io.flow" %% "lib-test-utils" % "0.0.4" % Test
+    "io.flow" %% "lib-play-play26" % "0.4.38",
+    "io.flow" %% "lib-test-utils" % "0.0.6" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
