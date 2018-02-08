@@ -97,7 +97,7 @@ class ApplicationController @javax.inject.Inject() (
     Redirect(request.path + "/")
   }
 
-  def index(organization: Option[String], buildsPage: Int = 0) = IdentifiedCookie.async { implicit request =>
+  def index(organization: Option[String], buildsPage: Int = 0) = User.async { implicit request =>
     for {
       dashboardBuilds <- deltaClient(request).dashboardBuilds.get(
         limit = Pagination.DefaultLimit+1,

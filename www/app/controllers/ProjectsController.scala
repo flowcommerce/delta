@@ -25,7 +25,7 @@ class ProjectsController @javax.inject.Inject() (
 
   override def section = Some(io.flow.delta.www.lib.Section.Projects)
 
-  def index(page: Int = 0) = IdentifiedCookie.async { implicit request =>
+  def index(page: Int = 0) = User.async { implicit request =>
     for {
       projects <- deltaClient(request).projects.get(
         limit = Pagination.DefaultLimit+1,
@@ -41,7 +41,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def show(id: String) = IdentifiedCookie.async { implicit request =>
+  def show(id: String) = User.async { implicit request =>
     withProject(request, id) { project =>
       for {
         buildStates <- deltaClient(request).projects.getBuildsAndStatesById(id)
@@ -88,7 +88,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def github() = IdentifiedCookie.async { implicit request =>
+  def github() = User.async { implicit request =>
     for {
       orgs <- organizations(request)
     } yield {
@@ -111,7 +111,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def githubOrg(orgId: String, repositoriesPage: Int = 0) = IdentifiedCookie.async { implicit request =>
+  def githubOrg(orgId: String, repositoriesPage: Int = 0) = User.async { implicit request =>
     withOrganization(request, orgId) { org =>
       for {
         repositories <- deltaClient(request).repositories.get(
@@ -135,7 +135,7 @@ class ProjectsController @javax.inject.Inject() (
     owner: String, // github owner, ex. flowcommerce
     name: String,  // github repo name, ex. user
     repositoriesPage: Int = 0
-  ) = IdentifiedCookie.async { implicit request =>
+  ) = User.async { implicit request =>
     withOrganization(request, orgId) { org =>
       deltaClient(request).repositories.get(
         organizationId = Some(org.id),
@@ -181,7 +181,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def create() = IdentifiedCookie.async { implicit request =>
+  def create() = User.async { implicit request =>
     organizations(request).map { orgs =>
       Ok(
         views.html.projects.create(
@@ -193,7 +193,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def postCreate() = IdentifiedCookie.async { implicit request =>
+  def postCreate() = User.async { implicit request =>
     val boundForm = ProjectsController.uiForm.bindFromRequest
 
     organizations(request).flatMap { orgs =>
@@ -225,7 +225,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def edit(id: String) = IdentifiedCookie.async { implicit request =>
+  def edit(id: String) = User.async { implicit request =>
     withProject(request, id) { project =>
       organizations(request).map { orgs =>
         Ok(
@@ -248,7 +248,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def postEdit(id: String) = IdentifiedCookie.async { implicit request =>
+  def postEdit(id: String) = User.async { implicit request =>
     organizations(request).flatMap { orgs =>
       withProject(request, id) { project =>
         val boundForm = ProjectsController.uiForm.bindFromRequest
@@ -281,7 +281,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def postDelete(id: String) = IdentifiedCookie.async { implicit request =>
+  def postDelete(id: String) = User.async { implicit request =>
     deltaClient(request).projects.deleteById(id).map { response =>
       Redirect(routes.ProjectsController.index()).flashing("success" -> s"Project deleted")
     }.recover {
@@ -291,7 +291,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  def postSync(id: String) = IdentifiedCookie.async { implicit request =>
+  def postSync(id: String) = User.async { implicit request =>
     deltaClient(request).projects.postEventsAndPursueDesiredStateById(id).map { _ =>
       Redirect(routes.ProjectsController.show(id)).flashing("success" -> s"Project sync triggered")
     }

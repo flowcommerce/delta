@@ -23,11 +23,11 @@ class OrganizationsController @javax.inject.Inject() (
 
   override def section = None
 
-  def redirectToDashboard(org: String) = IdentifiedCookie { implicit request =>
+  def redirectToDashboard(org: String) = User { implicit request =>
     Redirect(routes.ApplicationController.index(organization = Some(org)))
   }
 
-  def index(page: Int = 0) = IdentifiedCookie.async { implicit request =>
+  def index(page: Int = 0) = User.async { implicit request =>
     for {
       organizations <- deltaClient(request).organizations.get(
         limit = Pagination.DefaultLimit+1,
@@ -43,7 +43,7 @@ class OrganizationsController @javax.inject.Inject() (
     }
   }
 
-  def show(id: String, projectsPage: Int = 0) = IdentifiedCookie.async { implicit request =>
+  def show(id: String, projectsPage: Int = 0) = User.async { implicit request =>
     withOrganization(request, id) { org =>
       for {
         projects <- deltaClient(request).projects.get(
@@ -63,7 +63,7 @@ class OrganizationsController @javax.inject.Inject() (
     }
   }
 
-  def create(returnUrl: Option[String]) = IdentifiedCookie { implicit request =>
+  def create(returnUrl: Option[String]) = User { implicit request =>
     Ok(
       views.html.organizations.create(
         uiData(request),
@@ -79,7 +79,7 @@ class OrganizationsController @javax.inject.Inject() (
     )
   }
 
-  def postCreate() = IdentifiedCookie.async { implicit request =>
+  def postCreate() = User.async { implicit request =>
     val boundForm = OrganizationsController.uiForm.bindFromRequest
     boundForm.fold (
 
@@ -108,7 +108,7 @@ class OrganizationsController @javax.inject.Inject() (
     )
   }
 
-  def edit(id: String) = IdentifiedCookie.async { implicit request =>
+  def edit(id: String) = User.async { implicit request =>
     withOrganization(request, id) { organization =>
       Future {
         Ok(
@@ -129,7 +129,7 @@ class OrganizationsController @javax.inject.Inject() (
     }
   }
 
-  def postEdit(id: String) = IdentifiedCookie.async { implicit request =>
+  def postEdit(id: String) = User.async { implicit request =>
     withOrganization(request, id) { organization =>
       val boundForm = OrganizationsController.uiForm.bindFromRequest
       boundForm.fold (
@@ -151,7 +151,7 @@ class OrganizationsController @javax.inject.Inject() (
     }
   }
 
-  def postDelete(id: String) = IdentifiedCookie.async { implicit request =>
+  def postDelete(id: String) = User.async { implicit request =>
     withOrganization(request, id) { org =>
       deltaClient(request).organizations.deleteById(org.id).map { response =>
         Redirect(routes.OrganizationsController.index()).flashing("success" -> s"Organization deleted")
