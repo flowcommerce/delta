@@ -68,7 +68,7 @@ lazy val www = project
       "org.webjars" %% "webjars-play" % "2.6.3",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars.bower" % "bootstrap-social" % "5.1.1",
-      "org.webjars" % "font-awesome" % "5.0.2",
+      "org.webjars" % "font-awesome" % "5.0.6",
       "org.webjars" % "jquery" % "2.1.4"
     )
   )
@@ -84,7 +84,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.4.38",
+    "io.flow" %% "lib-play-play26" % "0.4.41",
     "io.flow" %% "lib-test-utils" % "0.0.6" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
