@@ -6,16 +6,16 @@ import io.flow.play.util.{Config, PaginatedCollection, Pagination}
 import play.api.i18n.MessagesApi
 import play.api.mvc.ControllerComponents
 
-class SearchController @javax.inject.Inject() (
-  override val config: Config,
-  override val messagesApi: MessagesApi,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
+import scala.concurrent.ExecutionContext
 
-  import scala.concurrent.ExecutionContext.Implicits.global
+class SearchController @javax.inject.Inject() (
+  val config: Config,
+  messagesApi: MessagesApi,
+  deltaClientProvider: DeltaClientProvider,
+  controllerComponents: ControllerComponents,
+  flowControllerComponents: FlowControllerComponents
+)(implicit ec: ExecutionContext)
+  extends BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) {
 
   override def section = None
 

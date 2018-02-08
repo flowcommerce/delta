@@ -9,10 +9,12 @@ import org.joda.time.DateTime
 import play.api.i18n.MessagesApi
 import play.api.mvc._
 
+import scala.concurrent.ExecutionContext
+
 /**
   * Wrapper to simplify display
   */
-case class BuildView(val dashboardBuild: io.flow.delta.v0.models.DashboardBuild) {
+case class BuildView(dashboardBuild: io.flow.delta.v0.models.DashboardBuild) {
 
   private[this] val MinutesUntilError = 30
 
@@ -81,16 +83,14 @@ case class BuildView(val dashboardBuild: io.flow.delta.v0.models.DashboardBuild)
 }
 
 class ApplicationController @javax.inject.Inject() (
-  override val config: Config,
-  override val messagesApi: MessagesApi,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
+  val config: Config,
+  messagesApi: MessagesApi,
+  deltaClientProvider: DeltaClientProvider,
+  controllerComponents: ControllerComponents,
+  flowControllerComponents: FlowControllerComponents
+)(implicit ec: ExecutionContext)
+  extends BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
- 
   override def section = Some(io.flow.delta.www.lib.Section.Dashboard)
 
   def redirect = Action { request =>

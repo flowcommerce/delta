@@ -12,18 +12,16 @@ import play.api.data._
 import play.api.i18n.MessagesApi
 import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class ProjectsController @javax.inject.Inject() (
-  override val config: Config,
-  override val messagesApi: MessagesApi,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+  val config: Config,
+  messagesApi: MessagesApi,
+  deltaClientProvider: DeltaClientProvider,
+  controllerComponents: ControllerComponents,
+  flowControllerComponents: FlowControllerComponents
+)(implicit ec: ExecutionContext)
+  extends BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) {
 
   override def section = Some(io.flow.delta.www.lib.Section.Projects)
 

@@ -8,7 +8,7 @@ import io.flow.play.util.Config
 import play.api.i18n._
 import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object Subscriptions {
 
@@ -22,32 +22,21 @@ object Subscriptions {
 }
 
 class SubscriptionsController @javax.inject.Inject() (
-  override val config: Config,
-  override val messagesApi: MessagesApi,
-  override val tokenClient: io.flow.token.v0.interfaces.Client,
-  override val deltaClientProvider: DeltaClientProvider,
-  override val controllerComponents: ControllerComponents,
-  override val flowControllerComponents: FlowControllerComponents
-) extends BaseController(tokenClient, deltaClientProvider, controllerComponents, flowControllerComponents) with I18nSupport {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+  val config: Config,
+  messagesApi: MessagesApi,
+  deltaClientProvider: DeltaClientProvider,
+  controllerComponents: ControllerComponents,
+  flowControllerComponents: FlowControllerComponents
+)(implicit ec: ExecutionContext)
+  extends BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) with I18nSupport {
 
   override def section = Some(io.flow.delta.www.lib.Section.Events)
 
   lazy val client = deltaClientProvider.newClient(user = None, requestId = None)
 
-  def index() = Action.async { implicit request =>
-    Helpers.userFromSession(tokenClient, request.session).flatMap { userOption =>
-      userOption match {
-        case None => Future {
-          Redirect(routes.LoginController.index(return_url = Some(request.path)))
-        }
-        case Some(user) => {
-          deltaClientProvider.newClient(user = Some(user), requestId = None).users.getIdentifierById(user.id).map { id =>
-            Redirect(routes.SubscriptionsController.identifier(id.value))
-          }
-        }
-      }
+  def index() =  User.async { implicit request =>
+    deltaClientProvider.newClient(user = Some(request.user), requestId = None).users.getIdentifierById(request.user.id).map { id =>
+      Redirect(routes.SubscriptionsController.identifier(id.value))
     }
   }
 

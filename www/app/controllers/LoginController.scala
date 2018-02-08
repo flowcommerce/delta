@@ -9,14 +9,14 @@ import play.api.Logger
 import play.api.i18n._
 import play.api.mvc.ControllerComponents
 
+import scala.concurrent.ExecutionContext
+
 class LoginController @javax.inject.Inject() (
   override val messagesApi: MessagesApi,
   val provider: DeltaClientProvider,
   val controllerComponents: ControllerComponents,
   val flowControllerComponents: FlowControllerComponents
-) extends FlowController with I18nSupport {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+)(implicit ec: ExecutionContext) extends FlowController with I18nSupport {
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl))

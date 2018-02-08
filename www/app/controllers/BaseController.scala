@@ -4,49 +4,29 @@ import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.Client
 import io.flow.delta.v0.models.Organization
 import io.flow.delta.www.lib.{DeltaClientProvider, Section, UiData}
+import io.flow.play.controllers.IdentifiedCookie.UserKey
 import io.flow.play.controllers._
+import io.flow.play.util.AuthHeaders
 import play.api.i18n._
 import play.api.mvc._
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 
-object Helpers {
-
-  def userFromSession(
-    tokenClient: io.flow.token.v0.interfaces.Client,
-    session: play.api.mvc.Session
-  ) (
-    implicit ec: scala.concurrent.ExecutionContext
-  ): scala.concurrent.Future[Option[UserReference]] = {
-    session.get("user_id") match {
-      case None => {
-        scala.concurrent.Future { None }
-      }
-      case Some(userId) => {
-        Future { Some(UserReference(id = userId)) }
-      }
-    }
-  }
-
-}
-
 abstract class BaseController(
-  val tokenClient: io.flow.token.v0.interfaces.Client,
   val deltaClientProvider: DeltaClientProvider,
   val controllerComponents: ControllerComponents,
   val flowControllerComponents: FlowControllerComponents
-) extends FlowController with FlowActionInvokeBlockHelper
-  with I18nSupport
-{
+)(implicit val ec: ExecutionContext) extends FlowController with I18nSupport {
 
-  private[this] lazy val client = deltaClientProvider.newClient(user = None, requestId = None)
+  protected def onUnauthorized(requestHeader: RequestHeader): Result =
+    Redirect(routes.LoginController.index(return_url = Some(requestHeader.path))).flashing("warning" -> "Please login")
+
+  private lazy val UserActionBuilder =
+    new UserActionBuilder(controllerComponents.parsers.default, onUnauthorized = onUnauthorized)
+  protected def User = UserActionBuilder
 
   def section: Option[Section]
-
-  override def unauthorized[A](request: Request[A]): Result = {
-    Redirect(routes.LoginController.index(return_url = Some(request.path))).flashing("warning" -> "Please login")
-  }
 
   def withOrganization[T](
     request: IdentifiedRequest[T],
@@ -96,32 +76,23 @@ abstract class BaseController(
     )
   }
 
-  def uiData[T](
-    request: AnonymousRequest[T], user: Option[UserReference]
-  ) (
-    implicit ec: ExecutionContext
-  ): UiData = {
-    val userReferenceOption = Await.result(
-      Helpers.userFromSession(tokenClient, request.session),
-      Duration(1, "seconds")
-    )
-
-    val user = userReferenceOption.flatMap { ref =>
-      Await.result(
-        client.users.get(id = Some(ref.id)),
-        Duration(1, "seconds")
-      ).headOption
-    }
-
-    UiData(
-      requestPath = request.path,
-      user = user,
-      section = section
-    )
-  }
-
-  def deltaClient[T](request: IdentifiedRequest[T]): Client = {
+  def deltaClient[T](request: IdentifiedRequest[T]): Client =
     deltaClientProvider.newClient(user = Some(request.user), requestId = Some(request.auth.requestId))
-  }
 
+}
+
+class UserActionBuilder(
+  val parser: BodyParser[AnyContent],
+  onUnauthorized: RequestHeader => Result
+)(
+  implicit val executionContext: ExecutionContext
+) extends ActionBuilder[IdentifiedRequest, AnyContent] {
+
+  def invokeBlock[A](request: Request[A], block: (IdentifiedRequest[A]) => Future[Result]): Future[Result] =
+    request.session.get(UserKey) match {
+      case None => Future.successful(onUnauthorized(request))
+      case Some(userId) =>
+        val auth = AuthHeaders.user(UserReference(id = userId))
+        block(new IdentifiedRequest(auth, request))
+    }
 }
