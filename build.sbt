@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.4"
 
-val awsVersion = "1.11.273"
+val awsVersion = "1.11.279"
 
 lazy val generated = project
   .in(file("generated"))
@@ -42,7 +42,7 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play26" % "0.0.62",
+      "io.flow" %% "lib-postgresql-play26" % "0.0.63",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
@@ -84,7 +84,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.4.43",
+    "io.flow" %% "lib-play-play26" % "0.4.48",
     "io.flow" %% "lib-test-utils" % "0.0.6" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
