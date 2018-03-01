@@ -14,6 +14,14 @@
       "types": [
         { "type": "project_summary" }
       ]
+    },
+
+    "sns_message_ami": {
+      "discriminator": "Type",
+      "types": [
+        { "type": "SubscriptionConfirmation", "description": "See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS-AMI-SubscribeTopic.html#ECS-AMI-Notification-format" },
+        { "type": "Notification" }
+      ]
     }
   },
 
@@ -403,6 +411,43 @@
         { "name": "organization", "type": "string" },
         { "name": "key", "type": "string" },
         { "name": "value", "type": "string" }
+      ]
+    },
+
+    "SubscriptionConfirmation": {
+      "fields": [
+        { "name": "SubscribeURL", "type": "string" }
+      ]
+    },
+
+    "Notification": {
+      "fields": [
+        { "name": "Message", "type": "sns_message_ami_update" }
+      ]
+    },
+
+    "sns_message_ami_update": {
+      "fields": [
+        { "name": "ECSAmis", "type": "ecs_amis" }
+      ]
+    },
+
+    "ecs_amis": {
+      "fields": [
+        { "name": "Regions", "type": "ecs_ami_regions" }
+      ]
+    },
+
+    "ecs_ami_regions": {
+      "fields": [
+        { "name": "us-east-1", "type": "ecs_ami_region_image" }
+      ]
+    },
+
+    "ecs_ami_region_image": {
+      "fields": [
+        { "name": "Name", "type": "string" },
+        { "name": "ImageId", "type": "string" }
       ]
     }
 
@@ -1082,6 +1127,18 @@
           "responses": {
             "200": { "type": "[dashboard_build]" },
             "401": { "type": "unit" }
+          }
+        }
+      ]
+    },
+
+    "sns_message_ami": {
+      "operations": [
+        {
+          "method": "POST",
+          "body": { "type": "sns_message_ami" },
+          "responses": {
+            "200": { "type": "unit" }
           }
         }
       ]
