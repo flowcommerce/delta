@@ -1,6 +1,6 @@
 package io.flow.delta.aws
 
-import com.amazonaws.auth.BasicAWSCredentials
+import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider, BasicAWSCredentials}
 import io.flow.play.util.Config
 import play.api.{Environment, Mode}
 
@@ -21,6 +21,11 @@ class Credentials @javax.inject.Inject() (
         config.requiredString("aws.delta.secret.key")
       )
     }
+  }
+
+  val provider = new AWSCredentialsProvider {
+    override def refresh() {}
+    override def getCredentials: AWSCredentials = aws
   }
 
 }

@@ -14,14 +14,6 @@
       "types": [
         { "type": "project_summary" }
       ]
-    },
-
-    "sns_message_ami": {
-      "discriminator": "Type",
-      "types": [
-        { "type": "SubscriptionConfirmation", "description": "See https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS-AMI-SubscribeTopic.html#ECS-AMI-Notification-format" },
-        { "type": "Notification" }
-      ]
     }
   },
 
@@ -414,19 +406,7 @@
       ]
     },
 
-    "SubscriptionConfirmation": {
-      "fields": [
-        { "name": "SubscribeURL", "type": "string" }
-      ]
-    },
-
-    "Notification": {
-      "fields": [
-        { "name": "Message", "type": "sns_message_ami_update" }
-      ]
-    },
-
-    "sns_message_ami_update": {
+    "sns_message_ami": {
       "fields": [
         { "name": "ECSAmis", "type": "ecs_amis" }
       ]
