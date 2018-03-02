@@ -2,6 +2,7 @@ package io.flow.delta.actors
 
 import akka.actor.{Actor, ActorSystem}
 import db._
+import db.generated.AmiUpdatesDao
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.aws.{AutoScalingGroup, DefaultSettings, EC2ContainerService, ElasticLoadBalancer}
 import io.flow.delta.config.v0.models.BuildStage
@@ -10,6 +11,7 @@ import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
 import io.flow.delta.v0.models.{Build, Docker, StateForm}
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
+import io.flow.postgresql.OrderBy
 import play.api.Logger
 
 import scala.concurrent.Future
@@ -53,6 +55,7 @@ class BuildActor @javax.inject.Inject() (
   override val projectsDao: ProjectsDao,
   override val organizationsDao: OrganizationsDao,
   buildLastStatesDao: BuildLastStatesDao,
+  amiUpdatesDao: AmiUpdatesDao,
   config: Config,
   ecs: EC2ContainerService,
   elb: ElasticLoadBalancer,
@@ -264,6 +267,7 @@ class BuildActor @javax.inject.Inject() (
   private[this] def awsSettings() = withBuildConfig { bc =>
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
+    val ami = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id
 
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
@@ -277,7 +281,7 @@ class BuildActor @javax.inject.Inject() (
       lcSecurityGroup = config.requiredString("aws.launch.configuration.security.group"),
       elbSecurityGroup = config.requiredString("aws.service.security.group"),
       ec2KeyName = config.requiredString("aws.service.key"),
-      launchConfigImageId = config.requiredString("aws.launch.configuration.ami"),
+      launchConfigImageId = ami,
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
       serviceRole = config.requiredString("aws.service.role"),
       instanceType = instanceType,

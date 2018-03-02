@@ -7,8 +7,10 @@ import com.amazonaws.SdkClientException
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sns.message._
 import com.amazonaws.services.sns.model.ConfirmSubscriptionResult
+import db.generated.{AmiUpdateForm, AmiUpdatesDao}
 import io.flow.delta.v0.models.SnsMessageAmi
 import io.flow.delta.v0.models.json._
+import io.flow.play.util.Constants
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
@@ -16,7 +18,8 @@ import play.api.mvc.{BaseController, ControllerComponents}
 import scala.util.{Failure, Success, Try}
 
 class SnsMessageAmis @Inject()(
-  val controllerComponents: ControllerComponents
+  val controllerComponents: ControllerComponents,
+  dao: AmiUpdatesDao
 ) extends BaseController {
 
   private val logger = Logger(getClass)
@@ -35,6 +38,11 @@ class SnsMessageAmis @Inject()(
           case JsSuccess(ami, _) =>
 
             logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${ami.ECSAmis.Regions.usEast1.ImageId}")
+
+            dao.insert(Constants.SystemUser, AmiUpdateForm(
+              ami.ECSAmis.Regions.usEast1.ImageId,
+              ami.ECSAmis.Regions.usEast1.Name
+            ))
 
           case JsError(errors) =>
 
