@@ -2448,225 +2448,264 @@ package io.flow.common.v0 {
   object Bindables {
 
     import play.api.mvc.{PathBindable, QueryStringBindable}
-    import org.joda.time.{DateTime, LocalDate}
-    import org.joda.time.format.ISODateTimeFormat
-    import io.flow.common.v0.models._
 
-    // Type: date-time-iso8601
-    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[org.joda.time.DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
+    // import models directly for backwards compatibility with prior versions of the generator
+    import Core._
+    import Models._
 
-    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[org.joda.time.DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
+    object Core {
+      implicit val pathBindableDateTimeIso8601: PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit val queryStringBindableDateTimeIso8601: QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
 
-    // Type: date-iso8601
-    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[org.joda.time.LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
+      implicit val pathBindableDateIso8601: PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
+      implicit val queryStringBindableDateIso8601: QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+    }
 
-    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
+    object Models {
+      import io.flow.common.v0.models._
 
-    // Enum: Calendar
-    private[this] val enumCalendarNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Calendar.all.mkString(", ")}"
+      val calendarConverter: ApibuilderTypeConverter[io.flow.common.v0.models.Calendar] = new ApibuilderTypeConverter[io.flow.common.v0.models.Calendar] {
+        override def convert(value: String): io.flow.common.v0.models.Calendar = io.flow.common.v0.models.Calendar(value)
+        override def convert(value: io.flow.common.v0.models.Calendar): String = value.toString
+        override def example: io.flow.common.v0.models.Calendar = io.flow.common.v0.models.Calendar.Weekdays
+        override def validValues: Seq[io.flow.common.v0.models.Calendar] = io.flow.common.v0.models.Calendar.all
+      }
+      implicit val pathBindableCalendar: PathBindable[io.flow.common.v0.models.Calendar] = ApibuilderPathBindable(calendarConverter)
+      implicit val queryStringBindableCalendar: QueryStringBindable[io.flow.common.v0.models.Calendar] = ApibuilderQueryStringBindable(calendarConverter)
 
-    implicit val pathBindableEnumCalendar = new PathBindable.Parsing[io.flow.common.v0.models.Calendar] (
-      Calendar.fromString(_).get, _.toString, enumCalendarNotFound
-    )
+      val capabilityConverter: ApibuilderTypeConverter[io.flow.common.v0.models.Capability] = new ApibuilderTypeConverter[io.flow.common.v0.models.Capability] {
+        override def convert(value: String): io.flow.common.v0.models.Capability = io.flow.common.v0.models.Capability(value)
+        override def convert(value: io.flow.common.v0.models.Capability): String = value.toString
+        override def example: io.flow.common.v0.models.Capability = io.flow.common.v0.models.Capability.Crossdock
+        override def validValues: Seq[io.flow.common.v0.models.Capability] = io.flow.common.v0.models.Capability.all
+      }
+      implicit val pathBindableCapability: PathBindable[io.flow.common.v0.models.Capability] = ApibuilderPathBindable(capabilityConverter)
+      implicit val queryStringBindableCapability: QueryStringBindable[io.flow.common.v0.models.Capability] = ApibuilderQueryStringBindable(capabilityConverter)
 
-    implicit val queryStringBindableEnumCalendar = new QueryStringBindable.Parsing[io.flow.common.v0.models.Calendar](
-      Calendar.fromString(_).get, _.toString, enumCalendarNotFound
-    )
+      val changeTypeConverter: ApibuilderTypeConverter[io.flow.common.v0.models.ChangeType] = new ApibuilderTypeConverter[io.flow.common.v0.models.ChangeType] {
+        override def convert(value: String): io.flow.common.v0.models.ChangeType = io.flow.common.v0.models.ChangeType(value)
+        override def convert(value: io.flow.common.v0.models.ChangeType): String = value.toString
+        override def example: io.flow.common.v0.models.ChangeType = io.flow.common.v0.models.ChangeType.Insert
+        override def validValues: Seq[io.flow.common.v0.models.ChangeType] = io.flow.common.v0.models.ChangeType.all
+      }
+      implicit val pathBindableChangeType: PathBindable[io.flow.common.v0.models.ChangeType] = ApibuilderPathBindable(changeTypeConverter)
+      implicit val queryStringBindableChangeType: QueryStringBindable[io.flow.common.v0.models.ChangeType] = ApibuilderQueryStringBindable(changeTypeConverter)
 
-    // Enum: Capability
-    private[this] val enumCapabilityNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Capability.all.mkString(", ")}"
+      val deliveredDutyConverter: ApibuilderTypeConverter[io.flow.common.v0.models.DeliveredDuty] = new ApibuilderTypeConverter[io.flow.common.v0.models.DeliveredDuty] {
+        override def convert(value: String): io.flow.common.v0.models.DeliveredDuty = io.flow.common.v0.models.DeliveredDuty(value)
+        override def convert(value: io.flow.common.v0.models.DeliveredDuty): String = value.toString
+        override def example: io.flow.common.v0.models.DeliveredDuty = io.flow.common.v0.models.DeliveredDuty.Paid
+        override def validValues: Seq[io.flow.common.v0.models.DeliveredDuty] = io.flow.common.v0.models.DeliveredDuty.all
+      }
+      implicit val pathBindableDeliveredDuty: PathBindable[io.flow.common.v0.models.DeliveredDuty] = ApibuilderPathBindable(deliveredDutyConverter)
+      implicit val queryStringBindableDeliveredDuty: QueryStringBindable[io.flow.common.v0.models.DeliveredDuty] = ApibuilderQueryStringBindable(deliveredDutyConverter)
 
-    implicit val pathBindableEnumCapability = new PathBindable.Parsing[io.flow.common.v0.models.Capability] (
-      Capability.fromString(_).get, _.toString, enumCapabilityNotFound
-    )
+      val environmentConverter: ApibuilderTypeConverter[io.flow.common.v0.models.Environment] = new ApibuilderTypeConverter[io.flow.common.v0.models.Environment] {
+        override def convert(value: String): io.flow.common.v0.models.Environment = io.flow.common.v0.models.Environment(value)
+        override def convert(value: io.flow.common.v0.models.Environment): String = value.toString
+        override def example: io.flow.common.v0.models.Environment = io.flow.common.v0.models.Environment.Sandbox
+        override def validValues: Seq[io.flow.common.v0.models.Environment] = io.flow.common.v0.models.Environment.all
+      }
+      implicit val pathBindableEnvironment: PathBindable[io.flow.common.v0.models.Environment] = ApibuilderPathBindable(environmentConverter)
+      implicit val queryStringBindableEnvironment: QueryStringBindable[io.flow.common.v0.models.Environment] = ApibuilderQueryStringBindable(environmentConverter)
 
-    implicit val queryStringBindableEnumCapability = new QueryStringBindable.Parsing[io.flow.common.v0.models.Capability](
-      Capability.fromString(_).get, _.toString, enumCapabilityNotFound
-    )
+      val exceptionTypeConverter: ApibuilderTypeConverter[io.flow.common.v0.models.ExceptionType] = new ApibuilderTypeConverter[io.flow.common.v0.models.ExceptionType] {
+        override def convert(value: String): io.flow.common.v0.models.ExceptionType = io.flow.common.v0.models.ExceptionType(value)
+        override def convert(value: io.flow.common.v0.models.ExceptionType): String = value.toString
+        override def example: io.flow.common.v0.models.ExceptionType = io.flow.common.v0.models.ExceptionType.Open
+        override def validValues: Seq[io.flow.common.v0.models.ExceptionType] = io.flow.common.v0.models.ExceptionType.all
+      }
+      implicit val pathBindableExceptionType: PathBindable[io.flow.common.v0.models.ExceptionType] = ApibuilderPathBindable(exceptionTypeConverter)
+      implicit val queryStringBindableExceptionType: QueryStringBindable[io.flow.common.v0.models.ExceptionType] = ApibuilderQueryStringBindable(exceptionTypeConverter)
 
-    // Enum: ChangeType
-    private[this] val enumChangeTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.ChangeType.all.mkString(", ")}"
+      val holidayCalendarConverter: ApibuilderTypeConverter[io.flow.common.v0.models.HolidayCalendar] = new ApibuilderTypeConverter[io.flow.common.v0.models.HolidayCalendar] {
+        override def convert(value: String): io.flow.common.v0.models.HolidayCalendar = io.flow.common.v0.models.HolidayCalendar(value)
+        override def convert(value: io.flow.common.v0.models.HolidayCalendar): String = value.toString
+        override def example: io.flow.common.v0.models.HolidayCalendar = io.flow.common.v0.models.HolidayCalendar.UsBankHolidays
+        override def validValues: Seq[io.flow.common.v0.models.HolidayCalendar] = io.flow.common.v0.models.HolidayCalendar.all
+      }
+      implicit val pathBindableHolidayCalendar: PathBindable[io.flow.common.v0.models.HolidayCalendar] = ApibuilderPathBindable(holidayCalendarConverter)
+      implicit val queryStringBindableHolidayCalendar: QueryStringBindable[io.flow.common.v0.models.HolidayCalendar] = ApibuilderQueryStringBindable(holidayCalendarConverter)
 
-    implicit val pathBindableEnumChangeType = new PathBindable.Parsing[io.flow.common.v0.models.ChangeType] (
-      ChangeType.fromString(_).get, _.toString, enumChangeTypeNotFound
-    )
+      val marginTypeConverter: ApibuilderTypeConverter[io.flow.common.v0.models.MarginType] = new ApibuilderTypeConverter[io.flow.common.v0.models.MarginType] {
+        override def convert(value: String): io.flow.common.v0.models.MarginType = io.flow.common.v0.models.MarginType(value)
+        override def convert(value: io.flow.common.v0.models.MarginType): String = value.toString
+        override def example: io.flow.common.v0.models.MarginType = io.flow.common.v0.models.MarginType.Fixed
+        override def validValues: Seq[io.flow.common.v0.models.MarginType] = io.flow.common.v0.models.MarginType.all
+      }
+      implicit val pathBindableMarginType: PathBindable[io.flow.common.v0.models.MarginType] = ApibuilderPathBindable(marginTypeConverter)
+      implicit val queryStringBindableMarginType: QueryStringBindable[io.flow.common.v0.models.MarginType] = ApibuilderQueryStringBindable(marginTypeConverter)
 
-    implicit val queryStringBindableEnumChangeType = new QueryStringBindable.Parsing[io.flow.common.v0.models.ChangeType](
-      ChangeType.fromString(_).get, _.toString, enumChangeTypeNotFound
-    )
+      val measurementSystemConverter: ApibuilderTypeConverter[io.flow.common.v0.models.MeasurementSystem] = new ApibuilderTypeConverter[io.flow.common.v0.models.MeasurementSystem] {
+        override def convert(value: String): io.flow.common.v0.models.MeasurementSystem = io.flow.common.v0.models.MeasurementSystem(value)
+        override def convert(value: io.flow.common.v0.models.MeasurementSystem): String = value.toString
+        override def example: io.flow.common.v0.models.MeasurementSystem = io.flow.common.v0.models.MeasurementSystem.Imperial
+        override def validValues: Seq[io.flow.common.v0.models.MeasurementSystem] = io.flow.common.v0.models.MeasurementSystem.all
+      }
+      implicit val pathBindableMeasurementSystem: PathBindable[io.flow.common.v0.models.MeasurementSystem] = ApibuilderPathBindable(measurementSystemConverter)
+      implicit val queryStringBindableMeasurementSystem: QueryStringBindable[io.flow.common.v0.models.MeasurementSystem] = ApibuilderQueryStringBindable(measurementSystemConverter)
 
-    // Enum: DeliveredDuty
-    private[this] val enumDeliveredDutyNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.DeliveredDuty.all.mkString(", ")}"
+      val roleConverter: ApibuilderTypeConverter[io.flow.common.v0.models.Role] = new ApibuilderTypeConverter[io.flow.common.v0.models.Role] {
+        override def convert(value: String): io.flow.common.v0.models.Role = io.flow.common.v0.models.Role(value)
+        override def convert(value: io.flow.common.v0.models.Role): String = value.toString
+        override def example: io.flow.common.v0.models.Role = io.flow.common.v0.models.Role.Admin
+        override def validValues: Seq[io.flow.common.v0.models.Role] = io.flow.common.v0.models.Role.all
+      }
+      implicit val pathBindableRole: PathBindable[io.flow.common.v0.models.Role] = ApibuilderPathBindable(roleConverter)
+      implicit val queryStringBindableRole: QueryStringBindable[io.flow.common.v0.models.Role] = ApibuilderQueryStringBindable(roleConverter)
 
-    implicit val pathBindableEnumDeliveredDuty = new PathBindable.Parsing[io.flow.common.v0.models.DeliveredDuty] (
-      DeliveredDuty.fromString(_).get, _.toString, enumDeliveredDutyNotFound
-    )
+      val roundingMethodConverter: ApibuilderTypeConverter[io.flow.common.v0.models.RoundingMethod] = new ApibuilderTypeConverter[io.flow.common.v0.models.RoundingMethod] {
+        override def convert(value: String): io.flow.common.v0.models.RoundingMethod = io.flow.common.v0.models.RoundingMethod(value)
+        override def convert(value: io.flow.common.v0.models.RoundingMethod): String = value.toString
+        override def example: io.flow.common.v0.models.RoundingMethod = io.flow.common.v0.models.RoundingMethod.Up
+        override def validValues: Seq[io.flow.common.v0.models.RoundingMethod] = io.flow.common.v0.models.RoundingMethod.all
+      }
+      implicit val pathBindableRoundingMethod: PathBindable[io.flow.common.v0.models.RoundingMethod] = ApibuilderPathBindable(roundingMethodConverter)
+      implicit val queryStringBindableRoundingMethod: QueryStringBindable[io.flow.common.v0.models.RoundingMethod] = ApibuilderQueryStringBindable(roundingMethodConverter)
 
-    implicit val queryStringBindableEnumDeliveredDuty = new QueryStringBindable.Parsing[io.flow.common.v0.models.DeliveredDuty](
-      DeliveredDuty.fromString(_).get, _.toString, enumDeliveredDutyNotFound
-    )
+      val roundingTypeConverter: ApibuilderTypeConverter[io.flow.common.v0.models.RoundingType] = new ApibuilderTypeConverter[io.flow.common.v0.models.RoundingType] {
+        override def convert(value: String): io.flow.common.v0.models.RoundingType = io.flow.common.v0.models.RoundingType(value)
+        override def convert(value: io.flow.common.v0.models.RoundingType): String = value.toString
+        override def example: io.flow.common.v0.models.RoundingType = io.flow.common.v0.models.RoundingType.Pattern
+        override def validValues: Seq[io.flow.common.v0.models.RoundingType] = io.flow.common.v0.models.RoundingType.all
+      }
+      implicit val pathBindableRoundingType: PathBindable[io.flow.common.v0.models.RoundingType] = ApibuilderPathBindable(roundingTypeConverter)
+      implicit val queryStringBindableRoundingType: QueryStringBindable[io.flow.common.v0.models.RoundingType] = ApibuilderQueryStringBindable(roundingTypeConverter)
 
-    // Enum: Environment
-    private[this] val enumEnvironmentNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Environment.all.mkString(", ")}"
+      val scheduleExceptionStatusConverter: ApibuilderTypeConverter[io.flow.common.v0.models.ScheduleExceptionStatus] = new ApibuilderTypeConverter[io.flow.common.v0.models.ScheduleExceptionStatus] {
+        override def convert(value: String): io.flow.common.v0.models.ScheduleExceptionStatus = io.flow.common.v0.models.ScheduleExceptionStatus(value)
+        override def convert(value: io.flow.common.v0.models.ScheduleExceptionStatus): String = value.toString
+        override def example: io.flow.common.v0.models.ScheduleExceptionStatus = io.flow.common.v0.models.ScheduleExceptionStatus.Open
+        override def validValues: Seq[io.flow.common.v0.models.ScheduleExceptionStatus] = io.flow.common.v0.models.ScheduleExceptionStatus.all
+      }
+      implicit val pathBindableScheduleExceptionStatus: PathBindable[io.flow.common.v0.models.ScheduleExceptionStatus] = ApibuilderPathBindable(scheduleExceptionStatusConverter)
+      implicit val queryStringBindableScheduleExceptionStatus: QueryStringBindable[io.flow.common.v0.models.ScheduleExceptionStatus] = ApibuilderQueryStringBindable(scheduleExceptionStatusConverter)
 
-    implicit val pathBindableEnumEnvironment = new PathBindable.Parsing[io.flow.common.v0.models.Environment] (
-      Environment.fromString(_).get, _.toString, enumEnvironmentNotFound
-    )
+      val sortDirectionConverter: ApibuilderTypeConverter[io.flow.common.v0.models.SortDirection] = new ApibuilderTypeConverter[io.flow.common.v0.models.SortDirection] {
+        override def convert(value: String): io.flow.common.v0.models.SortDirection = io.flow.common.v0.models.SortDirection(value)
+        override def convert(value: io.flow.common.v0.models.SortDirection): String = value.toString
+        override def example: io.flow.common.v0.models.SortDirection = io.flow.common.v0.models.SortDirection.Ascending
+        override def validValues: Seq[io.flow.common.v0.models.SortDirection] = io.flow.common.v0.models.SortDirection.all
+      }
+      implicit val pathBindableSortDirection: PathBindable[io.flow.common.v0.models.SortDirection] = ApibuilderPathBindable(sortDirectionConverter)
+      implicit val queryStringBindableSortDirection: QueryStringBindable[io.flow.common.v0.models.SortDirection] = ApibuilderQueryStringBindable(sortDirectionConverter)
 
-    implicit val queryStringBindableEnumEnvironment = new QueryStringBindable.Parsing[io.flow.common.v0.models.Environment](
-      Environment.fromString(_).get, _.toString, enumEnvironmentNotFound
-    )
+      val unitOfMeasurementConverter: ApibuilderTypeConverter[io.flow.common.v0.models.UnitOfMeasurement] = new ApibuilderTypeConverter[io.flow.common.v0.models.UnitOfMeasurement] {
+        override def convert(value: String): io.flow.common.v0.models.UnitOfMeasurement = io.flow.common.v0.models.UnitOfMeasurement(value)
+        override def convert(value: io.flow.common.v0.models.UnitOfMeasurement): String = value.toString
+        override def example: io.flow.common.v0.models.UnitOfMeasurement = io.flow.common.v0.models.UnitOfMeasurement.Millimeter
+        override def validValues: Seq[io.flow.common.v0.models.UnitOfMeasurement] = io.flow.common.v0.models.UnitOfMeasurement.all
+      }
+      implicit val pathBindableUnitOfMeasurement: PathBindable[io.flow.common.v0.models.UnitOfMeasurement] = ApibuilderPathBindable(unitOfMeasurementConverter)
+      implicit val queryStringBindableUnitOfMeasurement: QueryStringBindable[io.flow.common.v0.models.UnitOfMeasurement] = ApibuilderQueryStringBindable(unitOfMeasurementConverter)
 
-    // Enum: ExceptionType
-    private[this] val enumExceptionTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.ExceptionType.all.mkString(", ")}"
+      val unitOfTimeConverter: ApibuilderTypeConverter[io.flow.common.v0.models.UnitOfTime] = new ApibuilderTypeConverter[io.flow.common.v0.models.UnitOfTime] {
+        override def convert(value: String): io.flow.common.v0.models.UnitOfTime = io.flow.common.v0.models.UnitOfTime(value)
+        override def convert(value: io.flow.common.v0.models.UnitOfTime): String = value.toString
+        override def example: io.flow.common.v0.models.UnitOfTime = io.flow.common.v0.models.UnitOfTime.Day
+        override def validValues: Seq[io.flow.common.v0.models.UnitOfTime] = io.flow.common.v0.models.UnitOfTime.all
+      }
+      implicit val pathBindableUnitOfTime: PathBindable[io.flow.common.v0.models.UnitOfTime] = ApibuilderPathBindable(unitOfTimeConverter)
+      implicit val queryStringBindableUnitOfTime: QueryStringBindable[io.flow.common.v0.models.UnitOfTime] = ApibuilderQueryStringBindable(unitOfTimeConverter)
 
-    implicit val pathBindableEnumExceptionType = new PathBindable.Parsing[io.flow.common.v0.models.ExceptionType] (
-      ExceptionType.fromString(_).get, _.toString, enumExceptionTypeNotFound
-    )
+      val valueAddedServiceConverter: ApibuilderTypeConverter[io.flow.common.v0.models.ValueAddedService] = new ApibuilderTypeConverter[io.flow.common.v0.models.ValueAddedService] {
+        override def convert(value: String): io.flow.common.v0.models.ValueAddedService = io.flow.common.v0.models.ValueAddedService(value)
+        override def convert(value: io.flow.common.v0.models.ValueAddedService): String = value.toString
+        override def example: io.flow.common.v0.models.ValueAddedService = io.flow.common.v0.models.ValueAddedService.HazardousMaterial
+        override def validValues: Seq[io.flow.common.v0.models.ValueAddedService] = io.flow.common.v0.models.ValueAddedService.all
+      }
+      implicit val pathBindableValueAddedService: PathBindable[io.flow.common.v0.models.ValueAddedService] = ApibuilderPathBindable(valueAddedServiceConverter)
+      implicit val queryStringBindableValueAddedService: QueryStringBindable[io.flow.common.v0.models.ValueAddedService] = ApibuilderQueryStringBindable(valueAddedServiceConverter)
 
-    implicit val queryStringBindableEnumExceptionType = new QueryStringBindable.Parsing[io.flow.common.v0.models.ExceptionType](
-      ExceptionType.fromString(_).get, _.toString, enumExceptionTypeNotFound
-    )
+      val visibilityConverter: ApibuilderTypeConverter[io.flow.common.v0.models.Visibility] = new ApibuilderTypeConverter[io.flow.common.v0.models.Visibility] {
+        override def convert(value: String): io.flow.common.v0.models.Visibility = io.flow.common.v0.models.Visibility(value)
+        override def convert(value: io.flow.common.v0.models.Visibility): String = value.toString
+        override def example: io.flow.common.v0.models.Visibility = io.flow.common.v0.models.Visibility.Public
+        override def validValues: Seq[io.flow.common.v0.models.Visibility] = io.flow.common.v0.models.Visibility.all
+      }
+      implicit val pathBindableVisibility: PathBindable[io.flow.common.v0.models.Visibility] = ApibuilderPathBindable(visibilityConverter)
+      implicit val queryStringBindableVisibility: QueryStringBindable[io.flow.common.v0.models.Visibility] = ApibuilderQueryStringBindable(visibilityConverter)
+    }
 
-    // Enum: HolidayCalendar
-    private[this] val enumHolidayCalendarNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.HolidayCalendar.all.mkString(", ")}"
+    trait ApibuilderTypeConverter[T] {
 
-    implicit val pathBindableEnumHolidayCalendar = new PathBindable.Parsing[io.flow.common.v0.models.HolidayCalendar] (
-      HolidayCalendar.fromString(_).get, _.toString, enumHolidayCalendarNotFound
-    )
+      def convert(value: String): T
 
-    implicit val queryStringBindableEnumHolidayCalendar = new QueryStringBindable.Parsing[io.flow.common.v0.models.HolidayCalendar](
-      HolidayCalendar.fromString(_).get, _.toString, enumHolidayCalendarNotFound
-    )
+      def convert(value: T): String
 
-    // Enum: MarginType
-    private[this] val enumMarginTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.MarginType.all.mkString(", ")}"
+      def example: T
 
-    implicit val pathBindableEnumMarginType = new PathBindable.Parsing[io.flow.common.v0.models.MarginType] (
-      MarginType.fromString(_).get, _.toString, enumMarginTypeNotFound
-    )
+      def validValues: Seq[T] = Nil
 
-    implicit val queryStringBindableEnumMarginType = new QueryStringBindable.Parsing[io.flow.common.v0.models.MarginType](
-      MarginType.fromString(_).get, _.toString, enumMarginTypeNotFound
-    )
+      def errorMessage(key: String, value: String, ex: java.lang.Exception): String = {
+        val base = s"Invalid value '$value' for parameter '$key'. "
+        validValues.toList match {
+          case Nil => base + "Ex: " + convert(example)
+          case values => base + ". Valid values are: " + values.mkString("'", "', '", "'")
+        }
+      }
+    }
 
-    // Enum: MeasurementSystem
-    private[this] val enumMeasurementSystemNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.MeasurementSystem.all.mkString(", ")}"
+    object ApibuilderTypes {
+      import org.joda.time.{format, DateTime, LocalDate}
 
-    implicit val pathBindableEnumMeasurementSystem = new PathBindable.Parsing[io.flow.common.v0.models.MeasurementSystem] (
-      MeasurementSystem.fromString(_).get, _.toString, enumMeasurementSystemNotFound
-    )
+      val dateTimeIso8601: ApibuilderTypeConverter[DateTime] = new ApibuilderTypeConverter[DateTime] {
+        override def convert(value: String): DateTime = format.ISODateTimeFormat.dateTimeParser.parseDateTime(value)
+        override def convert(value: DateTime): String = format.ISODateTimeFormat.dateTime.print(value)
+        override def example: DateTime = DateTime.now
+      }
 
-    implicit val queryStringBindableEnumMeasurementSystem = new QueryStringBindable.Parsing[io.flow.common.v0.models.MeasurementSystem](
-      MeasurementSystem.fromString(_).get, _.toString, enumMeasurementSystemNotFound
-    )
+      val dateIso8601: ApibuilderTypeConverter[LocalDate] = new ApibuilderTypeConverter[LocalDate] {
+        override def convert(value: String): LocalDate = format.ISODateTimeFormat.yearMonthDay.parseLocalDate(value)
+        override def convert(value: LocalDate): String = value.toString
+        override def example: LocalDate = LocalDate.now
+      }
 
-    // Enum: Role
-    private[this] val enumRoleNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Role.all.mkString(", ")}"
+    }
 
-    implicit val pathBindableEnumRole = new PathBindable.Parsing[io.flow.common.v0.models.Role] (
-      Role.fromString(_).get, _.toString, enumRoleNotFound
-    )
+    case class ApibuilderQueryStringBindable[T](
+      converters: ApibuilderTypeConverter[T]
+    ) extends QueryStringBindable[T] {
 
-    implicit val queryStringBindableEnumRole = new QueryStringBindable.Parsing[io.flow.common.v0.models.Role](
-      Role.fromString(_).get, _.toString, enumRoleNotFound
-    )
+      override def bind(key: String, params: Map[String, Seq[String]]): _root_.scala.Option[_root_.scala.Either[String, T]] = {
+        params.getOrElse(key, Nil).headOption.map { v =>
+          try {
+            Right(
+              converters.convert(v)
+            )
+          } catch {
+            case ex: java.lang.Exception => Left(
+              converters.errorMessage(key, v, ex)
+            )
+          }
+        }
+      }
 
-    // Enum: RoundingMethod
-    private[this] val enumRoundingMethodNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.RoundingMethod.all.mkString(", ")}"
+      override def unbind(key: String, value: T): String = {
+        converters.convert(value)
+      }
+    }
 
-    implicit val pathBindableEnumRoundingMethod = new PathBindable.Parsing[io.flow.common.v0.models.RoundingMethod] (
-      RoundingMethod.fromString(_).get, _.toString, enumRoundingMethodNotFound
-    )
+    case class ApibuilderPathBindable[T](
+      converters: ApibuilderTypeConverter[T]
+    ) extends PathBindable[T] {
 
-    implicit val queryStringBindableEnumRoundingMethod = new QueryStringBindable.Parsing[io.flow.common.v0.models.RoundingMethod](
-      RoundingMethod.fromString(_).get, _.toString, enumRoundingMethodNotFound
-    )
+      override def bind(key: String, value: String): _root_.scala.Either[String, T] = {
+        try {
+          Right(
+            converters.convert(value)
+          )
+        } catch {
+          case ex: java.lang.Exception => Left(
+            converters.errorMessage(key, value, ex)
+          )
+        }
+      }
 
-    // Enum: RoundingType
-    private[this] val enumRoundingTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.RoundingType.all.mkString(", ")}"
-
-    implicit val pathBindableEnumRoundingType = new PathBindable.Parsing[io.flow.common.v0.models.RoundingType] (
-      RoundingType.fromString(_).get, _.toString, enumRoundingTypeNotFound
-    )
-
-    implicit val queryStringBindableEnumRoundingType = new QueryStringBindable.Parsing[io.flow.common.v0.models.RoundingType](
-      RoundingType.fromString(_).get, _.toString, enumRoundingTypeNotFound
-    )
-
-    // Enum: ScheduleExceptionStatus
-    private[this] val enumScheduleExceptionStatusNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.ScheduleExceptionStatus.all.mkString(", ")}"
-
-    implicit val pathBindableEnumScheduleExceptionStatus = new PathBindable.Parsing[io.flow.common.v0.models.ScheduleExceptionStatus] (
-      ScheduleExceptionStatus.fromString(_).get, _.toString, enumScheduleExceptionStatusNotFound
-    )
-
-    implicit val queryStringBindableEnumScheduleExceptionStatus = new QueryStringBindable.Parsing[io.flow.common.v0.models.ScheduleExceptionStatus](
-      ScheduleExceptionStatus.fromString(_).get, _.toString, enumScheduleExceptionStatusNotFound
-    )
-
-    // Enum: SortDirection
-    private[this] val enumSortDirectionNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.SortDirection.all.mkString(", ")}"
-
-    implicit val pathBindableEnumSortDirection = new PathBindable.Parsing[io.flow.common.v0.models.SortDirection] (
-      SortDirection.fromString(_).get, _.toString, enumSortDirectionNotFound
-    )
-
-    implicit val queryStringBindableEnumSortDirection = new QueryStringBindable.Parsing[io.flow.common.v0.models.SortDirection](
-      SortDirection.fromString(_).get, _.toString, enumSortDirectionNotFound
-    )
-
-    // Enum: UnitOfMeasurement
-    private[this] val enumUnitOfMeasurementNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.UnitOfMeasurement.all.mkString(", ")}"
-
-    implicit val pathBindableEnumUnitOfMeasurement = new PathBindable.Parsing[io.flow.common.v0.models.UnitOfMeasurement] (
-      UnitOfMeasurement.fromString(_).get, _.toString, enumUnitOfMeasurementNotFound
-    )
-
-    implicit val queryStringBindableEnumUnitOfMeasurement = new QueryStringBindable.Parsing[io.flow.common.v0.models.UnitOfMeasurement](
-      UnitOfMeasurement.fromString(_).get, _.toString, enumUnitOfMeasurementNotFound
-    )
-
-    // Enum: UnitOfTime
-    private[this] val enumUnitOfTimeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.UnitOfTime.all.mkString(", ")}"
-
-    implicit val pathBindableEnumUnitOfTime = new PathBindable.Parsing[io.flow.common.v0.models.UnitOfTime] (
-      UnitOfTime.fromString(_).get, _.toString, enumUnitOfTimeNotFound
-    )
-
-    implicit val queryStringBindableEnumUnitOfTime = new QueryStringBindable.Parsing[io.flow.common.v0.models.UnitOfTime](
-      UnitOfTime.fromString(_).get, _.toString, enumUnitOfTimeNotFound
-    )
-
-    // Enum: ValueAddedService
-    private[this] val enumValueAddedServiceNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.ValueAddedService.all.mkString(", ")}"
-
-    implicit val pathBindableEnumValueAddedService = new PathBindable.Parsing[io.flow.common.v0.models.ValueAddedService] (
-      ValueAddedService.fromString(_).get, _.toString, enumValueAddedServiceNotFound
-    )
-
-    implicit val queryStringBindableEnumValueAddedService = new QueryStringBindable.Parsing[io.flow.common.v0.models.ValueAddedService](
-      ValueAddedService.fromString(_).get, _.toString, enumValueAddedServiceNotFound
-    )
-
-    // Enum: Visibility
-    private[this] val enumVisibilityNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.common.v0.models.Visibility.all.mkString(", ")}"
-
-    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[io.flow.common.v0.models.Visibility] (
-      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
-    )
-
-    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[io.flow.common.v0.models.Visibility](
-      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
-    )
+      override def unbind(key: String, value: T): String = {
+        converters.convert(value)
+      }
+    }
 
   }
 

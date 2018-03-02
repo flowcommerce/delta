@@ -189,38 +189,111 @@ package io.flow.github.oauth.v0 {
   object Bindables {
 
     import play.api.mvc.{PathBindable, QueryStringBindable}
-    import org.joda.time.{DateTime, LocalDate}
-    import org.joda.time.format.ISODateTimeFormat
-    import io.flow.github.oauth.v0.models._
 
-    // Type: date-time-iso8601
-    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[org.joda.time.DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
+    // import models directly for backwards compatibility with prior versions of the generator
+    import Core._
+    import Models._
 
-    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[org.joda.time.DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
+    object Core {
+      implicit val pathBindableDateTimeIso8601: PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit val queryStringBindableDateTimeIso8601: QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
 
-    // Type: date-iso8601
-    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[org.joda.time.LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
+      implicit val pathBindableDateIso8601: PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
+      implicit val queryStringBindableDateIso8601: QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+    }
 
-    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
+    object Models {
+      import io.flow.github.oauth.v0.models._
 
-    // Enum: TokenType
-    private[this] val enumTokenTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.oauth.v0.models.TokenType.all.mkString(", ")}"
+      val tokenTypeConverter: ApibuilderTypeConverter[io.flow.github.oauth.v0.models.TokenType] = new ApibuilderTypeConverter[io.flow.github.oauth.v0.models.TokenType] {
+        override def convert(value: String): io.flow.github.oauth.v0.models.TokenType = io.flow.github.oauth.v0.models.TokenType(value)
+        override def convert(value: io.flow.github.oauth.v0.models.TokenType): String = value.toString
+        override def example: io.flow.github.oauth.v0.models.TokenType = io.flow.github.oauth.v0.models.TokenType.Bearer
+        override def validValues: Seq[io.flow.github.oauth.v0.models.TokenType] = io.flow.github.oauth.v0.models.TokenType.all
+      }
+      implicit val pathBindableTokenType: PathBindable[io.flow.github.oauth.v0.models.TokenType] = ApibuilderPathBindable(tokenTypeConverter)
+      implicit val queryStringBindableTokenType: QueryStringBindable[io.flow.github.oauth.v0.models.TokenType] = ApibuilderQueryStringBindable(tokenTypeConverter)
+    }
 
-    implicit val pathBindableEnumTokenType = new PathBindable.Parsing[io.flow.github.oauth.v0.models.TokenType] (
-      TokenType.fromString(_).get, _.toString, enumTokenTypeNotFound
-    )
+    trait ApibuilderTypeConverter[T] {
 
-    implicit val queryStringBindableEnumTokenType = new QueryStringBindable.Parsing[io.flow.github.oauth.v0.models.TokenType](
-      TokenType.fromString(_).get, _.toString, enumTokenTypeNotFound
-    )
+      def convert(value: String): T
+
+      def convert(value: T): String
+
+      def example: T
+
+      def validValues: Seq[T] = Nil
+
+      def errorMessage(key: String, value: String, ex: java.lang.Exception): String = {
+        val base = s"Invalid value '$value' for parameter '$key'. "
+        validValues.toList match {
+          case Nil => base + "Ex: " + convert(example)
+          case values => base + ". Valid values are: " + values.mkString("'", "', '", "'")
+        }
+      }
+    }
+
+    object ApibuilderTypes {
+      import org.joda.time.{format, DateTime, LocalDate}
+
+      val dateTimeIso8601: ApibuilderTypeConverter[DateTime] = new ApibuilderTypeConverter[DateTime] {
+        override def convert(value: String): DateTime = format.ISODateTimeFormat.dateTimeParser.parseDateTime(value)
+        override def convert(value: DateTime): String = format.ISODateTimeFormat.dateTime.print(value)
+        override def example: DateTime = DateTime.now
+      }
+
+      val dateIso8601: ApibuilderTypeConverter[LocalDate] = new ApibuilderTypeConverter[LocalDate] {
+        override def convert(value: String): LocalDate = format.ISODateTimeFormat.yearMonthDay.parseLocalDate(value)
+        override def convert(value: LocalDate): String = value.toString
+        override def example: LocalDate = LocalDate.now
+      }
+
+    }
+
+    case class ApibuilderQueryStringBindable[T](
+      converters: ApibuilderTypeConverter[T]
+    ) extends QueryStringBindable[T] {
+
+      override def bind(key: String, params: Map[String, Seq[String]]): _root_.scala.Option[_root_.scala.Either[String, T]] = {
+        params.getOrElse(key, Nil).headOption.map { v =>
+          try {
+            Right(
+              converters.convert(v)
+            )
+          } catch {
+            case ex: java.lang.Exception => Left(
+              converters.errorMessage(key, v, ex)
+            )
+          }
+        }
+      }
+
+      override def unbind(key: String, value: T): String = {
+        converters.convert(value)
+      }
+    }
+
+    case class ApibuilderPathBindable[T](
+      converters: ApibuilderTypeConverter[T]
+    ) extends PathBindable[T] {
+
+      override def bind(key: String, value: String): _root_.scala.Either[String, T] = {
+        try {
+          Right(
+            converters.convert(value)
+          )
+        } catch {
+          case ex: java.lang.Exception => Left(
+            converters.errorMessage(key, value, ex)
+          )
+        }
+      }
+
+      override def unbind(key: String, value: T): String = {
+        converters.convert(value)
+      }
+    }
 
   }
 

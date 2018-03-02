@@ -1678,93 +1678,156 @@ package io.flow.github.v0 {
   object Bindables {
 
     import play.api.mvc.{PathBindable, QueryStringBindable}
-    import org.joda.time.{DateTime, LocalDate}
-    import org.joda.time.format.ISODateTimeFormat
-    import io.flow.github.v0.models._
 
-    // Type: date-time-iso8601
-    implicit val pathBindableTypeDateTimeIso8601 = new PathBindable.Parsing[org.joda.time.DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
+    // import models directly for backwards compatibility with prior versions of the generator
+    import Core._
+    import Models._
 
-    implicit val queryStringBindableTypeDateTimeIso8601 = new QueryStringBindable.Parsing[org.joda.time.DateTime](
-      ISODateTimeFormat.dateTimeParser.parseDateTime(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date time $key. Example: 2014-04-29T11:56:52Z"
-    )
+    object Core {
+      implicit val pathBindableDateTimeIso8601: PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit val queryStringBindableDateTimeIso8601: QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
 
-    // Type: date-iso8601
-    implicit val pathBindableTypeDateIso8601 = new PathBindable.Parsing[org.joda.time.LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
+      implicit val pathBindableDateIso8601: PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
+      implicit val queryStringBindableDateIso8601: QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+    }
 
-    implicit val queryStringBindableTypeDateIso8601 = new QueryStringBindable.Parsing[org.joda.time.LocalDate](
-      ISODateTimeFormat.yearMonthDay.parseLocalDate(_), _.toString, (key: String, e: _root_.java.lang.Exception) => s"Error parsing date $key. Example: 2014-04-29"
-    )
+    object Models {
+      import io.flow.github.v0.models._
 
-    // Enum: ContentsType
-    private[this] val enumContentsTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.v0.models.ContentsType.all.mkString(", ")}"
+      val contentsTypeConverter: ApibuilderTypeConverter[io.flow.github.v0.models.ContentsType] = new ApibuilderTypeConverter[io.flow.github.v0.models.ContentsType] {
+        override def convert(value: String): io.flow.github.v0.models.ContentsType = io.flow.github.v0.models.ContentsType(value)
+        override def convert(value: io.flow.github.v0.models.ContentsType): String = value.toString
+        override def example: io.flow.github.v0.models.ContentsType = io.flow.github.v0.models.ContentsType.File
+        override def validValues: Seq[io.flow.github.v0.models.ContentsType] = io.flow.github.v0.models.ContentsType.all
+      }
+      implicit val pathBindableContentsType: PathBindable[io.flow.github.v0.models.ContentsType] = ApibuilderPathBindable(contentsTypeConverter)
+      implicit val queryStringBindableContentsType: QueryStringBindable[io.flow.github.v0.models.ContentsType] = ApibuilderQueryStringBindable(contentsTypeConverter)
 
-    implicit val pathBindableEnumContentsType = new PathBindable.Parsing[io.flow.github.v0.models.ContentsType] (
-      ContentsType.fromString(_).get, _.toString, enumContentsTypeNotFound
-    )
+      val encodingConverter: ApibuilderTypeConverter[io.flow.github.v0.models.Encoding] = new ApibuilderTypeConverter[io.flow.github.v0.models.Encoding] {
+        override def convert(value: String): io.flow.github.v0.models.Encoding = io.flow.github.v0.models.Encoding(value)
+        override def convert(value: io.flow.github.v0.models.Encoding): String = value.toString
+        override def example: io.flow.github.v0.models.Encoding = io.flow.github.v0.models.Encoding.Base64
+        override def validValues: Seq[io.flow.github.v0.models.Encoding] = io.flow.github.v0.models.Encoding.all
+      }
+      implicit val pathBindableEncoding: PathBindable[io.flow.github.v0.models.Encoding] = ApibuilderPathBindable(encodingConverter)
+      implicit val queryStringBindableEncoding: QueryStringBindable[io.flow.github.v0.models.Encoding] = ApibuilderQueryStringBindable(encodingConverter)
 
-    implicit val queryStringBindableEnumContentsType = new QueryStringBindable.Parsing[io.flow.github.v0.models.ContentsType](
-      ContentsType.fromString(_).get, _.toString, enumContentsTypeNotFound
-    )
+      val hookEventConverter: ApibuilderTypeConverter[io.flow.github.v0.models.HookEvent] = new ApibuilderTypeConverter[io.flow.github.v0.models.HookEvent] {
+        override def convert(value: String): io.flow.github.v0.models.HookEvent = io.flow.github.v0.models.HookEvent(value)
+        override def convert(value: io.flow.github.v0.models.HookEvent): String = value.toString
+        override def example: io.flow.github.v0.models.HookEvent = io.flow.github.v0.models.HookEvent.Push
+        override def validValues: Seq[io.flow.github.v0.models.HookEvent] = io.flow.github.v0.models.HookEvent.all
+      }
+      implicit val pathBindableHookEvent: PathBindable[io.flow.github.v0.models.HookEvent] = ApibuilderPathBindable(hookEventConverter)
+      implicit val queryStringBindableHookEvent: QueryStringBindable[io.flow.github.v0.models.HookEvent] = ApibuilderQueryStringBindable(hookEventConverter)
 
-    // Enum: Encoding
-    private[this] val enumEncodingNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.v0.models.Encoding.all.mkString(", ")}"
+      val nodeTypeConverter: ApibuilderTypeConverter[io.flow.github.v0.models.NodeType] = new ApibuilderTypeConverter[io.flow.github.v0.models.NodeType] {
+        override def convert(value: String): io.flow.github.v0.models.NodeType = io.flow.github.v0.models.NodeType(value)
+        override def convert(value: io.flow.github.v0.models.NodeType): String = value.toString
+        override def example: io.flow.github.v0.models.NodeType = io.flow.github.v0.models.NodeType.Blob
+        override def validValues: Seq[io.flow.github.v0.models.NodeType] = io.flow.github.v0.models.NodeType.all
+      }
+      implicit val pathBindableNodeType: PathBindable[io.flow.github.v0.models.NodeType] = ApibuilderPathBindable(nodeTypeConverter)
+      implicit val queryStringBindableNodeType: QueryStringBindable[io.flow.github.v0.models.NodeType] = ApibuilderQueryStringBindable(nodeTypeConverter)
 
-    implicit val pathBindableEnumEncoding = new PathBindable.Parsing[io.flow.github.v0.models.Encoding] (
-      Encoding.fromString(_).get, _.toString, enumEncodingNotFound
-    )
+      val ownerTypeConverter: ApibuilderTypeConverter[io.flow.github.v0.models.OwnerType] = new ApibuilderTypeConverter[io.flow.github.v0.models.OwnerType] {
+        override def convert(value: String): io.flow.github.v0.models.OwnerType = io.flow.github.v0.models.OwnerType(value)
+        override def convert(value: io.flow.github.v0.models.OwnerType): String = value.toString
+        override def example: io.flow.github.v0.models.OwnerType = io.flow.github.v0.models.OwnerType.User
+        override def validValues: Seq[io.flow.github.v0.models.OwnerType] = io.flow.github.v0.models.OwnerType.all
+      }
+      implicit val pathBindableOwnerType: PathBindable[io.flow.github.v0.models.OwnerType] = ApibuilderPathBindable(ownerTypeConverter)
+      implicit val queryStringBindableOwnerType: QueryStringBindable[io.flow.github.v0.models.OwnerType] = ApibuilderQueryStringBindable(ownerTypeConverter)
 
-    implicit val queryStringBindableEnumEncoding = new QueryStringBindable.Parsing[io.flow.github.v0.models.Encoding](
-      Encoding.fromString(_).get, _.toString, enumEncodingNotFound
-    )
+      val visibilityConverter: ApibuilderTypeConverter[io.flow.github.v0.models.Visibility] = new ApibuilderTypeConverter[io.flow.github.v0.models.Visibility] {
+        override def convert(value: String): io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility(value)
+        override def convert(value: io.flow.github.v0.models.Visibility): String = value.toString
+        override def example: io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility.All
+        override def validValues: Seq[io.flow.github.v0.models.Visibility] = io.flow.github.v0.models.Visibility.all
+      }
+      implicit val pathBindableVisibility: PathBindable[io.flow.github.v0.models.Visibility] = ApibuilderPathBindable(visibilityConverter)
+      implicit val queryStringBindableVisibility: QueryStringBindable[io.flow.github.v0.models.Visibility] = ApibuilderQueryStringBindable(visibilityConverter)
+    }
 
-    // Enum: HookEvent
-    private[this] val enumHookEventNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.v0.models.HookEvent.all.mkString(", ")}"
+    trait ApibuilderTypeConverter[T] {
 
-    implicit val pathBindableEnumHookEvent = new PathBindable.Parsing[io.flow.github.v0.models.HookEvent] (
-      HookEvent.fromString(_).get, _.toString, enumHookEventNotFound
-    )
+      def convert(value: String): T
 
-    implicit val queryStringBindableEnumHookEvent = new QueryStringBindable.Parsing[io.flow.github.v0.models.HookEvent](
-      HookEvent.fromString(_).get, _.toString, enumHookEventNotFound
-    )
+      def convert(value: T): String
 
-    // Enum: NodeType
-    private[this] val enumNodeTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.v0.models.NodeType.all.mkString(", ")}"
+      def example: T
 
-    implicit val pathBindableEnumNodeType = new PathBindable.Parsing[io.flow.github.v0.models.NodeType] (
-      NodeType.fromString(_).get, _.toString, enumNodeTypeNotFound
-    )
+      def validValues: Seq[T] = Nil
 
-    implicit val queryStringBindableEnumNodeType = new QueryStringBindable.Parsing[io.flow.github.v0.models.NodeType](
-      NodeType.fromString(_).get, _.toString, enumNodeTypeNotFound
-    )
+      def errorMessage(key: String, value: String, ex: java.lang.Exception): String = {
+        val base = s"Invalid value '$value' for parameter '$key'. "
+        validValues.toList match {
+          case Nil => base + "Ex: " + convert(example)
+          case values => base + ". Valid values are: " + values.mkString("'", "', '", "'")
+        }
+      }
+    }
 
-    // Enum: OwnerType
-    private[this] val enumOwnerTypeNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.v0.models.OwnerType.all.mkString(", ")}"
+    object ApibuilderTypes {
+      import org.joda.time.{format, DateTime, LocalDate}
 
-    implicit val pathBindableEnumOwnerType = new PathBindable.Parsing[io.flow.github.v0.models.OwnerType] (
-      OwnerType.fromString(_).get, _.toString, enumOwnerTypeNotFound
-    )
+      val dateTimeIso8601: ApibuilderTypeConverter[DateTime] = new ApibuilderTypeConverter[DateTime] {
+        override def convert(value: String): DateTime = format.ISODateTimeFormat.dateTimeParser.parseDateTime(value)
+        override def convert(value: DateTime): String = format.ISODateTimeFormat.dateTime.print(value)
+        override def example: DateTime = DateTime.now
+      }
 
-    implicit val queryStringBindableEnumOwnerType = new QueryStringBindable.Parsing[io.flow.github.v0.models.OwnerType](
-      OwnerType.fromString(_).get, _.toString, enumOwnerTypeNotFound
-    )
+      val dateIso8601: ApibuilderTypeConverter[LocalDate] = new ApibuilderTypeConverter[LocalDate] {
+        override def convert(value: String): LocalDate = format.ISODateTimeFormat.yearMonthDay.parseLocalDate(value)
+        override def convert(value: LocalDate): String = value.toString
+        override def example: LocalDate = LocalDate.now
+      }
 
-    // Enum: Visibility
-    private[this] val enumVisibilityNotFound = (key: String, e: _root_.java.lang.Exception) => s"Unrecognized $key, should be one of ${io.flow.github.v0.models.Visibility.all.mkString(", ")}"
+    }
 
-    implicit val pathBindableEnumVisibility = new PathBindable.Parsing[io.flow.github.v0.models.Visibility] (
-      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
-    )
+    case class ApibuilderQueryStringBindable[T](
+      converters: ApibuilderTypeConverter[T]
+    ) extends QueryStringBindable[T] {
 
-    implicit val queryStringBindableEnumVisibility = new QueryStringBindable.Parsing[io.flow.github.v0.models.Visibility](
-      Visibility.fromString(_).get, _.toString, enumVisibilityNotFound
-    )
+      override def bind(key: String, params: Map[String, Seq[String]]): _root_.scala.Option[_root_.scala.Either[String, T]] = {
+        params.getOrElse(key, Nil).headOption.map { v =>
+          try {
+            Right(
+              converters.convert(v)
+            )
+          } catch {
+            case ex: java.lang.Exception => Left(
+              converters.errorMessage(key, v, ex)
+            )
+          }
+        }
+      }
+
+      override def unbind(key: String, value: T): String = {
+        converters.convert(value)
+      }
+    }
+
+    case class ApibuilderPathBindable[T](
+      converters: ApibuilderTypeConverter[T]
+    ) extends PathBindable[T] {
+
+      override def bind(key: String, value: String): _root_.scala.Either[String, T] = {
+        try {
+          Right(
+            converters.convert(value)
+          )
+        } catch {
+          case ex: java.lang.Exception => Left(
+            converters.errorMessage(key, value, ex)
+          )
+        }
+      }
+
+      override def unbind(key: String, value: T): String = {
+        converters.convert(value)
+      }
+    }
 
   }
 
