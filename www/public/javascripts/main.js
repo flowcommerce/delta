@@ -9,8 +9,6 @@ $(function () {
 
         data[name] = value === "Enabled";
 
-        data[name] = value === "Enabled";
-
         $.post(project + '/settings', data, function () {
             // show flash - TBD
         });
