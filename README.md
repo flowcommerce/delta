@@ -3,7 +3,7 @@
 delta
 =====
 
-Flow's continuous delivery management console.
+Flow's continuous delivery management system.
 
 Delta does continuous delivery using the following SAAS providers:
 
