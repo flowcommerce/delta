@@ -1,0 +1,40 @@
+---
+flow:
+  common:
+    anorm_2_6_parsers:
+    - api/app/generated/FlowCommonV0Conversions.scala
+    - api/app/generated/FlowCommonV0Parsers.scala
+    play_2_x_json:
+    - generated/app/FlowCommonV0Models.scala
+  docker-registry:
+    play_2_6_client:
+    - generated/app/FlowDockerRegistryV0Client.scala
+  docker-hub:
+    play_2_6_client:
+    - generated/app/FlowDockerHubV0Client.scala
+  github:
+    anorm_2_6_parsers:
+    - api/app/generated/FlowGithubV0Conversions.scala
+    - api/app/generated/FlowGithubV0Parsers.scala
+    play_2_6_client:
+    - generated/app/FlowGithubV0Client.scala
+  github-oauth:
+    play_2_6_client:
+    - generated/app/FlowGithubOauthV0Client.scala
+  delta:
+    play_2_x_routes:
+    - api/conf/delta.routes
+    anorm_2_6_parsers:
+    - api/app/generated/FlowDeltaV0Conversions.scala
+    - api/app/generated/FlowDeltaV0Parsers.scala
+    play_2_6_client:
+    - generated/app/FlowDeltaV0Client.scala
+  delta-config:
+    anorm_2_6_parsers:
+    - api/app/generated/FlowDeltaConfigV0Conversions.scala
+    - api/app/generated/FlowDeltaConfigV0Parsers.scala
+    play_2_x_json:
+    - generated/app/FlowDeltaConfigV0Models.scala
+  travis-ci:
+    play_2_6_client:
+    - generated/app/FlowTravisCiV0Client.scala
