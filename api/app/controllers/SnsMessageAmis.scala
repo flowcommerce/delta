@@ -13,7 +13,6 @@ import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
-import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 class SnsMessageAmis @Inject()(
@@ -22,9 +21,7 @@ class SnsMessageAmis @Inject()(
 
   private val logger = Logger(getClass)
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
-  def post() = Action.async(parse.tolerantText) { request =>
+  def post() = Action(parse.tolerantText) { request =>
 
     logger.info(s"SNS handler received: ${request.body}")
 
@@ -39,7 +36,9 @@ class SnsMessageAmis @Inject()(
 
             logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${ami.ECSAmis.Regions.usEast1.ImageId}")
 
-          case JsError(errors) => logger.error(s"Invalid message received: $errors")
+          case JsError(errors) =>
+
+            logger.error(s"FlowError: Invalid message received: $errors")
         }
 
       }
@@ -61,15 +60,7 @@ class SnsMessageAmis @Inject()(
       override def handle(message: SnsUnknownMessage): Unit = {}
     })
 
-
-    Future {
-      Ok
-    }
-
-    //      .validate[SnsMessageAmi] match {
-    //      case JsSuccess(value, path) =>
-    //      case JsError(errors) =>
-    //    }
+    Ok
   }
 
 }
