@@ -272,9 +272,9 @@ package io.flow.delta.v0.anorm.parsers {
       prefixOpt: Option[String] = None
     ): RowParser[io.flow.delta.v0.models.EcsAmis] = {
       io.flow.delta.v0.anorm.parsers.EcsAmiRegions.parserWithPrefix(prefixOpt.getOrElse("") + regionsPrefix) map {
-        case Regions => {
+        case regions => {
           io.flow.delta.v0.models.EcsAmis(
-            Regions = Regions
+            Regions = regions
           )
         }
       }

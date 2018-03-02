@@ -1,15 +1,14 @@
 package controllers
 
-import java.io.{ByteArrayInputStream, InputStream}
+import java.io.ByteArrayInputStream
 import javax.inject.Inject
 
 import com.amazonaws.SdkClientException
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sns.message._
-import com.amazonaws.services.sns.model.{ConfirmSubscriptionRequest, ConfirmSubscriptionResult}
-import com.amazonaws.services.sns.{AmazonSNSAsyncClient, AmazonSNSClientBuilder}
-import io.flow.delta.aws.{Configuration, Credentials}
+import com.amazonaws.services.sns.model.ConfirmSubscriptionResult
 import io.flow.delta.v0.models.SnsMessageAmi
+import io.flow.delta.v0.models.json._
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
@@ -50,7 +49,7 @@ class SnsMessageAmis @Inject()(
         Try(message.confirmSubscription()) match {
           case Failure(exception: SdkClientException) =>
             logger.error("FlowError: subscribing to SNS topic failed", exception)
-          case Success(ConfirmSubscriptionResult) =>
+          case Success(_: ConfirmSubscriptionResult) =>
             logger.info("Subscribed")
         }
       }
