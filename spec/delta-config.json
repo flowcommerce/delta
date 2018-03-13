@@ -88,7 +88,7 @@
         { "name": "memory", "type": "long", "required": false, "description": "The number of MiB of memory to set for jvm xmx" },
         { "name": "port_container", "type": "integer", "description": "The port number on the container that is bound to the user-specified or automatically assigned host port." },
         { "name": "port_host", "type": "integer", "description": "The port number on the container instance to reserve for your container" },
-        { "name": "remote_logging", "type": "boolean", "default": true, "description": "Flag whether this build should send logs to a remote location. e.g. Sumo Logic" },
+        { "name": "remote_logging", "type": "boolean", "required": false, "description": "Flag whether this build should send logs to a remote location. e.g. Sumo Logic" },
         { "name": "stages", "type": "[build_stage]", "minimum": 0 },
         { "name": "dependencies", "type": "[string]", "minimum": 0, "description": "The names of other builds that this one is dependent on. If specified, we will ensure that we never scale this build to a tag that is ahead of the minimum version of the dependent application running in production.", "example": "www" },
         { "name": "version", "type": "string", "required": "false", "description": "The version of Delta to use for deployments. Defaults to 1.0 if not specified", "example": "1.0" },
