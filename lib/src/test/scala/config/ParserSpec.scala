@@ -48,13 +48,15 @@ class ParserSpec extends PlaySpec {
             dockerfile = "api/Dockerfile",
             portContainer = 9000,
             portHost = 6091,
-            initialNumberInstances = 1
+            initialNumberInstances = 1,
+            remoteLogging = true
           ),
           Defaults.Build.copy(
             name = "www",
             dockerfile = "www/Dockerfile",
             portContainer = 9000,
-            portHost = 6090
+            portHost = 6090,
+            remoteLogging = false
           )
         )
       )
@@ -75,7 +77,8 @@ class ParserSpec extends PlaySpec {
             portContainer = 7050,
             portHost = 8000,
             stages = BuildStage.all.filter { _ != BuildStage.Scale },
-            dependencies = Seq("api")
+            dependencies = Seq("api"),
+            remoteLogging = true // defaults to true
           )
         )
       )
