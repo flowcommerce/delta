@@ -21,6 +21,7 @@ object Defaults {
     memory = None,
     portContainer = 80,
     portHost = 80,
+    remoteLogging = true,
     stages = models.BuildStage.all,
     dependencies = Nil,
     version = None,

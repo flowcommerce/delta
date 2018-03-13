@@ -287,7 +287,8 @@ class BuildActor @javax.inject.Inject() (
       portContainer = bc.portContainer,
       portHost = bc.portHost,
       version = bc.version.getOrElse("1.0"),  // default delta version
-      healthcheckUrl = bc.healthcheckUrl.getOrElse(config.requiredString("aws.elb.healthcheck.url"))
+      healthcheckUrl = bc.healthcheckUrl.getOrElse(config.requiredString("aws.elb.healthcheck.url")),
+      remoteLogging = bc.remoteLogging
     )
   }.getOrElse {
     sys.error(s"Build[$buildId] Must have build configuration before getting settings for auto scaling group")

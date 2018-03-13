@@ -12,56 +12,56 @@
     "item_summary": {
       "discriminator": "discriminator",
       "types": [
-	{ "type": "project_summary" }
+        { "type": "project_summary" }
       ]
     }
   },
-
+  
   "enums": {
     "docker_provider": {
       "values": [
-	{ "name": "docker_hub" }
+        { "name": "docker_hub" }
       ]
     },
 
     "role": {
       "values": [
-	{ "name": "member" },
-	{ "name": "admin" }
+        { "name": "member" },
+        { "name": "admin" }
       ]
     },
 
     "scms": {
       "values": [
-	{ "name": "github" }
+        { "name": "github" }
       ]
     },
 
     "status": {
       "values": [
-	{ "name": "enabled" },
-	{ "name": "paused" }
+        { "name": "enabled" },
+        { "name": "paused" }
       ]
     },
 
     "publication": {
       "description": "A publication represents something that a user can subscribe to.",
       "values": [
-	{ "name": "deployments", "description": "Get notified of all deployments" }
+        { "name": "deployments", "description": "Get notified of all deployments" }
       ]
     },
 
     "visibility": {
       "values": [
-	{ "name": "public" },
-	{ "name": "private" }
+        { "name": "public" },
+        { "name": "private" }
       ]
     },
 
     "event_type": {
       "values": [
-	{ "name": "change", "description": "Indicates this event actually reported a successful change was completed in the project" },
-	{ "name": "info", "description": "Indicates this was an informational event only" }
+        { "name": "change", "description": "Indicates this event actually reported a successful change was completed in the project" },
+        { "name": "info", "description": "Indicates this was an informational event only" }
       ]
     }
 
@@ -71,21 +71,21 @@
 
     "reference": {
       "fields": [
-	{ "name": "id", "type": "string" }
+        { "name": "id", "type": "string" }
       ]
     },
 
     "username_password": {
       "fields": [
-	{ "name": "username", "type": "string" },
-	{ "name": "password", "type": "string", "required": false }
+        { "name": "username", "type": "string" },
+        { "name": "password", "type": "string", "required": false }
       ]
     },
 
     "organization": {
       "fields": [
-	{ "name": "id", "type": "string" },
-	{ "name": "user", "type": "user_summary", "description": "The user that created this organization" },
+        { "name": "id", "type": "string" },
+        { "name": "user", "type": "user_summary", "description": "The user that created this organization" },
         { "name": "docker", "type": "docker", "description": "Required information to locate docker images for projects associated with this organization." },
         { "name": "travis", "type": "travis" }
       ]
@@ -93,13 +93,13 @@
 
     "organization_summary": {
       "fields": [
-	{ "name": "id", "type": "string" }
+        { "name": "id", "type": "string" }
       ]
     },
 
     "organization_form": {
       "fields": [
-	{ "name": "id", "type": "string" },
+        { "name": "id", "type": "string" },
         { "name": "docker", "type": "docker" },
         { "name": "travis", "type": "travis" }
       ]
@@ -120,34 +120,34 @@
 
     "project": {
       "fields": [
-	{ "name": "id", "type": "string" },
-	{ "name": "organization", "type": "organization_summary" },
-	{ "name": "user", "type": "reference", "description": "The user that created this project" },
-	{ "name": "visibility", "type": "visibility" },
-	{ "name": "scms", "type": "scms" },
-	{ "name": "name", "type": "string" },
-	{ "name": "uri", "type": "string" },
-	{ "name": "config", "type": "io.flow.delta.config.v0.unions.config" }
+        { "name": "id", "type": "string" },
+        { "name": "organization", "type": "organization_summary" },
+        { "name": "user", "type": "reference", "description": "The user that created this project" },
+        { "name": "visibility", "type": "visibility" },
+        { "name": "scms", "type": "scms" },
+        { "name": "name", "type": "string" },
+        { "name": "uri", "type": "string" },
+        { "name": "config", "type": "io.flow.delta.config.v0.unions.config" }
       ]
     },
 
     "project_summary": {
       "fields": [
-	{ "name": "id", "type": "string" },
-	{ "name": "organization", "type": "organization_summary" },
-	{ "name": "name", "type": "string" },
+        { "name": "id", "type": "string" },
+        { "name": "organization", "type": "organization_summary" },
+        { "name": "name", "type": "string" },
         { "name": "uri", "type": "string" }
       ]
     },
 
     "project_form": {
       "fields": [
-	{ "name": "organization", "type": "string" },
-	{ "name": "name", "type": "string" },
-	{ "name": "visibility", "type": "visibility" },
-	{ "name": "scms", "type": "scms" },
-	{ "name": "uri", "type": "string" },
-	{ "name": "config", "type": "io.flow.delta.config.v0.models.config_project", "required": false, "description": "Project configuration. If not provided, we use the global default" }
+        { "name": "organization", "type": "string" },
+        { "name": "name", "type": "string" },
+        { "name": "visibility", "type": "visibility" },
+        { "name": "scms", "type": "scms" },
+        { "name": "uri", "type": "string" },
+        { "name": "config", "type": "io.flow.delta.config.v0.models.config_project", "required": false, "description": "Project configuration. If not provided, we use the global default" }
       ]
     },
 
@@ -184,33 +184,33 @@
 
     "repository": {
       "fields": [
-	{ "name": "name", "type": "string" },
-	{ "name": "visibility", "type": "visibility" },
-	{ "name": "uri", "type": "string" }
+        { "name": "name", "type": "string" },
+        { "name": "visibility", "type": "visibility" },
+        { "name": "uri", "type": "string" }
       ]
     },
 
     "user_form": {
       "fields": [
-	{ "name": "email", "type": "string", "required": false },
-	{ "name": "name", "type": "io.flow.common.v0.models.name", "required": false }
+        { "name": "email", "type": "string", "required": false },
+        { "name": "name", "type": "io.flow.common.v0.models.name", "required": false }
       ]
     },
 
     "github_user_form": {
       "fields": [
-	{ "name": "user_id", "type": "string" },
-	{ "name": "github_user_id", "type": "long" },
-	{ "name": "login", "type": "string" }
+        { "name": "user_id", "type": "string" },
+        { "name": "github_user_id", "type": "long" },
+        { "name": "login", "type": "string" }
       ]
     },
 
     "github_user": {
       "fields": [
-	{ "name": "id", "type": "string" },
+        { "name": "id", "type": "string" },
         { "name": "user", "type": "reference" },
-	{ "name": "github_user_id", "type": "long" },
-	{ "name": "login", "type": "string" }
+        { "name": "github_user_id", "type": "long" },
+        { "name": "login", "type": "string" }
       ]
     },
 
@@ -223,42 +223,42 @@
 
     "user_identifier": {
       "fields": [
-	{ "name": "id", "type": "string" },
+        { "name": "id", "type": "string" },
         { "name": "user", "type": "reference" },
-	{ "name": "value", "type": "string" }
+        { "name": "value", "type": "string" }
       ]
     },
 
     "token": {
       "fields": [
-	{ "name": "id", "type": "string" },
+        { "name": "id", "type": "string" },
         { "name": "user", "type": "reference" },
-	{ "name": "masked", "type": "string" },
-	{ "name": "cleartext", "type": "string", "required": false, "description": "The cleartext token. Only available when the token is initially created" },
-	{ "name": "description", "type": "string", "required": false }
+        { "name": "masked", "type": "string" },
+        { "name": "cleartext", "type": "string", "required": false, "description": "The cleartext token. Only available when the token is initially created" },
+        { "name": "description", "type": "string", "required": false }
       ]
     },
 
     "token_form": {
       "fields": [
-	{ "name": "user_id", "type": "string" },
-	{ "name": "description", "type": "string", "required": false }
+        { "name": "user_id", "type": "string" },
+        { "name": "description", "type": "string", "required": false }
       ]
     },
 
     "subscription": {
       "description": "Represents a user that is currently subscribed to a publication",
       "fields": [
-	{ "name": "id", "type": "string", "description": "Internal unique identifier for this subscription record" },
-	{ "name": "user", "type": "reference" },
-	{ "name": "publication", "type": "publication" }
+        { "name": "id", "type": "string", "description": "Internal unique identifier for this subscription record" },
+        { "name": "user", "type": "reference" },
+        { "name": "publication", "type": "publication" }
       ]
     },
 
     "subscription_form": {
       "fields": [
-	{ "name": "user_id", "type": "string" },
-	{ "name": "publication", "type": "publication" }
+        { "name": "user_id", "type": "string" },
+        { "name": "publication", "type": "publication" }
       ]
     },
 
@@ -267,7 +267,7 @@
       "fields": [
         { "name": "id", "type": "string", "description": "Unique identifier for this item." },
         { "name": "organization", "type": "organization_summary" },
-	{ "name": "visibility", "type": "visibility" },
+        { "name": "visibility", "type": "visibility" },
         { "name": "summary", "type": "item_summary" },
         { "name": "label", "type": "string" },
         { "name": "description", "type": "string", "required": false }
@@ -276,9 +276,9 @@
 
     "user_summary": {
       "fields": [
-	{ "name": "id", "type": "string" },
-	{ "name": "email", "type": "string", "required": false },
-	{ "name": "name", "type": "io.flow.common.v0.models.name" }
+        { "name": "id", "type": "string" },
+        { "name": "email", "type": "string", "required": false },
+        { "name": "name", "type": "io.flow.common.v0.models.name" }
       ]
     },
 
@@ -288,7 +288,7 @@
         { "name": "id", "type": "string", "description": "Unique identifier for this membership" },
         { "name": "user", "type": "user_summary" },
         { "name": "organization", "type": "organization_summary" },
-	{ "name": "role", "type": "role" }
+        { "name": "role", "type": "role" }
       ]
     },
 
@@ -413,16 +413,16 @@
     "github_user": {
       "path": "/authentications",
       "operations": [
-	{
-	  "method": "POST",
-	  "path": "/github",
-	  "description": "Used to authenticate a user via github",
-	  "body": { "type": "github_authentication_form" },
+        {
+          "method": "POST",
+          "path": "/github",
+          "description": "Used to authenticate a user via github",
+          "body": { "type": "github_authentication_form" },
           "responses": {
             "200": { "type": "io.flow.common.v0.models.user" },
             "422": { "type": "io.flow.error.v0.models.generic_error" }
-	  }
-	}
+          }
+        }
       ]
     },
 
@@ -436,7 +436,7 @@
           "parameters": [
             { "name": "id", "type": "string", "description": "Find user with this id. Exact match", "required": false },
             { "name": "email", "type": "string", "description": "Find user with this email address. Case in-sensitive. Exact match", "required": false },
-	    { "name": "identifier", "type": "string", "description": "Find user associated with this randomly generated identifier. Exact match", "required": false }
+            { "name": "identifier", "type": "string", "description": "Find user associated with this randomly generated identifier. Exact match", "required": false }
           ],
           "responses": {
             "200": { "type": "[io.flow.common.v0.models.user]" },
@@ -484,10 +484,10 @@
           "method": "GET",
           "description": "Search projects. Results are paginated",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
-	    { "name": "organization", "type": "string", "description": "Filter to resolvers belongs to the organization with this key", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "organization", "type": "string", "description": "Filter to resolvers belongs to the organization with this key", "required": false },
             { "name": "name", "type": "string", "description": "Find project with this name. Case in-sensitive. Exact match", "required": false },
-	    { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "projects.id" }
           ],
@@ -532,7 +532,7 @@
 
         {
           "method": "PUT",
-	  "path": "/:id",
+          "path": "/:id",
           "description": "Update an existing project.",
           "body": { "type": "project_form" },
           "responses": {
@@ -542,9 +542,9 @@
           }
         },
 
-	{
-	  "method": "DELETE",
-	  "path": "/:id",
+        {
+          "method": "DELETE",
+          "path": "/:id",
           "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
@@ -601,9 +601,9 @@
           "method": "GET",
           "description": "Search organizations. Results are paginated",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "user_id", "type": "string", "description": "Find organizations that this user has access to", "required": false },
-	    { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "organizations.id" }
           ],
@@ -637,7 +637,7 @@
 
         {
           "method": "PUT",
-	  "path": "/:id",
+          "path": "/:id",
           "description": "Update an existing organization.",
           "body": { "type": "organization_form" },
           "responses": {
@@ -647,9 +647,9 @@
           }
         },
 
-	{
-	  "method": "DELETE",
-	  "path": "/:id",
+        {
+          "method": "DELETE",
+          "path": "/:id",
           "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
@@ -665,7 +665,7 @@
           "method": "GET",
           "description": "Search all memberships. Results are always paginated.",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "organization", "type": "string", "required": false, "description": "Filter to organization with this key. Case insensitive" },
             { "name": "user_id", "type": "string", "required": false },
             { "name": "role", "type": "role", "required": false },
@@ -682,32 +682,32 @@
         {
           "method": "GET",
           "path": "/:id",
-	  "responses": {
-	    "200": { "type": "membership" },
+          "responses": {
+            "200": { "type": "membership" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
-	  }
+          }
         },
 
         {
           "method": "POST",
           "body": { "type": "membership_form" },
-	  "responses": {
-	    "201": { "type": "membership" },
+          "responses": {
+            "201": { "type": "membership" },
             "401": { "type": "unit" },
             "404": { "type": "unit" },
             "422": { "type": "io.flow.error.v0.models.generic_error" }
-	  }
+          }
         },
 
         {
           "method": "DELETE",
           "path": "/:id",
-	  "responses": {
-	    "204": { "type": "unit" },
+          "responses": {
+            "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
-	  }
+          }
         }
       ]
     },
@@ -716,35 +716,35 @@
       "path": "/github",
 
       "operations": [
-	{
+        {
           "method": "GET",
           "description": "Returns a list of repositories from github",
           "parameters": [
-	    { "name": "owner", "type": "string", "required": false, "description": "Optionally filter by owner name. Case in-sensitive. Exact match" },
-	    { "name": "name", "type": "string", "required": false, "description": "Optionally filter by repo name. Case in-sensitive. Exact match" },
-	    { "name": "organization_id", "type": "string", "required": false, "description": "If specified, we enable additional filtering by this organization (see existing_project parameter)." },
-	    { "name": "existing_project", "type": "boolean", "required": false, "description": "Optionally filter by repositories that are either already mapped to existing projects or not. Requires organization_id parameter to also be specified." },
-	    { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
-	    { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+            { "name": "owner", "type": "string", "required": false, "description": "Optionally filter by owner name. Case in-sensitive. Exact match" },
+            { "name": "name", "type": "string", "required": false, "description": "Optionally filter by repo name. Case in-sensitive. Exact match" },
+            { "name": "organization_id", "type": "string", "required": false, "description": "If specified, we enable additional filtering by this organization (see existing_project parameter)." },
+            { "name": "existing_project", "type": "boolean", "required": false, "description": "Optionally filter by repositories that are either already mapped to existing projects or not. Requires organization_id parameter to also be specified." },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
-	    "200": { "type": "[io.flow.github.v0.models.repository]" },
-	    "401": { "type": "unit" },
+            "200": { "type": "[io.flow.github.v0.models.repository]" },
+            "401": { "type": "unit" },
             "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
-	},
+        },
 
-	{
+        {
           "method": "GET",
-	  "path": "/:owner/:repo/config",
+          "path": "/:owner/:repo/config",
           "description": "Returns the delta configuration for the specified github repo, if the repo has a .delta file in its root",
           "parameters": [
-	    { "name": "owner", "type": "string" },
-	    { "name": "repo", "type": "string" }
+            { "name": "owner", "type": "string" },
+            { "name": "repo", "type": "string" }
           ],
           "responses": {
-	    "200": { "type": "io.flow.delta.config.v0.unions.config" },
-	    "401": { "type": "unit" },
+            "200": { "type": "io.flow.delta.config.v0.unions.config" },
+            "401": { "type": "unit" },
             "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         }
@@ -758,9 +758,9 @@
           "method": "GET",
           "description": "Search subscriptions. Always paginated.",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "user_id", "type": "string", "description": "Find subscriptions for this user.", "required": false },
-	    { "name": "identifier", "type": "string", "description": "Find subscriptions associated with this user identifier. Exact match", "required": false },
+            { "name": "identifier", "type": "string", "description": "Find subscriptions associated with this user identifier. Exact match", "required": false },
             { "name": "publication", "type": "publication", "description": "Find subscriptions for this publication.", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
@@ -768,7 +768,7 @@
           ],
           "responses": {
             "200": { "type": "[subscription]" },
-	    "401": { "type": "unit" }
+            "401": { "type": "unit" }
           }
         },
 
@@ -786,9 +786,9 @@
         {
           "method": "POST",
           "description": "Create a new subscription.",
-	  "parameters": [
-	    { "name": "identifier", "type": "string", "description": "If a user identifier is provided, authentication is bypassed", "required": false }
-	  ],
+          "parameters": [
+            { "name": "identifier", "type": "string", "description": "If a user identifier is provided, authentication is bypassed", "required": false }
+          ],
           "body": { "type": "subscription_form" },
           "responses": {
             "201": { "type": "subscription" },
@@ -799,11 +799,11 @@
 
         {
           "method": "DELETE",
-	  "path": "/:id",
-	  "parameters": [
-	    { "name": "identifier", "type": "string", "description": "If a user identifier is provided, authentication is bypassed", "required": false }
-	  ],
-	  "responses": {
+          "path": "/:id",
+          "parameters": [
+            { "name": "identifier", "type": "string", "description": "If a user identifier is provided, authentication is bypassed", "required": false }
+          ],
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -815,65 +815,65 @@
 
     "item": {
       "operations": [
-	{
+        {
           "method": "GET",
           "description": "Returns a list of all matching items",
           "parameters": [
-	    { "name": "q", "type": "string", "required": false, "description": "Actual search query" },
-	    { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
-	    { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
+            { "name": "q", "type": "string", "required": false, "description": "Actual search query" },
+            { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
+            { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],
           "responses": {
-	    "200": { "type": "[item]" },
-	    "401": { "type": "unit" }
+            "200": { "type": "[item]" },
+            "401": { "type": "unit" }
           }
-	}
+        }
       ]
     },
 
     "token": {
       "operations": [
-	{
-	  "method": "GET",
-	  "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+        {
+          "method": "GET",
+          "parameters": [
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "user_id", "type": "string", "description": "Find tokens for this user.", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "-tokens.created_at" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[token]" },
             "401": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "description": "Used to fetch one token",
-	  "path": "/:id",
+        {
+          "method": "GET",
+          "description": "Used to fetch one token",
+          "path": "/:id",
           "responses": {
             "200": { "type": "token" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "POST",
-	  "description": "Create a new API token for this user",
-	  "body": { "type": "token_form" },
+        {
+          "method": "POST",
+          "description": "Create a new API token for this user",
+          "body": { "type": "token_form" },
           "responses": {
             "201": { "type": "token" },
-	    "401": { "type": "unit" },
+            "401": { "type": "unit" },
             "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
-	},
+        },
 
         {
           "method": "DELETE",
-	  "path": "/:id",
-	  "responses": {
+          "path": "/:id",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -889,11 +889,11 @@
       "description": "The target of the github webooks",
 
       "operations": [
-	{
-	  "method": "POST",
-	  "path": "/:project_id",
-	  "description": "Receives a webhook on push for this particular project"
-	}
+        {
+          "method": "POST",
+          "path": "/:project_id",
+          "description": "Receives a webhook on push for this particular project"
+        }
       ]
     },
 
@@ -914,33 +914,33 @@
         {
           "method": "GET",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "project_id", "type": "string", "description": "Find tags for this project.", "required": false },
             { "name": "name", "type": "string", "description": "Find tags with this name.", "required": false, "example": "0.0.1" },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "-tags.sort_key" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[tag]" },
             "401": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "path": "/:id",
+        {
+          "method": "GET",
+          "path": "/:id",
           "responses": {
             "200": { "type": "tag" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
-	},
+        },
 
         {
           "method": "DELETE",
-	  "path": "/:id",
-	  "responses": {
+          "path": "/:id",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -956,33 +956,33 @@
         {
           "method": "GET",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "project_id", "type": "string", "description": "Find images for this project.", "required": false },
             { "name": "name", "type": "string", "description": "Find images with this name.", "required": false, "example": "0.0.1" },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "lower(images.name),-images.sort_key" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[image]" },
             "401": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "path": "/:id",
+        {
+          "method": "GET",
+          "path": "/:id",
           "responses": {
             "200": { "type": "image" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
-	},
+        },
 
         {
           "method": "DELETE",
-	  "path": "/:id",
-	  "responses": {
+          "path": "/:id",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -998,34 +998,34 @@
         {
           "method": "GET",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "project_id", "type": "string", "description": "Find shas for this project.", "required": false },
             { "name": "branch", "type": "string", "description": "Find shas for this branch.", "required": false, "example": "master" },
             { "name": "hash", "type": "string", "description": "Find shas for this hash.", "required": false, "example": "master" },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "-shas.created_at" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[sha]" },
             "401": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "path": "/:id",
+        {
+          "method": "GET",
+          "path": "/:id",
           "responses": {
             "200": { "type": "sha" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
           }
-	},
+        },
 
         {
           "method": "DELETE",
-	  "path": "/:id",
-	  "responses": {
+          "path": "/:id",
+          "responses": {
             "204": { "type": "unit" },
             "401": { "type": "unit" },
             "404": { "type": "unit" }
@@ -1041,7 +1041,7 @@
         {
           "method": "GET",
           "parameters": [
-	    { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
+            { "name": "id", "type": "[string]", "description": "Filter by any one of these ids", "required": false },
             { "name": "project_id", "type": "string", "description": "Find events for this project.", "required": false },
             { "name": "type", "type": "event_type", "required": false },
             { "name": "number_minutes_since_creation", "type": "long", "required": false },
@@ -1049,16 +1049,16 @@
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 },
             { "name": "sort", "type": "string", "default": "-events.created_at" }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[event]" },
             "401": { "type": "unit" }
           }
-	},
+        },
 
-	{
-	  "method": "GET",
-	  "path": "/:id",
+        {
+          "method": "GET",
+          "path": "/:id",
           "responses": {
             "200": { "type": "event" },
             "401": { "type": "unit" },
@@ -1078,12 +1078,12 @@
           "parameters": [
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
-	  ],
+          ],
           "responses": {
             "200": { "type": "[dashboard_build]" },
             "401": { "type": "unit" }
           }
-	}
+        }
       ]
     }
 

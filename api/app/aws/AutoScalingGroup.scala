@@ -248,18 +248,27 @@ class AutoScalingGroup @javax.inject.Inject() (
     val ecsClusterName = EC2ContainerService.getClusterName(id)
     val nofileMax = 1000000
 
-    return Seq(
+    // register this instance with the correct cluster and other ECS stuff
+    val ecsClusterRegistration = Seq(
       """#!/bin/bash""",
       s"""echo 'ECS_CLUSTER=${ecsClusterName}' >> /etc/ecs/ecs.config""",
       """echo 'ECS_ENGINE_AUTH_TYPE=dockercfg' >> /etc/ecs/ecs.config""",
       """echo 'ECS_LOGLEVEL=warn' >> /etc/ecs/ecs.config""",
-      s"""echo 'ECS_ENGINE_AUTH_DATA={"https://index.docker.io/v1/":{"auth":"${dockerHubToken}","email":"${dockerHubEmail}"}}' >> /etc/ecs/ecs.config""",
+      s"""echo 'ECS_ENGINE_AUTH_DATA={"https://index.docker.io/v1/":{"auth":"${dockerHubToken}","email":"${dockerHubEmail}"}}' >> /etc/ecs/ecs.config"""
+    )
+
+    // Sumo collector setup on a new ec2 instance
+    val setupSumoCollector = Seq(
       """mkdir -p /etc/sumo""",
       s"""echo '{"api.version":"v1","sources":[{"sourceType":"DockerLog","name":"ecs_docker_logs","category":"${id}_docker_logs","uri":"unix:///var/run/docker.sock","allContainers":true,"collectEvents":false}]}' > /etc/sumo/sources.json""",
       """curl -o /tmp/sumo.sh https://collectors.sumologic.com/rest/download/linux/64""",
       """chmod +x /tmp/sumo.sh""",
       """export PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)""",
-      s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\"",
+      s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\""
+    )
+
+    // other ECS, AWS, and OPSWORK stuff
+    val completeEcsAndAwsSetup = Seq(
       s"""echo '* soft nofile $nofileMax' >> /etc/security/limits.conf""",
       s"""echo '* hard nofile $nofileMax' >> /etc/security/limits.conf""",
       """service docker restart""",
@@ -270,6 +279,14 @@ class AutoScalingGroup @javax.inject.Inject() (
       """INSTANCE_ID=$(/usr/local/bin/aws opsworks register --use-instance-profile --infrastructure-class ec2 --region us-east-1 --stack-id """ + awsOpsworksStackId + """ --override-hostname """ + id + """-$(tr -cd 'a-z' < /dev/urandom |head -c8) --local 2>&1 |grep -o 'Instance ID: .*' |cut -d' ' -f3)""",
       """/usr/local/bin/aws opsworks wait instance-registered --region us-east-1 --instance-id $INSTANCE_ID""",
       """/usr/local/bin/aws opsworks assign-instance --region us-east-1 --instance-id $INSTANCE_ID --layer-ids """ + awsOpsworksLayerId
-    ).mkString("\n")
+    )
+
+    val allSteps = if (settings.remoteLogging) {
+      (ecsClusterRegistration ++ setupSumoCollector ++ completeEcsAndAwsSetup)
+    } else {
+      (ecsClusterRegistration ++ completeEcsAndAwsSetup)
+    }
+
+    allSteps.mkString("\n")
   }
 }

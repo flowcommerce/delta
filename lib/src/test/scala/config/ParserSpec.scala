@@ -156,7 +156,7 @@ builds:
     configProject("""
 builds:
   - api:
-      dockerfile: api/Dockerfile    
+      dockerfile: api/Dockerfile
       instance.type: t2.medium
       initial.number.instances: 5
       disable:

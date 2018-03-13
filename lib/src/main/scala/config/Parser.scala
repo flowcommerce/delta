@@ -118,6 +118,7 @@ case class Parser() {
         memory = map.get("memory").map(_.toLong),
         portContainer = map.get("port.container").map(_.toInt).getOrElse(Defaults.Build.portContainer),
         portHost = map.get("port.host").map(_.toInt).getOrElse(Defaults.Build.portHost),
+        remoteLogging = map.get("remote.logging").map(_.toBoolean).getOrElse(true),
         stages = toBuildStages(
           disable = obj.get("disable").map(toStringArray(_)).getOrElse(Nil),
           enable = obj.get("enable").map(toStringArray(_)).getOrElse(Nil)
@@ -178,7 +179,7 @@ case class Parser() {
       }
     }
   }
-  
+
   private[this] def toStringArray(obj: Any): Seq[String] = {
     obj match {
       case v: java.lang.String => Seq(v)
