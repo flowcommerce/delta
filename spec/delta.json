@@ -16,7 +16,7 @@
       ]
     }
   },
-
+  
   "enums": {
     "docker_provider": {
       "values": [

@@ -31,6 +31,10 @@
             <td>@{buildConfig.version.getOrElse("1.0")}</td>
           </tr>
           <tr>
+            <td><strong>Remote Logging</strong></td>
+            <td>@buildConfig.remoteLogging</td>
+          </tr>
+          <tr>
             <td><strong>Stages</strong></td>
             <td>@{buildConfig.stages.toList match {
                    case Nil => Html("<em>none</em>")
@@ -50,4 +54,4 @@
       </table>
     }
   </div>
-</section> 
+</section>

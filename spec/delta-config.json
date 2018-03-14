@@ -15,35 +15,41 @@
     "build_stage": {
       "description": "Represents the individual stages of the continuous delivery system that can be enabled / disabled at the build level",
       "values": [
-	{ "name": "set_desired_state" },
-	{ "name": "sync_docker_image" },
-	{ "name": "build_docker_image" },
-	{ "name": "scale" }
+        { "name": "set_desired_state" },
+        { "name": "sync_docker_image" },
+        { "name": "build_docker_image" },
+        { "name": "scale" }
       ]
     },
 
     "instance_type": {
       "description": "List of supported AWS instance types - see https://aws.amazon.com/ec2/instance-types/",
       "values": [
-	{ "name": "c4.large" },
-	{ "name": "c4.xlarge" },
-	{ "name": "c4.2xlarge" },
-	{ "name": "m4.large" },
-	{ "name": "m4.xlarge" },
-	{ "name": "m4.2xlarge" },
-	{ "name": "t2.micro" },
-	{ "name": "t2.small" },
-	{ "name": "t2.medium" },
-	{ "name": "t2.large" }
+        { "name": "c4.large" },
+        { "name": "c4.xlarge" },
+        { "name": "c4.2xlarge" },
+        { "name": "m4.large" },
+        { "name": "m4.xlarge" },
+        { "name": "m4.2xlarge" },
+        { "name": "m5.large" },
+        { "name": "m5.xlarge" },
+        { "name": "m5.2xlarge" },
+        { "name": "c5.large" },
+        { "name": "c5.xlarge" },
+        { "name": "c5.2xlarge" },
+        { "name": "t2.micro" },
+        { "name": "t2.small" },
+        { "name": "t2.medium" },
+        { "name": "t2.large" }
       ]
     },
 
     "project_stage": {
       "description": "Represents the individual stages of the continuous delivery system that can be enabled / disabled at the project level",
       "values": [
-	{ "name": "sync_shas" },
-	{ "name": "sync_tags" },
-	{ "name": "tag" }
+        { "name": "sync_shas" },
+        { "name": "sync_tags" },
+        { "name": "tag" }
       ]
     }
   },
@@ -53,39 +59,40 @@
     "config_project": {
       "description": "Top level configuration for a project, including what builds and branches are covered and the current status (e.g. enabled, paused, etc.)",
       "fields": [
-	{ "name": "stages", "type": "[project_stage]", "minimum": 0 },
-	{ "name": "builds", "type": "[build]", "minimum": 1 },
-	{ "name": "branches", "type": "[branch]", "minimum": 1 }
+        { "name": "stages", "type": "[project_stage]", "minimum": 0 },
+        { "name": "builds", "type": "[build]", "minimum": 1 },
+        { "name": "branches", "type": "[branch]", "minimum": 1 }
       ]
     },
 
     "config_error": {
       "description": "Used to indicate that there was a problem parsing the project configuration",
       "fields": [
-	{ "name": "errors", "type": "[string]", "minimum": 1 }
+        { "name": "errors", "type": "[string]", "minimum": 1 }
       ]
     },
 
     "branch": {
       "description": "The name of the branch that we are actively monitoring, including any information needed for the initial deploy.",
       "fields": [
-	{ "name": "name", "type": "string", "example": "master" }
+        { "name": "name", "type": "string", "example": "master" }
       ]
     },
 
     "build": {
       "fields": [
-	{ "name": "name", "type": "string", "example": "root, api, or www" },
-	{ "name": "dockerfile", "type": "string" },
-	{ "name": "initial_number_instances", "type": "long", "description": "When first deploying this branch, the number of instances we create" },
-	{ "name": "instance_type", "type": "instance_type" },
-	{ "name": "memory", "type": "long", "required": false, "description": "The number of MiB of memory to set for jvm xmx" },
-	{ "name": "port_container", "type": "integer", "description": "The port number on the container that is bound to the user-specified or automatically assigned host port." },
-	{ "name": "port_host", "type": "integer", "description": "The port number on the container instance to reserve for your container" },
-	{ "name": "stages", "type": "[build_stage]", "minimum": 0 },
-	{ "name": "dependencies", "type": "[string]", "minimum": 0, "description": "The names of other builds that this one is dependent on. If specified, we will ensure that we never scale this build to a tag that is ahead of the minimum version of the dependent application running in production.", "example": "www" },
-	{ "name": "version", "type": "string", "required": "false", "description": "The version of Delta to use for deployments. Defaults to 1.0 if not specified", "example": "1.0" },
-  { "name": "healthcheck_url", "type": "string", "required": "false", "description": "The URL used for healthchecks by the ELB", "example": "/_internal_/healthcheck" }
+        { "name": "name", "type": "string", "example": "root, api, or www" },
+        { "name": "dockerfile", "type": "string" },
+        { "name": "initial_number_instances", "type": "long", "description": "When first deploying this branch, the number of instances we create" },
+        { "name": "instance_type", "type": "instance_type" },
+        { "name": "memory", "type": "long", "required": false, "description": "The number of MiB of memory to set for jvm xmx" },
+        { "name": "port_container", "type": "integer", "description": "The port number on the container that is bound to the user-specified or automatically assigned host port." },
+        { "name": "port_host", "type": "integer", "description": "The port number on the container instance to reserve for your container" },
+        { "name": "remote_logging", "type": "boolean", "required": false, "description": "Flag whether this build should send logs to a remote location. e.g. Sumo Logic" },
+        { "name": "stages", "type": "[build_stage]", "minimum": 0 },
+        { "name": "dependencies", "type": "[string]", "minimum": 0, "description": "The names of other builds that this one is dependent on. If specified, we will ensure that we never scale this build to a tag that is ahead of the minimum version of the dependent application running in production.", "example": "www" },
+        { "name": "version", "type": "string", "required": "false", "description": "The version of Delta to use for deployments. Defaults to 1.0 if not specified", "example": "1.0" },
+        { "name": "healthcheck_url", "type": "string", "required": "false", "description": "The URL used for healthchecks by the ELB", "example": "/_internal_/healthcheck" }
       ]
     }
 

@@ -1684,11 +1684,11 @@ package io.flow.github.v0 {
     import Models._
 
     object Core {
-      implicit val pathBindableDateTimeIso8601: PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
-      implicit val queryStringBindableDateTimeIso8601: QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit def pathBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit def queryStringBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
 
-      implicit val pathBindableDateIso8601: PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
-      implicit val queryStringBindableDateIso8601: QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+      implicit def pathBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
+      implicit def queryStringBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
     }
 
     object Models {
@@ -1700,8 +1700,8 @@ package io.flow.github.v0 {
         override def example: io.flow.github.v0.models.ContentsType = io.flow.github.v0.models.ContentsType.File
         override def validValues: Seq[io.flow.github.v0.models.ContentsType] = io.flow.github.v0.models.ContentsType.all
       }
-      implicit val pathBindableContentsType: PathBindable[io.flow.github.v0.models.ContentsType] = ApibuilderPathBindable(contentsTypeConverter)
-      implicit val queryStringBindableContentsType: QueryStringBindable[io.flow.github.v0.models.ContentsType] = ApibuilderQueryStringBindable(contentsTypeConverter)
+      implicit def pathBindableContentsType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.github.v0.models.ContentsType] = ApibuilderPathBindable(contentsTypeConverter)
+      implicit def queryStringBindableContentsType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.github.v0.models.ContentsType] = ApibuilderQueryStringBindable(contentsTypeConverter)
 
       val encodingConverter: ApibuilderTypeConverter[io.flow.github.v0.models.Encoding] = new ApibuilderTypeConverter[io.flow.github.v0.models.Encoding] {
         override def convert(value: String): io.flow.github.v0.models.Encoding = io.flow.github.v0.models.Encoding(value)
@@ -1709,8 +1709,8 @@ package io.flow.github.v0 {
         override def example: io.flow.github.v0.models.Encoding = io.flow.github.v0.models.Encoding.Base64
         override def validValues: Seq[io.flow.github.v0.models.Encoding] = io.flow.github.v0.models.Encoding.all
       }
-      implicit val pathBindableEncoding: PathBindable[io.flow.github.v0.models.Encoding] = ApibuilderPathBindable(encodingConverter)
-      implicit val queryStringBindableEncoding: QueryStringBindable[io.flow.github.v0.models.Encoding] = ApibuilderQueryStringBindable(encodingConverter)
+      implicit def pathBindableEncoding(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.github.v0.models.Encoding] = ApibuilderPathBindable(encodingConverter)
+      implicit def queryStringBindableEncoding(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.github.v0.models.Encoding] = ApibuilderQueryStringBindable(encodingConverter)
 
       val hookEventConverter: ApibuilderTypeConverter[io.flow.github.v0.models.HookEvent] = new ApibuilderTypeConverter[io.flow.github.v0.models.HookEvent] {
         override def convert(value: String): io.flow.github.v0.models.HookEvent = io.flow.github.v0.models.HookEvent(value)
@@ -1718,8 +1718,8 @@ package io.flow.github.v0 {
         override def example: io.flow.github.v0.models.HookEvent = io.flow.github.v0.models.HookEvent.Push
         override def validValues: Seq[io.flow.github.v0.models.HookEvent] = io.flow.github.v0.models.HookEvent.all
       }
-      implicit val pathBindableHookEvent: PathBindable[io.flow.github.v0.models.HookEvent] = ApibuilderPathBindable(hookEventConverter)
-      implicit val queryStringBindableHookEvent: QueryStringBindable[io.flow.github.v0.models.HookEvent] = ApibuilderQueryStringBindable(hookEventConverter)
+      implicit def pathBindableHookEvent(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.github.v0.models.HookEvent] = ApibuilderPathBindable(hookEventConverter)
+      implicit def queryStringBindableHookEvent(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.github.v0.models.HookEvent] = ApibuilderQueryStringBindable(hookEventConverter)
 
       val nodeTypeConverter: ApibuilderTypeConverter[io.flow.github.v0.models.NodeType] = new ApibuilderTypeConverter[io.flow.github.v0.models.NodeType] {
         override def convert(value: String): io.flow.github.v0.models.NodeType = io.flow.github.v0.models.NodeType(value)
@@ -1727,8 +1727,8 @@ package io.flow.github.v0 {
         override def example: io.flow.github.v0.models.NodeType = io.flow.github.v0.models.NodeType.Blob
         override def validValues: Seq[io.flow.github.v0.models.NodeType] = io.flow.github.v0.models.NodeType.all
       }
-      implicit val pathBindableNodeType: PathBindable[io.flow.github.v0.models.NodeType] = ApibuilderPathBindable(nodeTypeConverter)
-      implicit val queryStringBindableNodeType: QueryStringBindable[io.flow.github.v0.models.NodeType] = ApibuilderQueryStringBindable(nodeTypeConverter)
+      implicit def pathBindableNodeType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.github.v0.models.NodeType] = ApibuilderPathBindable(nodeTypeConverter)
+      implicit def queryStringBindableNodeType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.github.v0.models.NodeType] = ApibuilderQueryStringBindable(nodeTypeConverter)
 
       val ownerTypeConverter: ApibuilderTypeConverter[io.flow.github.v0.models.OwnerType] = new ApibuilderTypeConverter[io.flow.github.v0.models.OwnerType] {
         override def convert(value: String): io.flow.github.v0.models.OwnerType = io.flow.github.v0.models.OwnerType(value)
@@ -1736,8 +1736,8 @@ package io.flow.github.v0 {
         override def example: io.flow.github.v0.models.OwnerType = io.flow.github.v0.models.OwnerType.User
         override def validValues: Seq[io.flow.github.v0.models.OwnerType] = io.flow.github.v0.models.OwnerType.all
       }
-      implicit val pathBindableOwnerType: PathBindable[io.flow.github.v0.models.OwnerType] = ApibuilderPathBindable(ownerTypeConverter)
-      implicit val queryStringBindableOwnerType: QueryStringBindable[io.flow.github.v0.models.OwnerType] = ApibuilderQueryStringBindable(ownerTypeConverter)
+      implicit def pathBindableOwnerType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.github.v0.models.OwnerType] = ApibuilderPathBindable(ownerTypeConverter)
+      implicit def queryStringBindableOwnerType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.github.v0.models.OwnerType] = ApibuilderQueryStringBindable(ownerTypeConverter)
 
       val visibilityConverter: ApibuilderTypeConverter[io.flow.github.v0.models.Visibility] = new ApibuilderTypeConverter[io.flow.github.v0.models.Visibility] {
         override def convert(value: String): io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility(value)
@@ -1745,8 +1745,8 @@ package io.flow.github.v0 {
         override def example: io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility.All
         override def validValues: Seq[io.flow.github.v0.models.Visibility] = io.flow.github.v0.models.Visibility.all
       }
-      implicit val pathBindableVisibility: PathBindable[io.flow.github.v0.models.Visibility] = ApibuilderPathBindable(visibilityConverter)
-      implicit val queryStringBindableVisibility: QueryStringBindable[io.flow.github.v0.models.Visibility] = ApibuilderQueryStringBindable(visibilityConverter)
+      implicit def pathBindableVisibility(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.github.v0.models.Visibility] = ApibuilderPathBindable(visibilityConverter)
+      implicit def queryStringBindableVisibility(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.github.v0.models.Visibility] = ApibuilderQueryStringBindable(visibilityConverter)
     }
 
     trait ApibuilderTypeConverter[T] {

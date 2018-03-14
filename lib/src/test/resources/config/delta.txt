@@ -6,7 +6,9 @@ builds:
       port.container: 9000
       port.host: 6091
       initial.number.instances: 1
+      remote.logging: true
   - www:
       dockerfile: www/Dockerfile
       port.container: 9000
       port.host: 6090
+      remote.logging: false

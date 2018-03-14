@@ -1252,11 +1252,11 @@ package io.flow.travis.ci.v0 {
     import Models._
 
     object Core {
-      implicit val pathBindableDateTimeIso8601: PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
-      implicit val queryStringBindableDateTimeIso8601: QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit def pathBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.DateTime] = ApibuilderPathBindable(ApibuilderTypes.dateTimeIso8601)
+      implicit def queryStringBindableDateTimeIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.DateTime] = ApibuilderQueryStringBindable(ApibuilderTypes.dateTimeIso8601)
 
-      implicit val pathBindableDateIso8601: PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
-      implicit val queryStringBindableDateIso8601: QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
+      implicit def pathBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): PathBindable[_root_.org.joda.time.LocalDate] = ApibuilderPathBindable(ApibuilderTypes.dateIso8601)
+      implicit def queryStringBindableDateIso8601(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[_root_.org.joda.time.LocalDate] = ApibuilderQueryStringBindable(ApibuilderTypes.dateIso8601)
     }
 
     object Models {
@@ -1268,8 +1268,8 @@ package io.flow.travis.ci.v0 {
         override def example: io.flow.travis.ci.v0.models.EventType = io.flow.travis.ci.v0.models.EventType.Api
         override def validValues: Seq[io.flow.travis.ci.v0.models.EventType] = io.flow.travis.ci.v0.models.EventType.all
       }
-      implicit val pathBindableEventType: PathBindable[io.flow.travis.ci.v0.models.EventType] = ApibuilderPathBindable(eventTypeConverter)
-      implicit val queryStringBindableEventType: QueryStringBindable[io.flow.travis.ci.v0.models.EventType] = ApibuilderQueryStringBindable(eventTypeConverter)
+      implicit def pathBindableEventType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.travis.ci.v0.models.EventType] = ApibuilderPathBindable(eventTypeConverter)
+      implicit def queryStringBindableEventType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.travis.ci.v0.models.EventType] = ApibuilderQueryStringBindable(eventTypeConverter)
 
       val mergeModeConverter: ApibuilderTypeConverter[io.flow.travis.ci.v0.models.MergeMode] = new ApibuilderTypeConverter[io.flow.travis.ci.v0.models.MergeMode] {
         override def convert(value: String): io.flow.travis.ci.v0.models.MergeMode = io.flow.travis.ci.v0.models.MergeMode(value)
@@ -1277,8 +1277,8 @@ package io.flow.travis.ci.v0 {
         override def example: io.flow.travis.ci.v0.models.MergeMode = io.flow.travis.ci.v0.models.MergeMode.Replace
         override def validValues: Seq[io.flow.travis.ci.v0.models.MergeMode] = io.flow.travis.ci.v0.models.MergeMode.all
       }
-      implicit val pathBindableMergeMode: PathBindable[io.flow.travis.ci.v0.models.MergeMode] = ApibuilderPathBindable(mergeModeConverter)
-      implicit val queryStringBindableMergeMode: QueryStringBindable[io.flow.travis.ci.v0.models.MergeMode] = ApibuilderQueryStringBindable(mergeModeConverter)
+      implicit def pathBindableMergeMode(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.travis.ci.v0.models.MergeMode] = ApibuilderPathBindable(mergeModeConverter)
+      implicit def queryStringBindableMergeMode(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.travis.ci.v0.models.MergeMode] = ApibuilderQueryStringBindable(mergeModeConverter)
     }
 
     trait ApibuilderTypeConverter[T] {

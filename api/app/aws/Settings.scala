@@ -24,7 +24,8 @@ case class DefaultSettings(
   override val portContainer: Int,
   override val portHost: Int,
   override val version: String,
-  override val healthcheckUrl: String
+  override val healthcheckUrl: String,
+  override val remoteLogging: Boolean
 ) extends Settings {
 
   override val launchConfigInstanceType = instanceType.toString
@@ -90,6 +91,8 @@ trait Settings {
   val portContainer: Int
 
   val portHost: Int
+
+  val remoteLogging: Boolean
 
   // Delta version
   val version: String
