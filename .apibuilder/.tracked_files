@@ -38,3 +38,6 @@ flow:
   travis-ci:
     play_2_6_client:
     - generated/app/FlowTravisCiV0Client.scala
+  email:
+    play_2_6_client:
+    - generated/app/FlowEmailV0Client.scala

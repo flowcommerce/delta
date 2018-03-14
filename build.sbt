@@ -51,7 +51,8 @@ lazy val api = project
       "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.1.2",
       "org.postgresql" % "postgresql" % "42.2.1",
-      "com.typesafe.play" %% "play-json-joda" % "2.6.8"
+      "com.typesafe.play" %% "play-json-joda" % "2.6.8",
+      "io.flow" %% "lib-event-play26" % "0.3.11"
     )
   )
 

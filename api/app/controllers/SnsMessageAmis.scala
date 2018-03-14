@@ -10,7 +10,12 @@ import com.amazonaws.services.sns.model.ConfirmSubscriptionResult
 import db.generated.{AmiUpdateForm, AmiUpdatesDao}
 import io.flow.delta.v0.models.SnsMessageAmi
 import io.flow.delta.v0.models.json._
+import io.flow.email.v0.models.Email
+import io.flow.email.v0.models.json._
+import io.flow.email.v0.models.AmiUpdateNotification
+import io.flow.event.v2.Queue
 import io.flow.play.util.Constants
+import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
@@ -19,10 +24,15 @@ import scala.util.{Failure, Success, Try}
 
 class SnsMessageAmis @Inject()(
   val controllerComponents: ControllerComponents,
-  dao: AmiUpdatesDao
+  dao: AmiUpdatesDao,
+  queue: Queue
 ) extends BaseController {
 
   private val logger = Logger(getClass)
+
+  private val emails = queue.producer[Email]()
+
+  import scala.concurrent.ExecutionContext.Implicits.global
 
   def post() = Action(parse.tolerantText) { request =>
 
@@ -42,6 +52,12 @@ class SnsMessageAmis @Inject()(
             dao.insert(Constants.SystemUser, AmiUpdateForm(
               ami.ECSAmis.Regions.usEast1.ImageId,
               ami.ECSAmis.Regions.usEast1.Name
+            ))
+
+            emails.publish(AmiUpdateNotification(
+              amiName = ami.ECSAmis.Regions.usEast1.Name,
+              amiId = ami.ECSAmis.Regions.usEast1.ImageId,
+              timestamp = new DateTime()
             ))
 
           case JsError(errors) =>

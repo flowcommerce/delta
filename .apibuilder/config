@@ -37,4 +37,7 @@ code:
       version: latest
       generators:
         play_2_6_client: generated/app
-
+    email:
+      version: latest
+      generators:
+        play_2_6_client: generated/app
