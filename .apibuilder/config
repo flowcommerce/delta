@@ -5,6 +5,11 @@ code:
       generators:
         anorm_2_6_parsers: api/app/generated
         play_2_x_json: generated/app
+    healthcheck:
+      version: latest
+      generators:
+        play_2_6_client: api/app/generated
+        play_2_x_routes: api/conf/healthcheck.routes
     docker-registry:
       version: latest
       generators:
