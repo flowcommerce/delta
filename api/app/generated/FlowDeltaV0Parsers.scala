@@ -222,66 +222,6 @@ package io.flow.delta.v0.anorm.parsers {
 
   }
 
-  object EcsAmiRegionImage {
-
-    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.v0.models.EcsAmiRegionImage] = parser(prefixOpt = Some(s"$prefix$sep"))
-
-    def parser(
-      Name: String = "Name",
-      ImageId: String = "ImageId",
-      prefixOpt: Option[String] = None
-    ): RowParser[io.flow.delta.v0.models.EcsAmiRegionImage] = {
-      SqlParser.str(prefixOpt.getOrElse("") + Name) ~
-      SqlParser.str(prefixOpt.getOrElse("") + ImageId) map {
-        case name ~ imageId => {
-          io.flow.delta.v0.models.EcsAmiRegionImage(
-            Name = name,
-            ImageId = imageId
-          )
-        }
-      }
-    }
-
-  }
-
-  object EcsAmiRegions {
-
-    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.v0.models.EcsAmiRegions] = parser(prefixOpt = Some(s"$prefix$sep"))
-
-    def parser(
-      usEast1Prefix: String = "us-east-1",
-      prefixOpt: Option[String] = None
-    ): RowParser[io.flow.delta.v0.models.EcsAmiRegions] = {
-      io.flow.delta.v0.anorm.parsers.EcsAmiRegionImage.parserWithPrefix(prefixOpt.getOrElse("") + usEast1Prefix) map {
-        case usEast1 => {
-          io.flow.delta.v0.models.EcsAmiRegions(
-            usEast1 = usEast1
-          )
-        }
-      }
-    }
-
-  }
-
-  object EcsAmis {
-
-    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.v0.models.EcsAmis] = parser(prefixOpt = Some(s"$prefix$sep"))
-
-    def parser(
-      regionsPrefix: String = "Regions",
-      prefixOpt: Option[String] = None
-    ): RowParser[io.flow.delta.v0.models.EcsAmis] = {
-      io.flow.delta.v0.anorm.parsers.EcsAmiRegions.parserWithPrefix(prefixOpt.getOrElse("") + regionsPrefix) map {
-        case regions => {
-          io.flow.delta.v0.models.EcsAmis(
-            Regions = regions
-          )
-        }
-      }
-    }
-
-  }
-
   object Event {
 
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.v0.models.Event] = parser(prefixOpt = Some(s"$prefix$sep"))
@@ -789,25 +729,6 @@ package io.flow.delta.v0.anorm.parsers {
             createdAt = createdAt,
             branch = branch,
             hash = hash
-          )
-        }
-      }
-    }
-
-  }
-
-  object SnsMessageAmi {
-
-    def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.v0.models.SnsMessageAmi] = parser(prefixOpt = Some(s"$prefix$sep"))
-
-    def parser(
-      eCSAmisPrefix: String = "ECSAmis",
-      prefixOpt: Option[String] = None
-    ): RowParser[io.flow.delta.v0.models.SnsMessageAmi] = {
-      io.flow.delta.v0.anorm.parsers.EcsAmis.parserWithPrefix(prefixOpt.getOrElse("") + eCSAmisPrefix) map {
-        case eCSAmis => {
-          io.flow.delta.v0.models.SnsMessageAmi(
-            ECSAmis = eCSAmis
           )
         }
       }
