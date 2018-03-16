@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.4"
 
-val awsVersion = "1.11.295"
+val awsVersion = "1.11.296"
 
 lazy val generated = project
   .in(file("generated"))
@@ -49,7 +49,7 @@ lazy val api = project
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.1.2",
-      "org.postgresql" % "postgresql" % "42.2.1",
+      "org.postgresql" % "postgresql" % "42.2.2",
       "com.typesafe.play" %% "play-json-joda" % "2.6.8"
     )
   )
@@ -86,7 +86,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.4.54",
+    "io.flow" %% "lib-play-play26" % "0.4.59",
     "io.flow" %% "lib-test-utils" % "0.0.6" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
