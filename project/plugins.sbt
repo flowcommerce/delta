@@ -7,6 +7,6 @@ resolvers += "Typesafe repository" at "http://repo.typesafe.com/typesafe/release
 resolvers += "scalaz-bintray" at "https://dl.bintray.com/scalaz/releases"
 
 // Use the Play sbt plugin for Play projects
-addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.11")
+addSbtPlugin("com.typesafe.play" % "sbt-plugin" % "2.6.12")
 
 addSbtPlugin("com.gilt.sbt" % "sbt-newrelic" % "0.2.4")
