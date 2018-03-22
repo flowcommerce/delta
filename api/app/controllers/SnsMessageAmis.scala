@@ -28,11 +28,11 @@ class SnsMessageAmis @Inject()(
   queue: Queue
 ) extends BaseController {
 
+  import scala.concurrent.ExecutionContext.Implicits.global
+
   private val logger = Logger(getClass)
 
   private val emails = queue.producer[Email]()
-
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   def post() = Action(parse.tolerantText) { request =>
 
