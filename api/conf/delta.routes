@@ -40,7 +40,6 @@ GET        /github/:owner/:repo/config                         controllers.Repos
 GET        /shas                                               controllers.Shas.get(id: _root_.scala.Option[List[String]], project_id: _root_.scala.Option[String], branch: _root_.scala.Option[String], hash: _root_.scala.Option[String], limit: Long ?= 25, offset: Long ?= 0, sort: String ?= "-shas.created_at")
 GET        /shas/:id                                           controllers.Shas.getById(id: String)
 DELETE     /shas/:id                                           controllers.Shas.deleteById(id: String)
-POST       /sns_message_amis                                   controllers.SnsMessageAmis.post()
 GET        /subscriptions                                      controllers.Subscriptions.get(id: _root_.scala.Option[List[String]], user_id: _root_.scala.Option[String], identifier: _root_.scala.Option[String], publication: _root_.scala.Option[io.flow.delta.v0.models.Publication], limit: Long ?= 25, offset: Long ?= 0, sort: String ?= "-subscriptions.created_at")
 GET        /subscriptions/:id                                  controllers.Subscriptions.getById(id: String)
 POST       /subscriptions                                      controllers.Subscriptions.post(identifier: _root_.scala.Option[String])
