@@ -44,6 +44,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       jdbc,
       "io.flow" %% "lib-postgresql-play-play26" % "0.1.87",
+      "io.flow" %% "lib-event-play26" % "0.3.11",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
@@ -51,8 +52,7 @@ lazy val api = project
       "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.1.2",
       "org.postgresql" % "postgresql" % "42.2.2",
-      "com.typesafe.play" %% "play-json-joda" % "2.6.9",
-      "io.flow" %% "lib-event-play26" % "0.3.11"
+      "com.typesafe.play" %% "play-json-joda" % "2.6.9"
     )
   )
 

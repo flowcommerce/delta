@@ -23,9 +23,4 @@ class Credentials @javax.inject.Inject() (
     }
   }
 
-  val provider = new AWSCredentialsProvider {
-    override def refresh() {}
-    override def getCredentials: AWSCredentials = aws
-  }
-
 }
