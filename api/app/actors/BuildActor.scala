@@ -267,7 +267,8 @@ class BuildActor @javax.inject.Inject() (
   private[this] def awsSettings() = withBuildConfig { bc =>
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
-    val ami = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id
+    val latestAmi = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id
+    Logger.info(s"latest AMI is $latestAmi")
 
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
@@ -281,7 +282,7 @@ class BuildActor @javax.inject.Inject() (
       lcSecurityGroup = config.requiredString("aws.launch.configuration.security.group"),
       elbSecurityGroup = config.requiredString("aws.service.security.group"),
       ec2KeyName = config.requiredString("aws.service.key"),
-      launchConfigImageId = ami,
+      launchConfigImageId = config.requiredString("aws.launch.configuration.ami"),
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
       serviceRole = config.requiredString("aws.service.role"),
       instanceType = instanceType,
