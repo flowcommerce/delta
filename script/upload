@@ -1,0 +1,29 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+
+ORGANIZATION = "flow"
+
+def assert_installed(cmd, url)
+  if !system("which %s > /dev/null" % cmd)
+    puts "** ERROR: Please install %s: %s" % [cmd, url]
+    exit(1)
+  end
+end
+
+def upload_file(name, version)
+  file = Pathname.new(File.join(File.dirname(__FILE__) + "/../spec/#{name}.json")).cleanpath
+  cmd = "apibuilder upload #{ORGANIZATION} #{name} #{file} --version #{version}"
+  puts "==> #{cmd}"
+  if !system(cmd)
+    exit(1)
+  end
+end
+
+
+assert_installed("sem-info", "https://github.com/mbryzek/schema-evolution-manager")
+assert_installed("apibuilder", "https://github.com/apicollective/apibuilder-cli")
+
+version = `sem-info tag next micro`.strip
+upload_file("delta", version)
+upload_file("delta-config", version)
