@@ -1,6 +1,6 @@
 package io.flow.delta.aws
 
-import com.amazonaws.auth.{AWSCredentials, AWSCredentialsProvider, BasicAWSCredentials}
+import com.amazonaws.auth.BasicAWSCredentials
 import io.flow.play.util.Config
 import play.api.{Environment, Mode}
 
