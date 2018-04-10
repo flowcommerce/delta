@@ -62,7 +62,7 @@ class SnsMessageAmis @Inject()(
 
           case JsError(errors) =>
 
-            logger.error(s"FlowError: Invalid message received: $errors")
+            logger.error(s"FlowError: Invalid message received: body=${request.body}\nparsed message=${message}\nerrors=$errors")
         }
 
       }
