@@ -49,18 +49,20 @@ class SnsMessageAmis @Inject()(
         Json.parse(message.getMessage).validate[SnsMessageAmi] match {
           case JsSuccess(ami, _) =>
 
-            logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${ami.ECSAmis.head.Regions.usEast1.ImageId}")
+            ami.ECSAmis.foreach { amis =>
+              logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${amis.Regions.usEast1.ImageId}")
 
-            dao.insert(Constants.SystemUser, AmiUpdateForm(
-              ami.ECSAmis.head.Regions.usEast1.ImageId,
-              ami.ECSAmis.head.Regions.usEast1.Name
-            ))
+              dao.insert(Constants.SystemUser, AmiUpdateForm(
+                amis.Regions.usEast1.ImageId,
+                amis.Regions.usEast1.Name
+              ))
 
-            emails.publish(AmiUpdateNotification(
-              amiName = ami.ECSAmis.head.Regions.usEast1.Name,
-              amiId = ami.ECSAmis.head.Regions.usEast1.ImageId,
-              timestamp = new DateTime()
-            ))
+              emails.publish(AmiUpdateNotification(
+                amiName = amis.Regions.usEast1.Name,
+                amiId = amis.Regions.usEast1.ImageId,
+                timestamp = new DateTime()
+              ))
+            }
 
           case JsError(errors) =>
 
