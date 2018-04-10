@@ -40,6 +40,8 @@ class SnsMessageAmis @Inject()(
 
     val manager = new SnsMessageManager(Regions.US_EAST_1.getName)
 
+    logger.info(s"AMI update - got message: ${request.body}")
+
     // the SDK will verify that the message is signed by AWS
     manager.handleMessage(new ByteArrayInputStream(request.body.getBytes), new SnsMessageHandler {
       override def handle(message: SnsNotification): Unit = {
@@ -47,16 +49,16 @@ class SnsMessageAmis @Inject()(
         Json.parse(message.getMessage).validate[SnsMessageAmi] match {
           case JsSuccess(ami, _) =>
 
-            logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${ami.ECSAmis.Regions.usEast1.ImageId}")
+            logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${ami.ECSAmis.head.Regions.usEast1.ImageId}")
 
             dao.insert(Constants.SystemUser, AmiUpdateForm(
-              ami.ECSAmis.Regions.usEast1.ImageId,
-              ami.ECSAmis.Regions.usEast1.Name
+              ami.ECSAmis.head.Regions.usEast1.ImageId,
+              ami.ECSAmis.head.Regions.usEast1.Name
             ))
 
             emails.publish(AmiUpdateNotification(
-              amiName = ami.ECSAmis.Regions.usEast1.Name,
-              amiId = ami.ECSAmis.Regions.usEast1.ImageId,
+              amiName = ami.ECSAmis.head.Regions.usEast1.Name,
+              amiId = ami.ECSAmis.head.Regions.usEast1.ImageId,
               timestamp = new DateTime()
             ))
 

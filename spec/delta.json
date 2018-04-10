@@ -408,7 +408,7 @@
 
     "sns_message_ami": {
       "fields": [
-        { "name": "ECSAmis", "type": "ecs_amis" }
+        { "name": "ECSAmis", "type": "[ecs_amis]" }
       ]
     },
 
