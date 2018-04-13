@@ -2178,8 +2178,8 @@ package io.flow.delta.v0 {
 
     object DashboardBuilds extends DashboardBuilds {
       override def get(
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.DashboardBuild]] = {
         val queryParameters = Seq(
@@ -2202,8 +2202,8 @@ package io.flow.delta.v0 {
         `type`: _root_.scala.Option[io.flow.delta.v0.models.EventType] = None,
         numberMinutesSinceCreation: _root_.scala.Option[Long] = None,
         hasError: _root_.scala.Option[Boolean] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "-events.created_at",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Event]] = {
@@ -2270,8 +2270,8 @@ package io.flow.delta.v0 {
         id: _root_.scala.Option[Seq[String]] = None,
         projectId: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "lower(images.name),-images.sort_key",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Image]] = {
@@ -2319,8 +2319,8 @@ package io.flow.delta.v0 {
     object Items extends Items {
       override def get(
         q: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Item]] = {
         val queryParameters = Seq(
@@ -2343,8 +2343,8 @@ package io.flow.delta.v0 {
         organization: _root_.scala.Option[String] = None,
         userId: _root_.scala.Option[String] = None,
         role: _root_.scala.Option[io.flow.delta.v0.models.Role] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "-memberships.created_at",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Membership]] = {
@@ -2409,8 +2409,8 @@ package io.flow.delta.v0 {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
         userId: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "organizations.id",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Organization]] = {
@@ -2488,8 +2488,8 @@ package io.flow.delta.v0 {
         id: _root_.scala.Option[Seq[String]] = None,
         organization: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "projects.id",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Project]] = {
@@ -2632,8 +2632,8 @@ package io.flow.delta.v0 {
         name: _root_.scala.Option[String] = None,
         organizationId: _root_.scala.Option[String] = None,
         existingProject: _root_.scala.Option[Boolean] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Repository]] = {
         val queryParameters = Seq(
@@ -2673,8 +2673,8 @@ package io.flow.delta.v0 {
         projectId: _root_.scala.Option[String] = None,
         branch: _root_.scala.Option[String] = None,
         hash: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "-shas.created_at",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Sha]] = {
@@ -2740,8 +2740,8 @@ package io.flow.delta.v0 {
         userId: _root_.scala.Option[String] = None,
         identifier: _root_.scala.Option[String] = None,
         publication: _root_.scala.Option[io.flow.delta.v0.models.Publication] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "-subscriptions.created_at",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Subscription]] = {
@@ -2816,8 +2816,8 @@ package io.flow.delta.v0 {
         id: _root_.scala.Option[Seq[String]] = None,
         projectId: _root_.scala.Option[String] = None,
         name: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "-tags.sort_key",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Tag]] = {
@@ -2866,8 +2866,8 @@ package io.flow.delta.v0 {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
         userId: _root_.scala.Option[String] = None,
-        limit: Long = 25,
-        offset: Long = 0,
+        limit: Long = 25L,
+        offset: Long = 0L,
         sort: String = "-tokens.created_at",
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Token]] = {
@@ -3122,8 +3122,8 @@ package io.flow.delta.v0 {
      * @param offset Used to paginate. First page of results is 0.
      */
     def get(
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.DashboardBuild]]
   }
@@ -3141,8 +3141,8 @@ package io.flow.delta.v0 {
       `type`: _root_.scala.Option[io.flow.delta.v0.models.EventType] = None,
       numberMinutesSinceCreation: _root_.scala.Option[Long] = None,
       hasError: _root_.scala.Option[Boolean] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "-events.created_at",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Event]]
@@ -3185,8 +3185,8 @@ package io.flow.delta.v0 {
       id: _root_.scala.Option[Seq[String]] = None,
       projectId: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "lower(images.name),-images.sort_key",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Image]]
@@ -3212,8 +3212,8 @@ package io.flow.delta.v0 {
      */
     def get(
       q: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Item]]
   }
@@ -3232,8 +3232,8 @@ package io.flow.delta.v0 {
       organization: _root_.scala.Option[String] = None,
       userId: _root_.scala.Option[String] = None,
       role: _root_.scala.Option[io.flow.delta.v0.models.Role] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "-memberships.created_at",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Membership]]
@@ -3266,8 +3266,8 @@ package io.flow.delta.v0 {
     def get(
       id: _root_.scala.Option[Seq[String]] = None,
       userId: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "organizations.id",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Organization]]
@@ -3317,8 +3317,8 @@ package io.flow.delta.v0 {
       id: _root_.scala.Option[Seq[String]] = None,
       organization: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "projects.id",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Project]]
@@ -3403,8 +3403,8 @@ package io.flow.delta.v0 {
       name: _root_.scala.Option[String] = None,
       organizationId: _root_.scala.Option[String] = None,
       existingProject: _root_.scala.Option[Boolean] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.github.v0.models.Repository]]
 
@@ -3433,8 +3433,8 @@ package io.flow.delta.v0 {
       projectId: _root_.scala.Option[String] = None,
       branch: _root_.scala.Option[String] = None,
       hash: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "-shas.created_at",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Sha]]
@@ -3473,8 +3473,8 @@ package io.flow.delta.v0 {
       userId: _root_.scala.Option[String] = None,
       identifier: _root_.scala.Option[String] = None,
       publication: _root_.scala.Option[io.flow.delta.v0.models.Publication] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "-subscriptions.created_at",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Subscription]]
@@ -3520,8 +3520,8 @@ package io.flow.delta.v0 {
       id: _root_.scala.Option[Seq[String]] = None,
       projectId: _root_.scala.Option[String] = None,
       name: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "-tags.sort_key",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Tag]]
@@ -3547,8 +3547,8 @@ package io.flow.delta.v0 {
     def get(
       id: _root_.scala.Option[Seq[String]] = None,
       userId: _root_.scala.Option[String] = None,
-      limit: Long = 25,
-      offset: Long = 0,
+      limit: Long = 25L,
+      offset: Long = 0L,
       sort: String = "-tokens.created_at",
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Token]]

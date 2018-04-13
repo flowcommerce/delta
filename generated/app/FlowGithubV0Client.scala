@@ -2118,7 +2118,7 @@ package io.flow.github.v0 {
 
     object Repositories extends Repositories {
       override def getUserAndRepos(
-        page: Long = 1,
+        page: Long = 1L,
         visibility: io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility.All,
         affiliation: _root_.scala.Option[String] = None,
         `type`: _root_.scala.Option[String] = None,
@@ -2144,7 +2144,7 @@ package io.flow.github.v0 {
 
       override def getUsersAndReposByUsername(
         username: String,
-        page: Long = 1,
+        page: Long = 1L,
         `type`: String = "owner",
         sort: String = "full_name",
         direction: String = "asc",
@@ -2166,7 +2166,7 @@ package io.flow.github.v0 {
 
       override def getOrgsAndReposByOrg(
         org: String,
-        page: Long = 1,
+        page: Long = 1L,
         `type`: String = "all",
         sort: String = "full_name",
         direction: String = "asc",
@@ -2508,7 +2508,7 @@ package io.flow.github.v0 {
 
   trait Repositories {
     def getUserAndRepos(
-      page: Long = 1,
+      page: Long = 1L,
       visibility: io.flow.github.v0.models.Visibility = io.flow.github.v0.models.Visibility.All,
       affiliation: _root_.scala.Option[String] = None,
       `type`: _root_.scala.Option[String] = None,
@@ -2522,7 +2522,7 @@ package io.flow.github.v0 {
      */
     def getUsersAndReposByUsername(
       username: String,
-      page: Long = 1,
+      page: Long = 1L,
       `type`: String = "owner",
       sort: String = "full_name",
       direction: String = "asc",
@@ -2534,7 +2534,7 @@ package io.flow.github.v0 {
      */
     def getOrgsAndReposByOrg(
       org: String,
-      page: Long = 1,
+      page: Long = 1L,
       `type`: String = "all",
       sort: String = "full_name",
       direction: String = "asc",
