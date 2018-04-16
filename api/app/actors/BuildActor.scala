@@ -270,6 +270,10 @@ class BuildActor @javax.inject.Inject() (
     val latestAmi = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id
     Logger.info(s"latest AMI is $latestAmi")
 
+    // if `memory` passed in to .delta, use that (previously deprecated feature that could still be useful)
+    // otherwise default to InstanceTypeDefaults.jvm
+    val jvmMemory = bc.memory.map(_.toInt).getOrElse(instanceMemorySettings.jvm)
+
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
       asgMinSize = config.requiredInt("aws.asg.min.size"),
@@ -286,7 +290,7 @@ class BuildActor @javax.inject.Inject() (
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
       serviceRole = config.requiredString("aws.service.role"),
       instanceType = instanceType,
-      jvmMemory = instanceMemorySettings.jvm,
+      jvmMemory = jvmMemory,
       containerMemory = instanceMemorySettings.container,
       instanceMemory = instanceMemorySettings.instance,
       portContainer = bc.portContainer,
