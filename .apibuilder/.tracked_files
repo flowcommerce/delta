@@ -41,3 +41,6 @@ flow:
   email:
     play_2_6_client:
     - generated/app/FlowEmailV0Client.scala
+  rollbar:
+    play_2_6_client:
+    - generated/app/FlowRollbarV0Client.scala
