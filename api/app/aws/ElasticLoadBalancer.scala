@@ -95,7 +95,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
             new LoadBalancerAttributes()
               .withCrossZoneLoadBalancing(
                 new CrossZoneLoadBalancing()
-                  .withEnabled(false)
+                  .withEnabled(settings.elbCrossZoneLoadBalancing)
               )
               .withConnectionDraining(
                 new ConnectionDraining()

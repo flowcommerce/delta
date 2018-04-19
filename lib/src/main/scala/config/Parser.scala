@@ -125,7 +125,8 @@ case class Parser() {
         ),
         dependencies = obj.get("dependencies").map(toStringArray(_)).getOrElse(Nil),
         version = map.get("version"),
-        healthcheckUrl = map.get("healthcheck.url")
+        healthcheckUrl = map.get("healthcheck.url"),
+        crossZoneLoadBalancing = map.get("cross.zone.load.balancing").map(_.toBoolean)
       )
     }
 

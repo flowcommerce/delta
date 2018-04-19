@@ -14,6 +14,7 @@ case class DefaultSettings(
   override val asgSubnets: Seq[String],
   override val lcSecurityGroup: String,
   override val elbSecurityGroup: String,
+  override val elbCrossZoneLoadBalancing: Boolean,
   override val ec2KeyName: String,
   override val launchConfigImageId: String,
   override val launchConfigIamInstanceProfile: String,
@@ -62,6 +63,9 @@ trait Settings {
   // Security groups for the EC2 instances launch configuration and autoscaling group
   val lcSecurityGroup: String
   val elbSecurityGroup: String
+
+  // Whether CrossZoneLoadBalancing is enabled
+  val elbCrossZoneLoadBalancing: Boolean
 
   // Keypair name used to SSH into EC2 instances created by the autoscaling group
   val ec2KeyName: String

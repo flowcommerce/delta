@@ -274,6 +274,9 @@ class BuildActor @javax.inject.Inject() (
     // otherwise default to InstanceTypeDefaults.jvm
     val jvmMemory = bc.memory.map(_.toInt).getOrElse(instanceMemorySettings.jvm)
 
+    // if cross_zone_load_balancing is pass in the .delta file, use that
+    val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(false)
+
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
       asgMinSize = config.requiredInt("aws.asg.min.size"),
@@ -285,6 +288,7 @@ class BuildActor @javax.inject.Inject() (
       asgSubnets = config.requiredString("aws.autoscaling.subnets").split(","),
       lcSecurityGroup = config.requiredString("aws.launch.configuration.security.group"),
       elbSecurityGroup = config.requiredString("aws.service.security.group"),
+      elbCrossZoneLoadBalancing = crossZoneLoadBalancing,
       ec2KeyName = config.requiredString("aws.service.key"),
       launchConfigImageId = config.requiredString("aws.launch.configuration.ami"),
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
