@@ -1,7 +1,6 @@
 package io.flow.delta.actors.functions
 
 import javax.inject.Inject
-
 import db.{BuildDesiredStatesDao, BuildLastStatesDao}
 import io.flow.delta.actors.{BuildActor, BuildSupervisorFunction, MainActor, SupervisorResult}
 import io.flow.delta.config.v0.models.BuildStage
@@ -31,7 +30,7 @@ object Scale extends BuildSupervisorFunction {
   * If we have both an desired state and a recent actual state,
   * compares the two to see if there are any instances we need to
   * scale up or down in production. Scale Up will always happen first;
-  * scale down only initiatied after Scale Up is complete.
+  * scale down only initiated after Scale Up is complete.
   */
 class Scale @Inject()(
   buildDesiredStatesDao: BuildDesiredStatesDao,

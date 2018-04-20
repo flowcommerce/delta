@@ -2,12 +2,14 @@ package io.flow.delta.actors
 
 import java.util.UUID
 
+import actors.Deployment
 import akka.actor._
 import db.{BuildsDao, ItemsDao, ProjectsDao}
 import io.flow.delta.api.lib.StateDiff
 import io.flow.play.actors.{ErrorHandler, Scheduler}
 import io.flow.play.util.Constants
 import io.flow.postgresql.{Authorization, Pager}
+import javax.inject.Named
 import play.api.libs.concurrent.InjectedActorSupport
 import play.api.{Environment, Logger, Mode}
 
@@ -67,7 +69,8 @@ class MainActor @javax.inject.Inject() (
   playEnv: Environment,
   buildsDao: BuildsDao,
   projectsDao: ProjectsDao,
-  itemsDao: ItemsDao
+  itemsDao: ItemsDao,
+  @Named("rollbar-actor") rollbarActor: ActorRef,
 ) extends Actor with ActorLogging with ErrorHandler with Scheduler with InjectedActorSupport {
 
   private[this] implicit val ec = system.dispatchers.lookup("main-actor-context")
@@ -202,6 +205,7 @@ class MainActor @javax.inject.Inject() (
       }
 
       case msg @ MainActor.Messages.Scale(buildId, diffs) => withErrorHandler(msg) {
+        rollbarActor ! Deployment(buildId, diffs)
         upsertBuildActor(buildId) ! BuildActor.Messages.Scale(diffs)
       }
 

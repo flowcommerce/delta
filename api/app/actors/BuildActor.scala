@@ -220,7 +220,7 @@ class BuildActor @javax.inject.Inject() (
       self ! BuildActor.Messages.ConfigureAWS
       val instances = diff.desiredInstances - diff.lastInstances
 
-      Logger.info(s"PaoloDeltaDebug project ${build.name}, scale up ${diff.desiredInstances} of ${diff.versionName}")
+      Logger.info(s"PaoloDeltaDebug project $projectName-${build.name}, scale up ${diff.desiredInstances} of ${diff.versionName}")
 
       eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log(build.project.id)) {
         ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
