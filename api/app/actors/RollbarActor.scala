@@ -3,22 +3,28 @@ package actors
 import akka.actor.{Actor, ActorSystem}
 import db.{BuildsDao, TagsDao}
 import io.flow.delta.api.lib.StateDiff
-import io.flow.delta.v0.models.{Build, State}
 import io.flow.play.actors.{ErrorHandler, Scheduler}
 import io.flow.play.util.{Config, FlowEnvironment}
 import io.flow.postgresql.Authorization
 import io.flow.rollbar.v0.models.Deploy
-import javax.inject.{Inject, Singleton}
 import io.flow.rollbar.v0.{Client => Rollbar}
+import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-case class Deployment(buildId: String, diffs: Seq[StateDiff])
+object RollbarActor {
 
-case object Refresh
+  trait Message
+
+  object Messages {
+    case class Deployment(buildId: String, diffs: Seq[StateDiff]) extends Message
+    case object Refresh extends Message
+  }
+
+}
 
 @Singleton
 class RollbarActor @Inject()(
@@ -42,12 +48,12 @@ class RollbarActor @Inject()(
   private val projectCache = new java.util.concurrent.ConcurrentHashMap[String, Project]()
 
   scheduleRecurring(system, "rollbar.actor.refresh.seconds") {
-    self ! Refresh
+    self ! RollbarActor.Messages.Refresh
   }
 
   def receive = akka.event.LoggingReceive {
 
-    case msg @ Deployment(buildId, diffs) => withErrorHandler(msg) {
+    case msg @ RollbarActor.Messages.Deployment(buildId, diffs) => withErrorHandler(msg) {
 
       buildsDao.findById(Authorization.All, buildId) match {
         case None => throw new IllegalArgumentException(buildId)
@@ -77,7 +83,7 @@ class RollbarActor @Inject()(
       }
     }
 
-    case msg @ Refresh => withErrorHandler(msg) {
+    case msg @ RollbarActor.Messages.Refresh => withErrorHandler(msg) {
 
       rollbar.projects.getProjects(accessToken).flatMap { projects =>
         Future.sequence(projects.result.map { project =>

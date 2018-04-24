@@ -2,7 +2,7 @@ package io.flow.delta.actors
 
 import java.util.UUID
 
-import actors.Deployment
+import actors.RollbarActor
 import akka.actor._
 import db.{BuildsDao, ItemsDao, ProjectsDao}
 import io.flow.delta.api.lib.StateDiff
@@ -205,7 +205,7 @@ class MainActor @javax.inject.Inject() (
       }
 
       case msg @ MainActor.Messages.Scale(buildId, diffs) => withErrorHandler(msg) {
-        rollbarActor ! Deployment(buildId, diffs)
+        rollbarActor ! RollbarActor.Messages.Deployment(buildId, diffs)
         upsertBuildActor(buildId) ! BuildActor.Messages.Scale(diffs)
       }
 
