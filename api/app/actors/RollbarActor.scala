@@ -62,22 +62,27 @@ class RollbarActor @Inject()(
             case None => throw new IllegalArgumentException(diffs.toString)
             case Some(diff) =>
 
-              tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
-                case None =>
-                case Some(tag) =>
+              // log to determine whether we should only post when lastInstances == 0
+              logger.warn(s"got deploy for ${build.project.id}, diffs = ${diffs}")
 
-                  if (projectCache.containsKey(build.project.id)) {
-                    rollbar.deploys.post(Deploy(
-                      accessToken = projectCache.get(build.project.id).postAccessKey,
-                      environment = FlowEnvironment.Current.toString,
-                      revision = tag.hash
-                    )) onComplete {
-                      case Success(_) => logger.info(s"success posting $msg")
-                      case Failure(e) => logger.error(s"failed to post deploy $msg")
+              if (diff.desiredInstances > diff.lastInstances) { // scale up
+                tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
+                  case None =>
+                  case Some(tag) =>
+
+                    if (projectCache.containsKey(build.project.id)) {
+                      rollbar.deploys.post(Deploy(
+                        accessToken = projectCache.get(build.project.id).postAccessKey,
+                        environment = FlowEnvironment.Current.toString,
+                        revision = tag.hash
+                      )) onComplete {
+                        case Success(_) => logger.info(s"success posting $msg")
+                        case Failure(e) => logger.error(s"failed to post deploy $msg", e)
+                      }
+                    } else {
+                      logger.warn(s"no project or access key for `${build.project.id}' exist in rollbar")
                     }
-                  } else {
-                    logger.warn(s"no project or access key for `${build.project.id}' exist in rollbar")
-                  }
+                }
               }
           }
       }
