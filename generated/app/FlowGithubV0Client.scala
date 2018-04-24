@@ -5,7 +5,7 @@
  */
 package io.flow.github.v0.models {
 
-  case class Blob(
+  final case class Blob(
     content: String,
     encoding: io.flow.github.v0.models.Encoding,
     url: String,
@@ -13,17 +13,17 @@ package io.flow.github.v0.models {
     size: Long
   )
 
-  case class BlobCreated(
+  final case class BlobCreated(
     url: String,
     sha: String
   )
 
-  case class BlobForm(
+  final case class BlobForm(
     content: String,
     encoding: io.flow.github.v0.models.Encoding = io.flow.github.v0.models.Encoding.Utf8
   )
 
-  case class Commit(
+  final case class Commit(
     sha: String,
     url: String,
     htmlUrl: String,
@@ -34,7 +34,7 @@ package io.flow.github.v0.models {
     parents: Seq[io.flow.github.v0.models.CommitSummary]
   )
 
-  case class CommitForm(
+  final case class CommitForm(
     message: String,
     tree: String,
     parents: Seq[String],
@@ -42,7 +42,7 @@ package io.flow.github.v0.models {
     committer: io.flow.github.v0.models.Person
   )
 
-  case class CommitResponse(
+  final case class CommitResponse(
     sha: String,
     url: String,
     author: io.flow.github.v0.models.Person,
@@ -52,7 +52,7 @@ package io.flow.github.v0.models {
     parents: Seq[io.flow.github.v0.models.TreeSummary]
   )
 
-  case class CommitSummary(
+  final case class CommitSummary(
     sha: String,
     url: String
   )
@@ -60,7 +60,7 @@ package io.flow.github.v0.models {
   /**
    * @param content If file, then present
    */
-  case class Contents(
+  final case class Contents(
     `type`: io.flow.github.v0.models.ContentsType,
     encoding: io.flow.github.v0.models.Encoding,
     size: Long,
@@ -74,24 +74,24 @@ package io.flow.github.v0.models {
     downloadUrl: String
   )
 
-  case class CreateTreeForm(
+  final case class CreateTreeForm(
     baseTree: String,
     tree: Seq[io.flow.github.v0.models.TreeForm]
   )
 
-  case class CreateTreeResponse(
+  final case class CreateTreeResponse(
     sha: String,
     url: String,
     treeResult: io.flow.github.v0.models.Tree
   )
 
-  case class Error(
+  final case class Error(
     resource: String,
     field: String,
     code: String
   )
 
-  case class GithubObject(
+  final case class GithubObject(
     `type`: String,
     sha: String,
     url: String
@@ -100,7 +100,7 @@ package io.flow.github.v0.models {
   /**
    * See https://developer.github.com/v3/repos/hooks/#create-a-hook
    */
-  case class Hook(
+  final case class Hook(
     id: Long,
     url: String,
     testUrl: String,
@@ -113,12 +113,12 @@ package io.flow.github.v0.models {
     createdAt: _root_.org.joda.time.DateTime
   )
 
-  case class HookConfig(
+  final case class HookConfig(
     url: _root_.scala.Option[String] = None,
     contentType: _root_.scala.Option[String] = None
   )
 
-  case class HookForm(
+  final case class HookForm(
     name: String,
     config: io.flow.github.v0.models.HookConfig,
     events: Seq[io.flow.github.v0.models.HookEvent],
@@ -129,7 +129,7 @@ package io.flow.github.v0.models {
    * @param mode 100644 file (blob), 100755 executable (blob), 040000 subdirectory (tree), 160000
    *        submodule (commit)
    */
-  case class Node(
+  final case class Node(
     path: String,
     mode: String,
     `type`: io.flow.github.v0.models.NodeType,
@@ -142,48 +142,48 @@ package io.flow.github.v0.models {
    * @param mode 100644 file (blob), 100755 executable (blob), 040000 subdirectory (tree), 160000
    *        submodule (commit)
    */
-  case class NodeForm(
+  final case class NodeForm(
     path: String,
     mode: String,
     `type`: io.flow.github.v0.models.NodeType,
     sha: String
   )
 
-  case class Person(
+  final case class Person(
     name: String,
     email: String,
     date: _root_.org.joda.time.DateTime
   )
 
-  case class PullRequest(
+  final case class PullRequest(
     id: String,
     url: String,
     number: String
   )
 
-  case class PullRequestForm(
+  final case class PullRequestForm(
     title: String,
     head: String,
     base: String,
     body: _root_.scala.Option[String] = None
   )
 
-  case class Ref(
+  final case class Ref(
     ref: String,
     url: String,
     `object`: io.flow.github.v0.models.GithubObject
   )
 
-  case class RefForm(
+  final case class RefForm(
     ref: String,
     sha: String
   )
 
-  case class RefUpdateForm(
+  final case class RefUpdateForm(
     sha: String
   )
 
-  case class Repository(
+  final case class Repository(
     id: Long,
     owner: io.flow.github.v0.models.User,
     name: String,
@@ -194,7 +194,7 @@ package io.flow.github.v0.models {
     htmlUrl: String
   )
 
-  case class Tag(
+  final case class Tag(
     tag: String,
     sha: String,
     url: String,
@@ -206,7 +206,7 @@ package io.flow.github.v0.models {
   /**
    * @param `object` The SHA of the git object this is tagging
    */
-  case class TagForm(
+  final case class TagForm(
     tag: String,
     message: String,
     `object`: String,
@@ -214,18 +214,18 @@ package io.flow.github.v0.models {
     tagger: io.flow.github.v0.models.Tagger
   )
 
-  case class TagSummary(
+  final case class TagSummary(
     name: String,
     commit: io.flow.github.v0.models.CommitSummary
   )
 
-  case class Tagger(
+  final case class Tagger(
     name: String,
     email: String,
     date: _root_.org.joda.time.DateTime
   )
 
-  case class Tree(
+  final case class Tree(
     sha: String,
     url: String,
     truncated: Boolean,
@@ -236,7 +236,7 @@ package io.flow.github.v0.models {
    * @param mode 100644 file (blob), 100755 executable (blob), 040000 subdirectory (tree), 160000
    *        submodule (commit)
    */
-  case class TreeForm(
+  final case class TreeForm(
     path: String,
     mode: String,
     `type`: io.flow.github.v0.models.NodeType,
@@ -248,7 +248,7 @@ package io.flow.github.v0.models {
    * @param mode 100644 file (blob), 100755 executable (blob), 040000 subdirectory (tree), 160000
    *        submodule (commit)
    */
-  case class TreeResult(
+  final case class TreeResult(
     path: String,
     mode: String,
     `type`: io.flow.github.v0.models.NodeType,
@@ -257,17 +257,17 @@ package io.flow.github.v0.models {
     url: String
   )
 
-  case class TreeSummary(
+  final case class TreeSummary(
     url: String,
     sha: String
   )
 
-  case class UnprocessableEntity(
+  final case class UnprocessableEntity(
     message: String,
     errors: _root_.scala.Option[Seq[io.flow.github.v0.models.Error]] = None
   )
 
-  case class User(
+  final case class User(
     id: Long,
     login: String,
     name: _root_.scala.Option[String] = None,
@@ -279,7 +279,7 @@ package io.flow.github.v0.models {
     `type`: io.flow.github.v0.models.OwnerType
   )
 
-  case class UserEmail(
+  final case class UserEmail(
     email: String,
     verified: Boolean,
     primary: Boolean
@@ -303,7 +303,7 @@ package io.flow.github.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends ContentsType
+    final case class UNDEFINED(override val toString: String) extends ContentsType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -337,7 +337,7 @@ package io.flow.github.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Encoding
+    final case class UNDEFINED(override val toString: String) extends Encoding
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -371,7 +371,7 @@ package io.flow.github.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends HookEvent
+    final case class UNDEFINED(override val toString: String) extends HookEvent
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -406,7 +406,7 @@ package io.flow.github.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends NodeType
+    final case class UNDEFINED(override val toString: String) extends NodeType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -439,7 +439,7 @@ package io.flow.github.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends OwnerType
+    final case class UNDEFINED(override val toString: String) extends OwnerType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -474,7 +474,7 @@ package io.flow.github.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Visibility
+    final case class UNDEFINED(override val toString: String) extends Visibility
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -1785,7 +1785,7 @@ package io.flow.github.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -1808,7 +1808,7 @@ package io.flow.github.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -2367,7 +2367,7 @@ package io.flow.github.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -2589,16 +2589,16 @@ package io.flow.github.v0 {
 
     import io.flow.github.v0.models.json._
 
-    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
+    final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
-    case class UnprocessableEntityResponse(
+    final case class UnprocessableEntityResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val unprocessableEntity = _root_.io.flow.github.v0.Client.parseJson("io.flow.github.v0.models.UnprocessableEntity", response, _.validate[io.flow.github.v0.models.UnprocessableEntity])
     }
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 

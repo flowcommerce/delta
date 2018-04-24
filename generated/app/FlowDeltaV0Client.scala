@@ -16,7 +16,7 @@ package io.flow.delta.v0.models {
 
     case object ProjectSummary extends ItemSummaryDiscriminator { override def toString = "project_summary" }
 
-    case class UNDEFINED(override val toString: String) extends ItemSummaryDiscriminator
+    final case class UNDEFINED(override val toString: String) extends ItemSummaryDiscriminator
 
     val all: scala.List[ItemSummaryDiscriminator] = scala.List(ProjectSummary)
 
@@ -31,7 +31,7 @@ package io.flow.delta.v0.models {
   /**
    * Defines an aws actor
    */
-  case class AwsActor(
+  final case class AwsActor(
     id: Long
   )
 
@@ -42,7 +42,7 @@ package io.flow.delta.v0.models {
    * @param name This is the full name of the application that this build represents and is used
    *        to lookup information in the registry, in docker hub, in AWS, etc.
    */
-  case class Build(
+  final case class Build(
     id: String,
     project: io.flow.delta.v0.models.ProjectSummary,
     status: io.flow.delta.v0.models.Status,
@@ -55,7 +55,7 @@ package io.flow.delta.v0.models {
    * @param name The build name
    * @param latestImage If available, the full name of the latest image for this build
    */
-  case class BuildState(
+  final case class BuildState(
     name: String,
     desired: _root_.scala.Option[io.flow.delta.v0.models.State] = None,
     last: _root_.scala.Option[io.flow.delta.v0.models.State] = None,
@@ -67,32 +67,32 @@ package io.flow.delta.v0.models {
    * 
    * @param name The build name
    */
-  case class DashboardBuild(
+  final case class DashboardBuild(
     project: io.flow.delta.v0.models.ProjectSummary,
     name: String,
     desired: io.flow.delta.v0.models.State,
     last: io.flow.delta.v0.models.State
   )
 
-  case class Docker(
+  final case class Docker(
     provider: io.flow.delta.v0.models.DockerProvider,
     organization: String
   )
 
-  case class EcsAmiRegionImage(
+  final case class EcsAmiRegionImage(
     Name: String,
     ImageId: String
   )
 
-  case class EcsAmiRegions(
+  final case class EcsAmiRegions(
     usEast1: io.flow.delta.v0.models.EcsAmiRegionImage
   )
 
-  case class EcsAmis(
+  final case class EcsAmis(
     Regions: io.flow.delta.v0.models.EcsAmiRegions
   )
 
-  case class Event(
+  final case class Event(
     id: String,
     createdAt: _root_.org.joda.time.DateTime,
     project: io.flow.delta.v0.models.ProjectSummary,
@@ -104,18 +104,18 @@ package io.flow.delta.v0.models {
   /**
    * Used to authenticate user based on the oauth code we receive from github
    */
-  case class GithubAuthenticationForm(
+  final case class GithubAuthenticationForm(
     code: String
   )
 
-  case class GithubUser(
+  final case class GithubUser(
     id: String,
     user: io.flow.delta.v0.models.Reference,
     githubUserId: Long,
     login: String
   )
 
-  case class GithubUserForm(
+  final case class GithubUserForm(
     userId: String,
     githubUserId: Long,
     login: String
@@ -124,18 +124,18 @@ package io.flow.delta.v0.models {
   /**
    * Defines a github hook
    */
-  case class GithubWebhook(
+  final case class GithubWebhook(
     id: Long
   )
 
-  case class Image(
+  final case class Image(
     id: String,
     build: io.flow.delta.v0.models.Build,
     name: String,
     version: String
   )
 
-  case class ImageForm(
+  final case class ImageForm(
     buildId: String,
     name: String,
     version: String
@@ -146,7 +146,7 @@ package io.flow.delta.v0.models {
    * 
    * @param id Unique identifier for this item.
    */
-  case class Item(
+  final case class Item(
     id: String,
     organization: io.flow.delta.v0.models.OrganizationSummary,
     visibility: io.flow.delta.v0.models.Visibility,
@@ -160,14 +160,14 @@ package io.flow.delta.v0.models {
    * 
    * @param id Unique identifier for this membership
    */
-  case class Membership(
+  final case class Membership(
     id: String,
     user: io.flow.delta.v0.models.UserSummary,
     organization: io.flow.delta.v0.models.OrganizationSummary,
     role: io.flow.delta.v0.models.Role
   )
 
-  case class MembershipForm(
+  final case class MembershipForm(
     userId: String,
     organization: String,
     role: io.flow.delta.v0.models.Role = io.flow.delta.v0.models.Role.Member
@@ -178,27 +178,27 @@ package io.flow.delta.v0.models {
    * @param docker Required information to locate docker images for projects associated with this
    *        organization.
    */
-  case class Organization(
+  final case class Organization(
     id: String,
     user: io.flow.delta.v0.models.UserSummary,
     docker: io.flow.delta.v0.models.Docker,
     travis: io.flow.delta.v0.models.Travis
   )
 
-  case class OrganizationForm(
+  final case class OrganizationForm(
     id: String,
     docker: io.flow.delta.v0.models.Docker,
     travis: io.flow.delta.v0.models.Travis
   )
 
-  case class OrganizationSummary(
+  final case class OrganizationSummary(
     id: String
   )
 
   /**
    * @param user The user that created this project
    */
-  case class Project(
+  final case class Project(
     id: String,
     organization: io.flow.delta.v0.models.OrganizationSummary,
     user: io.flow.delta.v0.models.Reference,
@@ -212,7 +212,7 @@ package io.flow.delta.v0.models {
   /**
    * @param config Project configuration. If not provided, we use the global default
    */
-  case class ProjectForm(
+  final case class ProjectForm(
     organization: String,
     name: String,
     visibility: io.flow.delta.v0.models.Visibility,
@@ -221,24 +221,24 @@ package io.flow.delta.v0.models {
     config: _root_.scala.Option[io.flow.delta.config.v0.models.ConfigProject] = None
   )
 
-  case class ProjectSummary(
+  final case class ProjectSummary(
     id: String,
     organization: io.flow.delta.v0.models.OrganizationSummary,
     name: String,
     uri: String
   ) extends ItemSummary
 
-  case class Reference(
+  final case class Reference(
     id: String
   )
 
-  case class Repository(
+  final case class Repository(
     name: String,
     visibility: io.flow.delta.v0.models.Visibility,
     uri: String
   )
 
-  case class Sha(
+  final case class Sha(
     id: String,
     project: io.flow.delta.v0.models.ProjectSummary,
     createdAt: _root_.org.joda.time.DateTime,
@@ -246,7 +246,7 @@ package io.flow.delta.v0.models {
     hash: String
   )
 
-  case class SnsMessageAmi(
+  final case class SnsMessageAmi(
     ECSAmis: Seq[io.flow.delta.v0.models.EcsAmis]
   )
 
@@ -254,12 +254,12 @@ package io.flow.delta.v0.models {
    * Used to describe the last state of a project in AWS. Specifically which versions
    * are running
    */
-  case class State(
+  final case class State(
     timestamp: _root_.org.joda.time.DateTime,
     versions: Seq[io.flow.delta.v0.models.Version]
   )
 
-  case class StateForm(
+  final case class StateForm(
     versions: Seq[io.flow.delta.v0.models.Version]
   )
 
@@ -268,18 +268,18 @@ package io.flow.delta.v0.models {
    * 
    * @param id Internal unique identifier for this subscription record
    */
-  case class Subscription(
+  final case class Subscription(
     id: String,
     user: io.flow.delta.v0.models.Reference,
     publication: io.flow.delta.v0.models.Publication
   )
 
-  case class SubscriptionForm(
+  final case class SubscriptionForm(
     userId: String,
     publication: io.flow.delta.v0.models.Publication
   )
 
-  case class Tag(
+  final case class Tag(
     id: String,
     project: io.flow.delta.v0.models.ProjectSummary,
     createdAt: _root_.org.joda.time.DateTime,
@@ -290,7 +290,7 @@ package io.flow.delta.v0.models {
   /**
    * @param cleartext The cleartext token. Only available when the token is initially created
    */
-  case class Token(
+  final case class Token(
     id: String,
     user: io.flow.delta.v0.models.Reference,
     masked: String,
@@ -298,33 +298,33 @@ package io.flow.delta.v0.models {
     description: _root_.scala.Option[String] = None
   )
 
-  case class TokenForm(
+  final case class TokenForm(
     userId: String,
     description: _root_.scala.Option[String] = None
   )
 
-  case class Travis(
+  final case class Travis(
     organization: String
   )
 
-  case class UserForm(
+  final case class UserForm(
     email: _root_.scala.Option[String] = None,
     name: _root_.scala.Option[io.flow.common.v0.models.Name] = None
   )
 
-  case class UserIdentifier(
+  final case class UserIdentifier(
     id: String,
     user: io.flow.delta.v0.models.Reference,
     value: String
   )
 
-  case class UserSummary(
+  final case class UserSummary(
     id: String,
     email: _root_.scala.Option[String] = None,
     name: io.flow.common.v0.models.Name
   )
 
-  case class UsernamePassword(
+  final case class UsernamePassword(
     username: String,
     password: _root_.scala.Option[String] = None
   )
@@ -332,14 +332,14 @@ package io.flow.delta.v0.models {
   /**
    * Configuration variable of an organization
    */
-  case class Variable(
+  final case class Variable(
     id: String,
     organization: io.flow.delta.v0.models.OrganizationSummary,
     key: String,
     value: String
   )
 
-  case class VariableForm(
+  final case class VariableForm(
     organization: String,
     key: String,
     value: String
@@ -348,7 +348,7 @@ package io.flow.delta.v0.models {
   /**
    * @param instances The number of instances running this version
    */
-  case class Version(
+  final case class Version(
     name: String,
     instances: Long
   )
@@ -361,7 +361,7 @@ package io.flow.delta.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class ItemSummaryUndefinedType(
+  final case class ItemSummaryUndefinedType(
     description: String
   ) extends ItemSummary
 
@@ -380,7 +380,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends DockerProvider
+    final case class UNDEFINED(override val toString: String) extends DockerProvider
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -421,7 +421,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends EventType
+    final case class UNDEFINED(override val toString: String) extends EventType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -460,7 +460,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Publication
+    final case class UNDEFINED(override val toString: String) extends Publication
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -494,7 +494,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Role
+    final case class UNDEFINED(override val toString: String) extends Role
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -527,7 +527,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Scms
+    final case class UNDEFINED(override val toString: String) extends Scms
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -561,7 +561,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Status
+    final case class UNDEFINED(override val toString: String) extends Status
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -595,7 +595,7 @@ package io.flow.delta.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends Visibility
+    final case class UNDEFINED(override val toString: String) extends Visibility
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -2054,7 +2054,7 @@ package io.flow.delta.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -2077,7 +2077,7 @@ package io.flow.delta.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -3078,7 +3078,7 @@ package io.flow.delta.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -3627,16 +3627,16 @@ package io.flow.delta.v0 {
     import io.flow.error.v0.models.json._
     import io.flow.github.v0.models.json._
 
-    case class GenericErrorResponse(
+    final case class GenericErrorResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val genericError = _root_.io.flow.delta.v0.Client.parseJson("io.flow.error.v0.models.GenericError", response, _.validate[io.flow.error.v0.models.GenericError])
     }
 
-    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
+    final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 
