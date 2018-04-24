@@ -41,7 +41,7 @@ class RollbarActor @Inject()(
 
   private val projectCache = new java.util.concurrent.ConcurrentHashMap[String, Project]()
 
-  scheduleRecurring(system, "rollbar.actor.refresh") {
+  scheduleRecurring(system, "rollbar.actor.refresh.seconds") {
     self ! Refresh
   }
 
