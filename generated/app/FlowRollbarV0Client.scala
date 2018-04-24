@@ -5,7 +5,7 @@
  */
 package io.flow.rollbar.v0.models {
 
-  case class Deploy(
+  final case class Deploy(
     accessToken: String,
     environment: String,
     revision: String,
@@ -14,28 +14,28 @@ package io.flow.rollbar.v0.models {
     comment: _root_.scala.Option[String] = None
   )
 
-  case class Error(
+  final case class Error(
     err: Int,
     message: String
   )
 
-  case class Project(
+  final case class Project(
     id: Int,
     name: String
   )
 
-  case class ProjectAccessToken(
+  final case class ProjectAccessToken(
     projectId: Int,
     accessToken: String,
     scopes: Seq[String]
   )
 
-  case class ProjectAccessTokensResult(
+  final case class ProjectAccessTokensResult(
     err: Int,
     result: Seq[io.flow.rollbar.v0.models.ProjectAccessToken]
   )
 
-  case class ProjectsResult(
+  final case class ProjectsResult(
     err: Int,
     result: Seq[io.flow.rollbar.v0.models.Project]
   )
@@ -288,7 +288,7 @@ package io.flow.rollbar.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -311,7 +311,7 @@ package io.flow.rollbar.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -508,7 +508,7 @@ package io.flow.rollbar.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -545,14 +545,14 @@ package io.flow.rollbar.v0 {
 
     import io.flow.rollbar.v0.models.json._
 
-    case class ErrorResponse(
+    final case class ErrorResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val error = _root_.io.flow.rollbar.v0.Client.parseJson("io.flow.rollbar.v0.models.Error", response, _.validate[io.flow.rollbar.v0.models.Error])
     }
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 

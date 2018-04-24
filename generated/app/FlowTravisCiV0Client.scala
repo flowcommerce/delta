@@ -5,14 +5,14 @@
  */
 package io.flow.travis.ci.v0.models {
 
-  case class EnvVar(
+  final case class EnvVar(
     envVar: io.flow.travis.ci.v0.models.EnvVarData
   )
 
   /**
    * @param value Will be null unless public
    */
-  case class EnvVarData(
+  final case class EnvVarData(
     id: _root_.java.util.UUID,
     repositoryId: Long,
     name: String,
@@ -20,17 +20,17 @@ package io.flow.travis.ci.v0.models {
     public: Boolean
   )
 
-  case class EnvVarForm(
+  final case class EnvVarForm(
     envVar: io.flow.travis.ci.v0.models.EnvVarFormData
   )
 
-  case class EnvVarFormData(
+  final case class EnvVarFormData(
     name: String,
     value: String,
     public: Boolean = false
   )
 
-  case class EnvVarGetResponse(
+  final case class EnvVarGetResponse(
     envVars: Seq[io.flow.travis.ci.v0.models.EnvVarData]
   )
 
@@ -46,7 +46,7 @@ package io.flow.travis.ci.v0.models {
    * @param lastBuildFinishedAt build finished at of the last build
    * @param githubLanguage language on github
    */
-  case class Repo(
+  final case class Repo(
     id: Long,
     slug: String,
     description: _root_.scala.Option[String] = None,
@@ -59,17 +59,17 @@ package io.flow.travis.ci.v0.models {
     githubLanguage: _root_.scala.Option[String] = None
   )
 
-  case class Request(
+  final case class Request(
     remainingRequests: Long,
     repository: io.flow.travis.ci.v0.models.RequestRepositoryData,
     request: io.flow.travis.ci.v0.models.RequestPostData
   )
 
-  case class RequestBranchName(
+  final case class RequestBranchName(
     name: _root_.scala.Option[String] = None
   )
 
-  case class RequestBuild(
+  final case class RequestBuild(
     id: Long,
     number: String,
     state: String,
@@ -82,7 +82,7 @@ package io.flow.travis.ci.v0.models {
     finishedAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None
   )
 
-  case class RequestCommit(
+  final case class RequestCommit(
     id: _root_.scala.Option[Long] = None,
     sha: _root_.scala.Option[String] = None,
     ref: _root_.scala.Option[String] = None,
@@ -91,24 +91,24 @@ package io.flow.travis.ci.v0.models {
     committedAt: _root_.scala.Option[_root_.org.joda.time.DateTime] = None
   )
 
-  case class RequestConfigAddonsAptData(
+  final case class RequestConfigAddonsAptData(
     packages: _root_.scala.Option[Seq[String]] = None
   )
 
-  case class RequestConfigAddonsData(
+  final case class RequestConfigAddonsData(
     apt: _root_.scala.Option[io.flow.travis.ci.v0.models.RequestConfigAddonsAptData] = None
   )
 
-  case class RequestConfigBranchesData(
+  final case class RequestConfigBranchesData(
     only: _root_.scala.Option[Seq[String]] = None,
     except: _root_.scala.Option[Seq[String]] = None
   )
 
-  case class RequestConfigCacheData(
+  final case class RequestConfigCacheData(
     directories: _root_.scala.Option[Seq[String]] = None
   )
 
-  case class RequestConfigData(
+  final case class RequestConfigData(
     mergeMode: _root_.scala.Option[io.flow.travis.ci.v0.models.MergeMode] = None,
     language: _root_.scala.Option[String] = None,
     dist: _root_.scala.Option[String] = None,
@@ -131,16 +131,16 @@ package io.flow.travis.ci.v0.models {
     branches: _root_.scala.Option[io.flow.travis.ci.v0.models.RequestConfigBranchesData] = None
   )
 
-  case class RequestGetResponse(
+  final case class RequestGetResponse(
     requests: Seq[io.flow.travis.ci.v0.models.RequestRepositoryGetData]
   )
 
-  case class RequestOwner(
+  final case class RequestOwner(
     id: Long,
     login: String
   )
 
-  case class RequestPostData(
+  final case class RequestPostData(
     repository: io.flow.travis.ci.v0.models.RequestRepositoryData,
     user: io.flow.travis.ci.v0.models.RequestUserData,
     id: Long,
@@ -149,30 +149,30 @@ package io.flow.travis.ci.v0.models {
     config: io.flow.travis.ci.v0.models.RequestConfigData
   )
 
-  case class RequestPostForm(
+  final case class RequestPostForm(
     request: io.flow.travis.ci.v0.models.RequestPostFormData
   )
 
-  case class RequestPostFormData(
+  final case class RequestPostFormData(
     branch: String,
     message: _root_.scala.Option[String] = None,
     config: io.flow.travis.ci.v0.models.RequestConfigData
   )
 
-  case class RequestPostRepositoryData(
+  final case class RequestPostRepositoryData(
     id: Long,
     ownerName: String,
     name: String
   )
 
-  case class RequestRepositoryData(
+  final case class RequestRepositoryData(
     id: Long,
     name: String,
     ownerName: _root_.scala.Option[String] = None,
     slug: _root_.scala.Option[String] = None
   )
 
-  case class RequestRepositoryGetData(
+  final case class RequestRepositoryGetData(
     id: Long,
     state: _root_.scala.Option[String] = None,
     result: _root_.scala.Option[String] = None,
@@ -186,26 +186,26 @@ package io.flow.travis.ci.v0.models {
     eventType: io.flow.travis.ci.v0.models.EventType
   )
 
-  case class RequestUserData(
+  final case class RequestUserData(
     id: Long
   )
 
-  case class Setting(
+  final case class Setting(
     settings: io.flow.travis.ci.v0.models.SettingsData
   )
 
-  case class SettingsData(
+  final case class SettingsData(
     buildsOnlyWithTravisYml: Boolean,
     buildPushes: Boolean,
     buildPullRequests: Boolean,
     maximumNumberOfBuilds: Int
   )
 
-  case class SettingsPatchForm(
+  final case class SettingsPatchForm(
     settings: io.flow.travis.ci.v0.models.SettingsPatchFormData
   )
 
-  case class SettingsPatchFormData(
+  final case class SettingsPatchFormData(
     buildsOnlyWithTravisYml: _root_.scala.Option[Boolean] = None,
     buildPushes: _root_.scala.Option[Boolean] = None,
     buildPullRequests: _root_.scala.Option[Boolean] = None,
@@ -232,7 +232,7 @@ package io.flow.travis.ci.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends EventType
+    final case class UNDEFINED(override val toString: String) extends EventType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -271,7 +271,7 @@ package io.flow.travis.ci.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends MergeMode
+    final case class UNDEFINED(override val toString: String) extends MergeMode
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -1317,7 +1317,7 @@ package io.flow.travis.ci.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -1340,7 +1340,7 @@ package io.flow.travis.ci.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -1674,7 +1674,7 @@ package io.flow.travis.ci.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -1777,9 +1777,9 @@ package io.flow.travis.ci.v0 {
 
     import io.flow.travis.ci.v0.models.json._
 
-    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
+    final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 
