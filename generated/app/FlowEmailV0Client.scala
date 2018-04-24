@@ -40,7 +40,7 @@ package io.flow.email.v0.models {
     case object TulaEmail extends EmailDiscriminator { override def toString = "tula_email" }
     case object AmiUpdateNotification extends EmailDiscriminator { override def toString = "ami_update_notification" }
 
-    case class UNDEFINED(override val toString: String) extends EmailDiscriminator
+    final case class UNDEFINED(override val toString: String) extends EmailDiscriminator
 
     val all: scala.List[EmailDiscriminator] = scala.List(LabelGenerated, ExportCompleted, ExportFailed, ImportCompleted, ImportFailed, BillingStatement, BillingFlowDailySummary, OrganizationInvitation, UserActivated, UserEmailChanged, UserPasswordChanged, UserPasswordReset, UserPendingCreated, UserVerifyEmail, FeedErrorsDetected, OrderManagementReport, CustomsIdentificationEmail, CanadaGooseOrderConfirmation, CanadaGooseShipmentConfirmation, CanadaGooseOrderCancelOutOfStock, CanadaGooseOrderCancelCustomerRequest, CanadaGooseOrderCancelFlow, CanadaGooseOrderCancelInvalidPayment, TulaEmail, AmiUpdateNotification)
 
@@ -63,7 +63,7 @@ package io.flow.email.v0.models {
 
     case object ReportError extends ReportDiscriminator { override def toString = "report_error" }
 
-    case class UNDEFINED(override val toString: String) extends ReportDiscriminator
+    final case class UNDEFINED(override val toString: String) extends ReportDiscriminator
 
     val all: scala.List[ReportDiscriminator] = scala.List(ReportError)
 
@@ -79,18 +79,18 @@ package io.flow.email.v0.models {
    * An email to tech@flow.io notifying that a new AMI is available and instances
    * should be rotated
    */
-  case class AmiUpdateNotification(
+  final case class AmiUpdateNotification(
     amiName: String,
     amiId: String,
     timestamp: _root_.org.joda.time.DateTime
   ) extends Email
 
-  case class Attachment(
+  final case class Attachment(
     name: String,
     url: String
   )
 
-  case class BillingEntry(
+  final case class BillingEntry(
     date: _root_.org.joda.time.DateTime,
     description: String,
     amount: BigDecimal
@@ -102,7 +102,7 @@ package io.flow.email.v0.models {
    * 
    * @param to The email addresses to which to send
    */
-  case class BillingFlowDailySummary(
+  final case class BillingFlowDailySummary(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     pendingStatements: Seq[io.flow.email.v0.models.BillingPendingStatement],
@@ -110,7 +110,7 @@ package io.flow.email.v0.models {
     to: Seq[String]
   ) extends Email
 
-  case class BillingPendingPayment(
+  final case class BillingPendingPayment(
     organization: String,
     accountId: String,
     accountCurrency: String
@@ -119,7 +119,7 @@ package io.flow.email.v0.models {
   /**
    * @param url URL To download this statement
    */
-  case class BillingPendingStatement(
+  final case class BillingPendingStatement(
     organization: String,
     accountId: String,
     accountCurrency: String,
@@ -134,7 +134,7 @@ package io.flow.email.v0.models {
    * @param endingBalance A negative balance indicates an amount due
    * @param to The email addresses to which to send the invoice.
    */
-  case class BillingStatement(
+  final case class BillingStatement(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organization: String,
@@ -151,7 +151,7 @@ package io.flow.email.v0.models {
     attachments: Seq[io.flow.email.v0.models.Attachment]
   ) extends Email
 
-  case class CanadaGooseCommon(
+  final case class CanadaGooseCommon(
     customerEmail: String,
     customerFirstName: String,
     customerLastName: String,
@@ -170,7 +170,7 @@ package io.flow.email.v0.models {
     localizedTotal: String
   )
 
-  case class CanadaGooseItem(
+  final case class CanadaGooseItem(
     productImageSrc: String,
     productName: String,
     productSpec: String,
@@ -181,37 +181,37 @@ package io.flow.email.v0.models {
     trackingLink: _root_.scala.Option[String] = None
   )
 
-  case class CanadaGooseOrderCancelCustomerRequest(
+  final case class CanadaGooseOrderCancelCustomerRequest(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.CanadaGooseCommon
   ) extends Email
 
-  case class CanadaGooseOrderCancelFlow(
+  final case class CanadaGooseOrderCancelFlow(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.CanadaGooseCommon
   ) extends Email
 
-  case class CanadaGooseOrderCancelInvalidPayment(
+  final case class CanadaGooseOrderCancelInvalidPayment(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.CanadaGooseCommon
   ) extends Email
 
-  case class CanadaGooseOrderCancelOutOfStock(
+  final case class CanadaGooseOrderCancelOutOfStock(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.CanadaGooseCommon
   ) extends Email
 
-  case class CanadaGooseOrderConfirmation(
+  final case class CanadaGooseOrderConfirmation(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.CanadaGooseCommon
   ) extends Email
 
-  case class CanadaGooseShipmentConfirmation(
+  final case class CanadaGooseShipmentConfirmation(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.CanadaGooseCommon
@@ -221,7 +221,7 @@ package io.flow.email.v0.models {
    * Email notification sent when the destination country on the order requires id
    * for the order to get through customs
    */
-  case class CustomsIdentificationEmail(
+  final case class CustomsIdentificationEmail(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organizationId: String,
@@ -238,7 +238,7 @@ package io.flow.email.v0.models {
    * @param code Machine readable code for this specific error message
    * @param message Description of the error
    */
-  case class Error(
+  final case class Error(
     code: String,
     message: String
   )
@@ -255,7 +255,7 @@ package io.flow.email.v0.models {
    *        after a fixed period of time (e.g. valid for 1 week).
    * @param expiration The date / time of expiration for the URL
    */
-  case class ExportCompleted(
+  final case class ExportCompleted(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organization: String,
@@ -274,7 +274,7 @@ package io.flow.email.v0.models {
    * @param email The email address of the user that requested notification when the export was
    *        ready.
    */
-  case class ExportFailed(
+  final case class ExportFailed(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organization: String,
@@ -290,7 +290,7 @@ package io.flow.email.v0.models {
    * @param experienceKey The experience we were building a feed for.
    * @param email The email address to send the email to.
    */
-  case class FeedErrorsDetected(
+  final case class FeedErrorsDetected(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organizationId: String,
@@ -299,7 +299,7 @@ package io.flow.email.v0.models {
     url: String
   ) extends Email
 
-  case class Healthcheck(
+  final case class Healthcheck(
     status: String
   )
 
@@ -318,7 +318,7 @@ package io.flow.email.v0.models {
    *        fixed period of time (e.g. valid for 1 week).
    * @param expiration The date / time of expiration for the URL
    */
-  case class ImportCompleted(
+  final case class ImportCompleted(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organization: String,
@@ -340,7 +340,7 @@ package io.flow.email.v0.models {
    * @param email The email address of the user that requested notification when the import was
    *        ready.
    */
-  case class ImportFailed(
+  final case class ImportFailed(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organization: String,
@@ -359,7 +359,7 @@ package io.flow.email.v0.models {
    * @param trackingNumber Carrier tracking number associated with this label.
    * @param url URL of the label to be sent in this email.
    */
-  case class LabelGenerated(
+  final case class LabelGenerated(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     carrier: String,
@@ -375,7 +375,7 @@ package io.flow.email.v0.models {
    * @param `type` The type of report
    * @param to The email addresses to which to send the invoice.
    */
-  case class OrderManagementReport(
+  final case class OrderManagementReport(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     `type`: String,
@@ -398,7 +398,7 @@ package io.flow.email.v0.models {
    * @param lastName The last name of the person being invited. If provided, we prefill the
    *        registration form with their name
    */
-  case class OrganizationInvitation(
+  final case class OrganizationInvitation(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     organization: io.flow.email.v0.models.OrganizationSummary,
@@ -408,7 +408,7 @@ package io.flow.email.v0.models {
     lastName: _root_.scala.Option[String] = None
   ) extends Email
 
-  case class OrganizationSummary(
+  final case class OrganizationSummary(
     id: String,
     name: String
   )
@@ -421,7 +421,7 @@ package io.flow.email.v0.models {
    * @param request The original API request which caused the error(s)
    * @param errors The reported error(s)
    */
-  case class ReportError(
+  final case class ReportError(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     user: _root_.scala.Option[String] = None,
@@ -430,7 +430,7 @@ package io.flow.email.v0.models {
     errors: Seq[String]
   ) extends Report
 
-  case class TulaCommon(
+  final case class TulaCommon(
     customerEmail: String,
     customerFirstName: String,
     customerLastName: String,
@@ -455,7 +455,7 @@ package io.flow.email.v0.models {
     trackingLink: _root_.scala.Option[String] = None
   )
 
-  case class TulaEmail(
+  final case class TulaEmail(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     commonFields: io.flow.email.v0.models.TulaCommon,
@@ -463,7 +463,7 @@ package io.flow.email.v0.models {
     locale: String
   ) extends Email
 
-  case class TulaItem(
+  final case class TulaItem(
     productImageSrc: String,
     productName: String,
     localItemPrice: String,
@@ -473,7 +473,7 @@ package io.flow.email.v0.models {
   /**
    * A message sent when a user's account has been activated.
    */
-  case class UserActivated(
+  final case class UserActivated(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     email: String
@@ -485,7 +485,7 @@ package io.flow.email.v0.models {
    * 
    * @param newEmail If not provided, indicates email was removed
    */
-  case class UserEmailChanged(
+  final case class UserEmailChanged(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     oldEmail: String,
@@ -497,7 +497,7 @@ package io.flow.email.v0.models {
    * 
    * @param email The email address of the user whose password was changed.
    */
-  case class UserPasswordChanged(
+  final case class UserPasswordChanged(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     email: String
@@ -510,7 +510,7 @@ package io.flow.email.v0.models {
    * @param token Unique, one time use token to allow a user to change their password.
    * @param email The email address of the user that forgot their password.
    */
-  case class UserPasswordReset(
+  final case class UserPasswordReset(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     token: String,
@@ -523,7 +523,7 @@ package io.flow.email.v0.models {
    * @param id The Id of the user pending record.
    * @param email The email address of the user that registered
    */
-  case class UserPendingCreated(
+  final case class UserPendingCreated(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     id: String,
@@ -539,7 +539,7 @@ package io.flow.email.v0.models {
    * @param token Unique, one time use token that is used to verify the email address.
    * @param email The email address being verified
    */
-  case class UserVerifyEmail(
+  final case class UserVerifyEmail(
     eventId: String,
     timestamp: _root_.org.joda.time.DateTime,
     token: String,
@@ -554,7 +554,7 @@ package io.flow.email.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class EmailUndefinedType(
+  final case class EmailUndefinedType(
     description: String
   ) extends Email
 
@@ -566,7 +566,7 @@ package io.flow.email.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class ReportUndefinedType(
+  final case class ReportUndefinedType(
     description: String
   ) extends Report
 
@@ -586,7 +586,7 @@ package io.flow.email.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends TulaEmailType
+    final case class UNDEFINED(override val toString: String) extends TulaEmailType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -1765,7 +1765,7 @@ package io.flow.email.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -1788,7 +1788,7 @@ package io.flow.email.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
@@ -1982,7 +1982,7 @@ package io.flow.email.v0 {
 
   sealed trait Authorization extends _root_.scala.Product with _root_.scala.Serializable
   object Authorization {
-    case class Basic(username: String, password: Option[String] = None) extends Authorization
+    final case class Basic(username: String, password: Option[String] = None) extends Authorization
   }
 
   package interfaces {
@@ -2020,16 +2020,16 @@ package io.flow.email.v0 {
 
     import io.flow.email.v0.models.json._
 
-    case class ErrorsResponse(
+    final case class ErrorsResponse(
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
       lazy val errors = _root_.io.flow.email.v0.Client.parseJson("Seq[io.flow.email.v0.models.Error]", response, _.validate[Seq[io.flow.email.v0.models.Error]])
     }
 
-    case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
+    final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
 
-    case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
+    final case class FailedRequest(responseCode: Int, message: String, requestUri: Option[_root_.java.net.URI] = None) extends _root_.java.lang.Exception(s"HTTP $responseCode: $message")
 
   }
 

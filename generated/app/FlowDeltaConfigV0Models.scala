@@ -17,7 +17,7 @@ package io.flow.delta.config.v0.models {
     case object ConfigProject extends ConfigDiscriminator { override def toString = "config_project" }
     case object ConfigError extends ConfigDiscriminator { override def toString = "config_error" }
 
-    case class UNDEFINED(override val toString: String) extends ConfigDiscriminator
+    final case class UNDEFINED(override val toString: String) extends ConfigDiscriminator
 
     val all: scala.List[ConfigDiscriminator] = scala.List(ConfigProject, ConfigError)
 
@@ -33,7 +33,7 @@ package io.flow.delta.config.v0.models {
    * The name of the branch that we are actively monitoring, including any
    * information needed for the initial deploy.
    */
-  case class Branch(
+  final case class Branch(
     name: String
   )
 
@@ -51,7 +51,7 @@ package io.flow.delta.config.v0.models {
    * @param healthcheckUrl The URL used for healthchecks by the ELB
    * @param crossZoneLoadBalancing Flag whether this build should enable CrossZoneLoadBalancing
    */
-  case class Build(
+  final case class Build(
     name: String,
     dockerfile: String,
     initialNumberInstances: Long,
@@ -70,7 +70,7 @@ package io.flow.delta.config.v0.models {
   /**
    * Used to indicate that there was a problem parsing the project configuration
    */
-  case class ConfigError(
+  final case class ConfigError(
     errors: Seq[String]
   ) extends Config
 
@@ -78,7 +78,7 @@ package io.flow.delta.config.v0.models {
    * Top level configuration for a project, including what builds and branches are
    * covered and the current status (e.g. enabled, paused, etc.)
    */
-  case class ConfigProject(
+  final case class ConfigProject(
     stages: Seq[io.flow.delta.config.v0.models.ProjectStage],
     builds: Seq[io.flow.delta.config.v0.models.Build],
     branches: Seq[io.flow.delta.config.v0.models.Branch]
@@ -92,7 +92,7 @@ package io.flow.delta.config.v0.models {
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  case class ConfigUndefinedType(
+  final case class ConfigUndefinedType(
     description: String
   ) extends Config
 
@@ -118,7 +118,7 @@ package io.flow.delta.config.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends BuildStage
+    final case class UNDEFINED(override val toString: String) extends BuildStage
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -170,7 +170,7 @@ package io.flow.delta.config.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends InstanceType
+    final case class UNDEFINED(override val toString: String) extends InstanceType
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -209,7 +209,7 @@ package io.flow.delta.config.v0.models {
      * We use all CAPS for the variable name to avoid collisions
      * with the camel cased values above.
      */
-    case class UNDEFINED(override val toString: String) extends ProjectStage
+    final case class UNDEFINED(override val toString: String) extends ProjectStage
 
     /**
      * all returns a list of all the valid, known values. We use
@@ -577,7 +577,7 @@ package io.flow.delta.config.v0 {
 
     }
 
-    case class ApibuilderQueryStringBindable[T](
+    final case class ApibuilderQueryStringBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends QueryStringBindable[T] {
 
@@ -600,7 +600,7 @@ package io.flow.delta.config.v0 {
       }
     }
 
-    case class ApibuilderPathBindable[T](
+    final case class ApibuilderPathBindable[T](
       converters: ApibuilderTypeConverter[T]
     ) extends PathBindable[T] {
 
