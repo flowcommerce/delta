@@ -678,11 +678,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailAmiUpdateNotification: play.api.libs.json.Reads[AmiUpdateNotification] = {
-      (
-        (__ \ "ami_name").read[String] and
-        (__ \ "ami_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
-      )(AmiUpdateNotification.apply _)
+      for {
+        amiName <- (__ \ "ami_name").read[String]
+        amiId <- (__ \ "ami_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+      } yield AmiUpdateNotification(amiName, amiId, timestamp)
     }
 
     def jsObjectAmiUpdateNotification(obj: io.flow.email.v0.models.AmiUpdateNotification): play.api.libs.json.JsObject = {
@@ -694,10 +694,10 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailAttachment: play.api.libs.json.Reads[Attachment] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "url").read[String]
-      )(Attachment.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        url <- (__ \ "url").read[String]
+      } yield Attachment(name, url)
     }
 
     def jsObjectAttachment(obj: io.flow.email.v0.models.Attachment): play.api.libs.json.JsObject = {
@@ -716,11 +716,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailBillingEntry: play.api.libs.json.Reads[BillingEntry] = {
-      (
-        (__ \ "date").read[_root_.org.joda.time.DateTime] and
-        (__ \ "description").read[String] and
-        (__ \ "amount").read[BigDecimal]
-      )(BillingEntry.apply _)
+      for {
+        date <- (__ \ "date").read[_root_.org.joda.time.DateTime]
+        description <- (__ \ "description").read[String]
+        amount <- (__ \ "amount").read[BigDecimal]
+      } yield BillingEntry(date, description, amount)
     }
 
     def jsObjectBillingEntry(obj: io.flow.email.v0.models.BillingEntry): play.api.libs.json.JsObject = {
@@ -740,13 +740,13 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailBillingFlowDailySummary: play.api.libs.json.Reads[BillingFlowDailySummary] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "pending_statements").read[Seq[io.flow.email.v0.models.BillingPendingStatement]] and
-        (__ \ "pending_payments").read[Seq[io.flow.email.v0.models.BillingPendingPayment]] and
-        (__ \ "to").read[Seq[String]]
-      )(BillingFlowDailySummary.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        pendingStatements <- (__ \ "pending_statements").read[Seq[io.flow.email.v0.models.BillingPendingStatement]]
+        pendingPayments <- (__ \ "pending_payments").read[Seq[io.flow.email.v0.models.BillingPendingPayment]]
+        to <- (__ \ "to").read[Seq[String]]
+      } yield BillingFlowDailySummary(eventId, timestamp, pendingStatements, pendingPayments, to)
     }
 
     def jsObjectBillingFlowDailySummary(obj: io.flow.email.v0.models.BillingFlowDailySummary): play.api.libs.json.JsObject = {
@@ -760,11 +760,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailBillingPendingPayment: play.api.libs.json.Reads[BillingPendingPayment] = {
-      (
-        (__ \ "organization").read[String] and
-        (__ \ "account_id").read[String] and
-        (__ \ "account_currency").read[String]
-      )(BillingPendingPayment.apply _)
+      for {
+        organization <- (__ \ "organization").read[String]
+        accountId <- (__ \ "account_id").read[String]
+        accountCurrency <- (__ \ "account_currency").read[String]
+      } yield BillingPendingPayment(organization, accountId, accountCurrency)
     }
 
     def jsObjectBillingPendingPayment(obj: io.flow.email.v0.models.BillingPendingPayment): play.api.libs.json.JsObject = {
@@ -784,13 +784,13 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailBillingPendingStatement: play.api.libs.json.Reads[BillingPendingStatement] = {
-      (
-        (__ \ "organization").read[String] and
-        (__ \ "account_id").read[String] and
-        (__ \ "account_currency").read[String] and
-        (__ \ "statement_id").read[String] and
-        (__ \ "url").read[String]
-      )(BillingPendingStatement.apply _)
+      for {
+        organization <- (__ \ "organization").read[String]
+        accountId <- (__ \ "account_id").read[String]
+        accountCurrency <- (__ \ "account_currency").read[String]
+        statementId <- (__ \ "statement_id").read[String]
+        url <- (__ \ "url").read[String]
+      } yield BillingPendingStatement(organization, accountId, accountCurrency, statementId, url)
     }
 
     def jsObjectBillingPendingStatement(obj: io.flow.email.v0.models.BillingPendingStatement): play.api.libs.json.JsObject = {
@@ -812,22 +812,22 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailBillingStatement: play.api.libs.json.Reads[BillingStatement] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization").read[String] and
-        (__ \ "statement_id").read[String] and
-        (__ \ "currency").read[String] and
-        (__ \ "period_from").read[_root_.org.joda.time.DateTime] and
-        (__ \ "period_to").read[_root_.org.joda.time.DateTime] and
-        (__ \ "entries").read[Seq[io.flow.email.v0.models.BillingEntry]] and
-        (__ \ "amount_paid").read[BigDecimal] and
-        (__ \ "ending_balance").read[BigDecimal] and
-        (__ \ "to").read[Seq[String]] and
-        (__ \ "cc").read[Seq[String]] and
-        (__ \ "bcc").read[Seq[String]] and
-        (__ \ "attachments").read[Seq[io.flow.email.v0.models.Attachment]]
-      )(BillingStatement.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organization <- (__ \ "organization").read[String]
+        statementId <- (__ \ "statement_id").read[String]
+        currency <- (__ \ "currency").read[String]
+        periodFrom <- (__ \ "period_from").read[_root_.org.joda.time.DateTime]
+        periodTo <- (__ \ "period_to").read[_root_.org.joda.time.DateTime]
+        entries <- (__ \ "entries").read[Seq[io.flow.email.v0.models.BillingEntry]]
+        amountPaid <- (__ \ "amount_paid").read[BigDecimal]
+        endingBalance <- (__ \ "ending_balance").read[BigDecimal]
+        to <- (__ \ "to").read[Seq[String]]
+        cc <- (__ \ "cc").read[Seq[String]]
+        bcc <- (__ \ "bcc").read[Seq[String]]
+        attachments <- (__ \ "attachments").read[Seq[io.flow.email.v0.models.Attachment]]
+      } yield BillingStatement(eventId, timestamp, organization, statementId, currency, periodFrom, periodTo, entries, amountPaid, endingBalance, to, cc, bcc, attachments)
     }
 
     def jsObjectBillingStatement(obj: io.flow.email.v0.models.BillingStatement): play.api.libs.json.JsObject = {
@@ -850,24 +850,24 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseCommon: play.api.libs.json.Reads[CanadaGooseCommon] = {
-      (
-        (__ \ "customer_email").read[String] and
-        (__ \ "customer_first_name").read[String] and
-        (__ \ "customer_last_name").read[String] and
-        (__ \ "order_number").read[String] and
-        (__ \ "shipping_address_line_one").read[String] and
-        (__ \ "shipping_address_line_two").read[String] and
-        (__ \ "shipping_address_line_three").read[String] and
-        (__ \ "billing_address_line_one").read[String] and
-        (__ \ "billing_address_line_two").read[String] and
-        (__ \ "billing_address_line_three").read[String] and
-        (__ \ "items").read[Seq[io.flow.email.v0.models.CanadaGooseItem]] and
-        (__ \ "localized_subtotal").read[String] and
-        (__ \ "localized_tax").read[String] and
-        (__ \ "localized_duty").read[String] and
-        (__ \ "localized_shipping").read[String] and
-        (__ \ "localized_total").read[String]
-      )(CanadaGooseCommon.apply _)
+      for {
+        customerEmail <- (__ \ "customer_email").read[String]
+        customerFirstName <- (__ \ "customer_first_name").read[String]
+        customerLastName <- (__ \ "customer_last_name").read[String]
+        orderNumber <- (__ \ "order_number").read[String]
+        shippingAddressLineOne <- (__ \ "shipping_address_line_one").read[String]
+        shippingAddressLineTwo <- (__ \ "shipping_address_line_two").read[String]
+        shippingAddressLineThree <- (__ \ "shipping_address_line_three").read[String]
+        billingAddressLineOne <- (__ \ "billing_address_line_one").read[String]
+        billingAddressLineTwo <- (__ \ "billing_address_line_two").read[String]
+        billingAddressLineThree <- (__ \ "billing_address_line_three").read[String]
+        items <- (__ \ "items").read[Seq[io.flow.email.v0.models.CanadaGooseItem]]
+        localizedSubtotal <- (__ \ "localized_subtotal").read[String]
+        localizedTax <- (__ \ "localized_tax").read[String]
+        localizedDuty <- (__ \ "localized_duty").read[String]
+        localizedShipping <- (__ \ "localized_shipping").read[String]
+        localizedTotal <- (__ \ "localized_total").read[String]
+      } yield CanadaGooseCommon(customerEmail, customerFirstName, customerLastName, orderNumber, shippingAddressLineOne, shippingAddressLineTwo, shippingAddressLineThree, billingAddressLineOne, billingAddressLineTwo, billingAddressLineThree, items, localizedSubtotal, localizedTax, localizedDuty, localizedShipping, localizedTotal)
     }
 
     def jsObjectCanadaGooseCommon(obj: io.flow.email.v0.models.CanadaGooseCommon): play.api.libs.json.JsObject = {
@@ -900,16 +900,16 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseItem: play.api.libs.json.Reads[CanadaGooseItem] = {
-      (
-        (__ \ "product_image_src").read[String] and
-        (__ \ "product_name").read[String] and
-        (__ \ "product_spec").read[String] and
-        (__ \ "local_item_price").read[String] and
-        (__ \ "item_quantity").read[String] and
-        (__ \ "local_line_total").read[String] and
-        (__ \ "tracking_number").readNullable[String] and
-        (__ \ "tracking_link").readNullable[String]
-      )(CanadaGooseItem.apply _)
+      for {
+        productImageSrc <- (__ \ "product_image_src").read[String]
+        productName <- (__ \ "product_name").read[String]
+        productSpec <- (__ \ "product_spec").read[String]
+        localItemPrice <- (__ \ "local_item_price").read[String]
+        itemQuantity <- (__ \ "item_quantity").read[String]
+        localLineTotal <- (__ \ "local_line_total").read[String]
+        trackingNumber <- (__ \ "tracking_number").readNullable[String]
+        trackingLink <- (__ \ "tracking_link").readNullable[String]
+      } yield CanadaGooseItem(productImageSrc, productName, productSpec, localItemPrice, itemQuantity, localLineTotal, trackingNumber, trackingLink)
     }
 
     def jsObjectCanadaGooseItem(obj: io.flow.email.v0.models.CanadaGooseItem): play.api.libs.json.JsObject = {
@@ -939,11 +939,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseOrderCancelCustomerRequest: play.api.libs.json.Reads[CanadaGooseOrderCancelCustomerRequest] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
-      )(CanadaGooseOrderCancelCustomerRequest.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
+      } yield CanadaGooseOrderCancelCustomerRequest(eventId, timestamp, commonFields)
     }
 
     def jsObjectCanadaGooseOrderCancelCustomerRequest(obj: io.flow.email.v0.models.CanadaGooseOrderCancelCustomerRequest): play.api.libs.json.JsObject = {
@@ -955,11 +955,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseOrderCancelFlow: play.api.libs.json.Reads[CanadaGooseOrderCancelFlow] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
-      )(CanadaGooseOrderCancelFlow.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
+      } yield CanadaGooseOrderCancelFlow(eventId, timestamp, commonFields)
     }
 
     def jsObjectCanadaGooseOrderCancelFlow(obj: io.flow.email.v0.models.CanadaGooseOrderCancelFlow): play.api.libs.json.JsObject = {
@@ -971,11 +971,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseOrderCancelInvalidPayment: play.api.libs.json.Reads[CanadaGooseOrderCancelInvalidPayment] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
-      )(CanadaGooseOrderCancelInvalidPayment.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
+      } yield CanadaGooseOrderCancelInvalidPayment(eventId, timestamp, commonFields)
     }
 
     def jsObjectCanadaGooseOrderCancelInvalidPayment(obj: io.flow.email.v0.models.CanadaGooseOrderCancelInvalidPayment): play.api.libs.json.JsObject = {
@@ -987,11 +987,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseOrderCancelOutOfStock: play.api.libs.json.Reads[CanadaGooseOrderCancelOutOfStock] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
-      )(CanadaGooseOrderCancelOutOfStock.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
+      } yield CanadaGooseOrderCancelOutOfStock(eventId, timestamp, commonFields)
     }
 
     def jsObjectCanadaGooseOrderCancelOutOfStock(obj: io.flow.email.v0.models.CanadaGooseOrderCancelOutOfStock): play.api.libs.json.JsObject = {
@@ -1003,11 +1003,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseOrderConfirmation: play.api.libs.json.Reads[CanadaGooseOrderConfirmation] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
-      )(CanadaGooseOrderConfirmation.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
+      } yield CanadaGooseOrderConfirmation(eventId, timestamp, commonFields)
     }
 
     def jsObjectCanadaGooseOrderConfirmation(obj: io.flow.email.v0.models.CanadaGooseOrderConfirmation): play.api.libs.json.JsObject = {
@@ -1019,11 +1019,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCanadaGooseShipmentConfirmation: play.api.libs.json.Reads[CanadaGooseShipmentConfirmation] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
-      )(CanadaGooseShipmentConfirmation.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.CanadaGooseCommon]
+      } yield CanadaGooseShipmentConfirmation(eventId, timestamp, commonFields)
     }
 
     def jsObjectCanadaGooseShipmentConfirmation(obj: io.flow.email.v0.models.CanadaGooseShipmentConfirmation): play.api.libs.json.JsObject = {
@@ -1035,18 +1035,18 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailCustomsIdentificationEmail: play.api.libs.json.Reads[CustomsIdentificationEmail] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization_id").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "carrier").read[String] and
-        (__ \ "order_number").read[String] and
-        (__ \ "estimated_delivery_min").read[_root_.org.joda.time.DateTime] and
-        (__ \ "estimated_delivery_max").read[_root_.org.joda.time.DateTime] and
-        (__ \ "destination").read[String] and
-        (__ \ "customs_url").read[String]
-      )(CustomsIdentificationEmail.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organizationId <- (__ \ "organization_id").read[String]
+        email <- (__ \ "email").read[String]
+        carrier <- (__ \ "carrier").read[String]
+        orderNumber <- (__ \ "order_number").read[String]
+        estimatedDeliveryMin <- (__ \ "estimated_delivery_min").read[_root_.org.joda.time.DateTime]
+        estimatedDeliveryMax <- (__ \ "estimated_delivery_max").read[_root_.org.joda.time.DateTime]
+        destination <- (__ \ "destination").read[String]
+        customsUrl <- (__ \ "customs_url").read[String]
+      } yield CustomsIdentificationEmail(eventId, timestamp, organizationId, email, carrier, orderNumber, estimatedDeliveryMin, estimatedDeliveryMax, destination, customsUrl)
     }
 
     def jsObjectCustomsIdentificationEmail(obj: io.flow.email.v0.models.CustomsIdentificationEmail): play.api.libs.json.JsObject = {
@@ -1065,10 +1065,10 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailError: play.api.libs.json.Reads[Error] = {
-      (
-        (__ \ "code").read[String] and
-        (__ \ "message").read[String]
-      )(Error.apply _)
+      for {
+        code <- (__ \ "code").read[String]
+        message <- (__ \ "message").read[String]
+      } yield Error(code, message)
     }
 
     def jsObjectError(obj: io.flow.email.v0.models.Error): play.api.libs.json.JsObject = {
@@ -1087,16 +1087,16 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailExportCompleted: play.api.libs.json.Reads[ExportCompleted] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization").read[String] and
-        (__ \ "export_id").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "expiration").read[_root_.org.joda.time.DateTime]
-      )(ExportCompleted.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organization <- (__ \ "organization").read[String]
+        exportId <- (__ \ "export_id").read[String]
+        `type` <- (__ \ "type").read[String]
+        email <- (__ \ "email").read[String]
+        url <- (__ \ "url").read[String]
+        expiration <- (__ \ "expiration").read[_root_.org.joda.time.DateTime]
+      } yield ExportCompleted(eventId, timestamp, organization, exportId, `type`, email, url, expiration)
     }
 
     def jsObjectExportCompleted(obj: io.flow.email.v0.models.ExportCompleted): play.api.libs.json.JsObject = {
@@ -1113,14 +1113,14 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailExportFailed: play.api.libs.json.Reads[ExportFailed] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization").read[String] and
-        (__ \ "export_id").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "email").read[String]
-      )(ExportFailed.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organization <- (__ \ "organization").read[String]
+        exportId <- (__ \ "export_id").read[String]
+        `type` <- (__ \ "type").read[String]
+        email <- (__ \ "email").read[String]
+      } yield ExportFailed(eventId, timestamp, organization, exportId, `type`, email)
     }
 
     def jsObjectExportFailed(obj: io.flow.email.v0.models.ExportFailed): play.api.libs.json.JsObject = {
@@ -1135,14 +1135,14 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailFeedErrorsDetected: play.api.libs.json.Reads[FeedErrorsDetected] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization_id").read[String] and
-        (__ \ "experience_key").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "url").read[String]
-      )(FeedErrorsDetected.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organizationId <- (__ \ "organization_id").read[String]
+        experienceKey <- (__ \ "experience_key").read[String]
+        email <- (__ \ "email").read[String]
+        url <- (__ \ "url").read[String]
+      } yield FeedErrorsDetected(eventId, timestamp, organizationId, experienceKey, email, url)
     }
 
     def jsObjectFeedErrorsDetected(obj: io.flow.email.v0.models.FeedErrorsDetected): play.api.libs.json.JsObject = {
@@ -1175,19 +1175,19 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailImportCompleted: play.api.libs.json.Reads[ImportCompleted] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization").read[String] and
-        (__ \ "import_id").read[String] and
-        (__ \ "source_url").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "number_successful").read[Long] and
-        (__ \ "number_errors").read[Long] and
-        (__ \ "results_url").readNullable[String] and
-        (__ \ "expiration").read[_root_.org.joda.time.DateTime]
-      )(ImportCompleted.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organization <- (__ \ "organization").read[String]
+        importId <- (__ \ "import_id").read[String]
+        sourceUrl <- (__ \ "source_url").read[String]
+        `type` <- (__ \ "type").read[String]
+        email <- (__ \ "email").read[String]
+        numberSuccessful <- (__ \ "number_successful").read[Long]
+        numberErrors <- (__ \ "number_errors").read[Long]
+        resultsUrl <- (__ \ "results_url").readNullable[String]
+        expiration <- (__ \ "expiration").read[_root_.org.joda.time.DateTime]
+      } yield ImportCompleted(eventId, timestamp, organization, importId, sourceUrl, `type`, email, numberSuccessful, numberErrors, resultsUrl, expiration)
     }
 
     def jsObjectImportCompleted(obj: io.flow.email.v0.models.ImportCompleted): play.api.libs.json.JsObject = {
@@ -1209,15 +1209,15 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailImportFailed: play.api.libs.json.Reads[ImportFailed] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization").read[String] and
-        (__ \ "import_id").read[String] and
-        (__ \ "source_url").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "email").read[String]
-      )(ImportFailed.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organization <- (__ \ "organization").read[String]
+        importId <- (__ \ "import_id").read[String]
+        sourceUrl <- (__ \ "source_url").read[String]
+        `type` <- (__ \ "type").read[String]
+        email <- (__ \ "email").read[String]
+      } yield ImportFailed(eventId, timestamp, organization, importId, sourceUrl, `type`, email)
     }
 
     def jsObjectImportFailed(obj: io.flow.email.v0.models.ImportFailed): play.api.libs.json.JsObject = {
@@ -1233,15 +1233,15 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailLabelGenerated: play.api.libs.json.Reads[LabelGenerated] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "carrier").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "flow_tracking_number").read[String] and
-        (__ \ "tracking_number").read[String] and
-        (__ \ "url").read[String]
-      )(LabelGenerated.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        carrier <- (__ \ "carrier").read[String]
+        email <- (__ \ "email").read[String]
+        flowTrackingNumber <- (__ \ "flow_tracking_number").read[String]
+        trackingNumber <- (__ \ "tracking_number").read[String]
+        url <- (__ \ "url").read[String]
+      } yield LabelGenerated(eventId, timestamp, carrier, email, flowTrackingNumber, trackingNumber, url)
     }
 
     def jsObjectLabelGenerated(obj: io.flow.email.v0.models.LabelGenerated): play.api.libs.json.JsObject = {
@@ -1257,17 +1257,17 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailOrderManagementReport: play.api.libs.json.Reads[OrderManagementReport] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "type").read[String] and
-        (__ \ "period_from").read[_root_.org.joda.time.DateTime] and
-        (__ \ "period_to").read[_root_.org.joda.time.DateTime] and
-        (__ \ "to").read[Seq[String]] and
-        (__ \ "cc").read[Seq[String]] and
-        (__ \ "bcc").read[Seq[String]] and
-        (__ \ "attachments").read[Seq[io.flow.email.v0.models.Attachment]]
-      )(OrderManagementReport.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        `type` <- (__ \ "type").read[String]
+        periodFrom <- (__ \ "period_from").read[_root_.org.joda.time.DateTime]
+        periodTo <- (__ \ "period_to").read[_root_.org.joda.time.DateTime]
+        to <- (__ \ "to").read[Seq[String]]
+        cc <- (__ \ "cc").read[Seq[String]]
+        bcc <- (__ \ "bcc").read[Seq[String]]
+        attachments <- (__ \ "attachments").read[Seq[io.flow.email.v0.models.Attachment]]
+      } yield OrderManagementReport(eventId, timestamp, `type`, periodFrom, periodTo, to, cc, bcc, attachments)
     }
 
     def jsObjectOrderManagementReport(obj: io.flow.email.v0.models.OrderManagementReport): play.api.libs.json.JsObject = {
@@ -1285,15 +1285,15 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailOrganizationInvitation: play.api.libs.json.Reads[OrganizationInvitation] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "organization").read[io.flow.email.v0.models.OrganizationSummary] and
-        (__ \ "token").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "first_name").readNullable[String] and
-        (__ \ "last_name").readNullable[String]
-      )(OrganizationInvitation.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        organization <- (__ \ "organization").read[io.flow.email.v0.models.OrganizationSummary]
+        token <- (__ \ "token").read[String]
+        email <- (__ \ "email").read[String]
+        firstName <- (__ \ "first_name").readNullable[String]
+        lastName <- (__ \ "last_name").readNullable[String]
+      } yield OrganizationInvitation(eventId, timestamp, organization, token, email, firstName, lastName)
     }
 
     def jsObjectOrganizationInvitation(obj: io.flow.email.v0.models.OrganizationInvitation): play.api.libs.json.JsObject = {
@@ -1314,10 +1314,10 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailOrganizationSummary: play.api.libs.json.Reads[OrganizationSummary] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "name").read[String]
-      )(OrganizationSummary.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        name <- (__ \ "name").read[String]
+      } yield OrganizationSummary(id, name)
     }
 
     def jsObjectOrganizationSummary(obj: io.flow.email.v0.models.OrganizationSummary): play.api.libs.json.JsObject = {
@@ -1336,14 +1336,14 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailReportError: play.api.libs.json.Reads[ReportError] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "user").readNullable[String] and
-        (__ \ "organization").readNullable[String] and
-        (__ \ "request").readNullable[_root_.play.api.libs.json.JsObject] and
-        (__ \ "errors").read[Seq[String]]
-      )(ReportError.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        user <- (__ \ "user").readNullable[String]
+        organization <- (__ \ "organization").readNullable[String]
+        request <- (__ \ "request").readNullable[_root_.play.api.libs.json.JsObject]
+        errors <- (__ \ "errors").read[Seq[String]]
+      } yield ReportError(eventId, timestamp, user, organization, request, errors)
     }
 
     def jsObjectReportError(obj: io.flow.email.v0.models.ReportError): play.api.libs.json.JsObject = {
@@ -1366,30 +1366,30 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailTulaCommon: play.api.libs.json.Reads[TulaCommon] = {
-      (
-        (__ \ "customer_email").read[String] and
-        (__ \ "customer_first_name").read[String] and
-        (__ \ "customer_last_name").read[String] and
-        (__ \ "order_number").read[String] and
-        (__ \ "shipping_name").read[String] and
-        (__ \ "shipping_address_line_one").read[String] and
-        (__ \ "shipping_address_line_two").read[String] and
-        (__ \ "shipping_address_line_three").read[String] and
-        (__ \ "billing_name").read[String] and
-        (__ \ "billing_address_line_one").read[String] and
-        (__ \ "billing_address_line_two").read[String] and
-        (__ \ "billing_address_line_three").read[String] and
-        (__ \ "items").read[Seq[io.flow.email.v0.models.TulaItem]] and
-        (__ \ "localized_subtotal").read[String] and
-        (__ \ "localized_tax").read[String] and
-        (__ \ "localized_duty").read[String] and
-        (__ \ "localized_shipping").read[String] and
-        (__ \ "localized_total").read[String] and
-        (__ \ "shipping_method").read[String] and
-        (__ \ "payment_method").read[String] and
-        (__ \ "tracking_number").readNullable[String] and
-        (__ \ "tracking_link").readNullable[String]
-      )(TulaCommon.apply _)
+      for {
+        customerEmail <- (__ \ "customer_email").read[String]
+        customerFirstName <- (__ \ "customer_first_name").read[String]
+        customerLastName <- (__ \ "customer_last_name").read[String]
+        orderNumber <- (__ \ "order_number").read[String]
+        shippingName <- (__ \ "shipping_name").read[String]
+        shippingAddressLineOne <- (__ \ "shipping_address_line_one").read[String]
+        shippingAddressLineTwo <- (__ \ "shipping_address_line_two").read[String]
+        shippingAddressLineThree <- (__ \ "shipping_address_line_three").read[String]
+        billingName <- (__ \ "billing_name").read[String]
+        billingAddressLineOne <- (__ \ "billing_address_line_one").read[String]
+        billingAddressLineTwo <- (__ \ "billing_address_line_two").read[String]
+        billingAddressLineThree <- (__ \ "billing_address_line_three").read[String]
+        items <- (__ \ "items").read[Seq[io.flow.email.v0.models.TulaItem]]
+        localizedSubtotal <- (__ \ "localized_subtotal").read[String]
+        localizedTax <- (__ \ "localized_tax").read[String]
+        localizedDuty <- (__ \ "localized_duty").read[String]
+        localizedShipping <- (__ \ "localized_shipping").read[String]
+        localizedTotal <- (__ \ "localized_total").read[String]
+        shippingMethod <- (__ \ "shipping_method").read[String]
+        paymentMethod <- (__ \ "payment_method").read[String]
+        trackingNumber <- (__ \ "tracking_number").readNullable[String]
+        trackingLink <- (__ \ "tracking_link").readNullable[String]
+      } yield TulaCommon(customerEmail, customerFirstName, customerLastName, orderNumber, shippingName, shippingAddressLineOne, shippingAddressLineTwo, shippingAddressLineThree, billingName, billingAddressLineOne, billingAddressLineTwo, billingAddressLineThree, items, localizedSubtotal, localizedTax, localizedDuty, localizedShipping, localizedTotal, shippingMethod, paymentMethod, trackingNumber, trackingLink)
     }
 
     def jsObjectTulaCommon(obj: io.flow.email.v0.models.TulaCommon): play.api.libs.json.JsObject = {
@@ -1433,13 +1433,13 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailTulaEmail: play.api.libs.json.Reads[TulaEmail] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "common_fields").read[io.flow.email.v0.models.TulaCommon] and
-        (__ \ "email_type").read[io.flow.email.v0.models.TulaEmailType] and
-        (__ \ "locale").read[String]
-      )(TulaEmail.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        commonFields <- (__ \ "common_fields").read[io.flow.email.v0.models.TulaCommon]
+        emailType <- (__ \ "email_type").read[io.flow.email.v0.models.TulaEmailType]
+        locale <- (__ \ "locale").read[String]
+      } yield TulaEmail(eventId, timestamp, commonFields, emailType, locale)
     }
 
     def jsObjectTulaEmail(obj: io.flow.email.v0.models.TulaEmail): play.api.libs.json.JsObject = {
@@ -1453,12 +1453,12 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailTulaItem: play.api.libs.json.Reads[TulaItem] = {
-      (
-        (__ \ "product_image_src").read[String] and
-        (__ \ "product_name").read[String] and
-        (__ \ "local_item_price").read[String] and
-        (__ \ "item_quantity").read[String]
-      )(TulaItem.apply _)
+      for {
+        productImageSrc <- (__ \ "product_image_src").read[String]
+        productName <- (__ \ "product_name").read[String]
+        localItemPrice <- (__ \ "local_item_price").read[String]
+        itemQuantity <- (__ \ "item_quantity").read[String]
+      } yield TulaItem(productImageSrc, productName, localItemPrice, itemQuantity)
     }
 
     def jsObjectTulaItem(obj: io.flow.email.v0.models.TulaItem): play.api.libs.json.JsObject = {
@@ -1479,11 +1479,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailUserActivated: play.api.libs.json.Reads[UserActivated] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "email").read[String]
-      )(UserActivated.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        email <- (__ \ "email").read[String]
+      } yield UserActivated(eventId, timestamp, email)
     }
 
     def jsObjectUserActivated(obj: io.flow.email.v0.models.UserActivated): play.api.libs.json.JsObject = {
@@ -1495,12 +1495,12 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailUserEmailChanged: play.api.libs.json.Reads[UserEmailChanged] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "old_email").read[String] and
-        (__ \ "new_email").readNullable[String]
-      )(UserEmailChanged.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        oldEmail <- (__ \ "old_email").read[String]
+        newEmail <- (__ \ "new_email").readNullable[String]
+      } yield UserEmailChanged(eventId, timestamp, oldEmail, newEmail)
     }
 
     def jsObjectUserEmailChanged(obj: io.flow.email.v0.models.UserEmailChanged): play.api.libs.json.JsObject = {
@@ -1515,11 +1515,11 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailUserPasswordChanged: play.api.libs.json.Reads[UserPasswordChanged] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "email").read[String]
-      )(UserPasswordChanged.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        email <- (__ \ "email").read[String]
+      } yield UserPasswordChanged(eventId, timestamp, email)
     }
 
     def jsObjectUserPasswordChanged(obj: io.flow.email.v0.models.UserPasswordChanged): play.api.libs.json.JsObject = {
@@ -1531,12 +1531,12 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailUserPasswordReset: play.api.libs.json.Reads[UserPasswordReset] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "token").read[String] and
-        (__ \ "email").read[String]
-      )(UserPasswordReset.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        token <- (__ \ "token").read[String]
+        email <- (__ \ "email").read[String]
+      } yield UserPasswordReset(eventId, timestamp, token, email)
     }
 
     def jsObjectUserPasswordReset(obj: io.flow.email.v0.models.UserPasswordReset): play.api.libs.json.JsObject = {
@@ -1549,14 +1549,14 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailUserPendingCreated: play.api.libs.json.Reads[UserPendingCreated] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "id").read[String] and
-        (__ \ "email").readNullable[String] and
-        (__ \ "first_name").readNullable[String] and
-        (__ \ "last_name").readNullable[String]
-      )(UserPendingCreated.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        id <- (__ \ "id").read[String]
+        email <- (__ \ "email").readNullable[String]
+        firstName <- (__ \ "first_name").readNullable[String]
+        lastName <- (__ \ "last_name").readNullable[String]
+      } yield UserPendingCreated(eventId, timestamp, id, email, firstName, lastName)
     }
 
     def jsObjectUserPendingCreated(obj: io.flow.email.v0.models.UserPendingCreated): play.api.libs.json.JsObject = {
@@ -1579,12 +1579,12 @@ package io.flow.email.v0.models {
     }
 
     implicit def jsonReadsEmailUserVerifyEmail: play.api.libs.json.Reads[UserVerifyEmail] = {
-      (
-        (__ \ "event_id").read[String] and
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "token").read[String] and
-        (__ \ "email").read[String]
-      )(UserVerifyEmail.apply _)
+      for {
+        eventId <- (__ \ "event_id").read[String]
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        token <- (__ \ "token").read[String]
+        email <- (__ \ "email").read[String]
+      } yield UserVerifyEmail(eventId, timestamp, token, email)
     }
 
     def jsObjectUserVerifyEmail(obj: io.flow.email.v0.models.UserVerifyEmail): play.api.libs.json.JsObject = {

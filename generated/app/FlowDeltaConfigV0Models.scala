@@ -379,21 +379,21 @@ package io.flow.delta.config.v0.models {
     }
 
     implicit def jsonReadsDeltaConfigBuild: play.api.libs.json.Reads[Build] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "dockerfile").read[String] and
-        (__ \ "initial_number_instances").read[Long] and
-        (__ \ "instance_type").read[io.flow.delta.config.v0.models.InstanceType] and
-        (__ \ "memory").readNullable[Long] and
-        (__ \ "port_container").read[Int] and
-        (__ \ "port_host").read[Int] and
-        (__ \ "remote_logging").readNullable[Boolean] and
-        (__ \ "stages").read[Seq[io.flow.delta.config.v0.models.BuildStage]] and
-        (__ \ "dependencies").read[Seq[String]] and
-        (__ \ "version").readNullable[String] and
-        (__ \ "healthcheck_url").readNullable[String] and
-        (__ \ "cross_zone_load_balancing").readNullable[Boolean]
-      )(Build.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        dockerfile <- (__ \ "dockerfile").read[String]
+        initialNumberInstances <- (__ \ "initial_number_instances").read[Long]
+        instanceType <- (__ \ "instance_type").read[io.flow.delta.config.v0.models.InstanceType]
+        memory <- (__ \ "memory").readNullable[Long]
+        portContainer <- (__ \ "port_container").read[Int]
+        portHost <- (__ \ "port_host").read[Int]
+        remoteLogging <- (__ \ "remote_logging").readNullable[Boolean]
+        stages <- (__ \ "stages").read[Seq[io.flow.delta.config.v0.models.BuildStage]]
+        dependencies <- (__ \ "dependencies").read[Seq[String]]
+        version <- (__ \ "version").readNullable[String]
+        healthcheckUrl <- (__ \ "healthcheck_url").readNullable[String]
+        crossZoneLoadBalancing <- (__ \ "cross_zone_load_balancing").readNullable[Boolean]
+      } yield Build(name, dockerfile, initialNumberInstances, instanceType, memory, portContainer, portHost, remoteLogging, stages, dependencies, version, healthcheckUrl, crossZoneLoadBalancing)
     }
 
     def jsObjectBuild(obj: io.flow.delta.config.v0.models.Build): play.api.libs.json.JsObject = {
@@ -447,11 +447,11 @@ package io.flow.delta.config.v0.models {
     }
 
     implicit def jsonReadsDeltaConfigConfigProject: play.api.libs.json.Reads[ConfigProject] = {
-      (
-        (__ \ "stages").read[Seq[io.flow.delta.config.v0.models.ProjectStage]] and
-        (__ \ "builds").read[Seq[io.flow.delta.config.v0.models.Build]] and
-        (__ \ "branches").read[Seq[io.flow.delta.config.v0.models.Branch]]
-      )(ConfigProject.apply _)
+      for {
+        stages <- (__ \ "stages").read[Seq[io.flow.delta.config.v0.models.ProjectStage]]
+        builds <- (__ \ "builds").read[Seq[io.flow.delta.config.v0.models.Build]]
+        branches <- (__ \ "branches").read[Seq[io.flow.delta.config.v0.models.Branch]]
+      } yield ConfigProject(stages, builds, branches)
     }
 
     def jsObjectConfigProject(obj: io.flow.delta.config.v0.models.ConfigProject): play.api.libs.json.JsObject = {

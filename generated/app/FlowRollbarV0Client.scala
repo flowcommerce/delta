@@ -84,14 +84,14 @@ package io.flow.rollbar.v0.models {
     }
 
     implicit def jsonReadsRollbarDeploy: play.api.libs.json.Reads[Deploy] = {
-      (
-        (__ \ "access_token").read[String] and
-        (__ \ "environment").read[String] and
-        (__ \ "revision").read[String] and
-        (__ \ "rollbar_username").readNullable[String] and
-        (__ \ "local_username").readNullable[String] and
-        (__ \ "comment").readNullable[String]
-      )(Deploy.apply _)
+      for {
+        accessToken <- (__ \ "access_token").read[String]
+        environment <- (__ \ "environment").read[String]
+        revision <- (__ \ "revision").read[String]
+        rollbarUsername <- (__ \ "rollbar_username").readNullable[String]
+        localUsername <- (__ \ "local_username").readNullable[String]
+        comment <- (__ \ "comment").readNullable[String]
+      } yield Deploy(accessToken, environment, revision, rollbarUsername, localUsername, comment)
     }
 
     def jsObjectDeploy(obj: io.flow.rollbar.v0.models.Deploy): play.api.libs.json.JsObject = {
@@ -122,10 +122,10 @@ package io.flow.rollbar.v0.models {
     }
 
     implicit def jsonReadsRollbarError: play.api.libs.json.Reads[Error] = {
-      (
-        (__ \ "err").read[Int] and
-        (__ \ "message").read[String]
-      )(Error.apply _)
+      for {
+        err <- (__ \ "err").read[Int]
+        message <- (__ \ "message").read[String]
+      } yield Error(err, message)
     }
 
     def jsObjectError(obj: io.flow.rollbar.v0.models.Error): play.api.libs.json.JsObject = {
@@ -144,10 +144,10 @@ package io.flow.rollbar.v0.models {
     }
 
     implicit def jsonReadsRollbarProject: play.api.libs.json.Reads[Project] = {
-      (
-        (__ \ "id").read[Int] and
-        (__ \ "name").read[String]
-      )(Project.apply _)
+      for {
+        id <- (__ \ "id").read[Int]
+        name <- (__ \ "name").read[String]
+      } yield Project(id, name)
     }
 
     def jsObjectProject(obj: io.flow.rollbar.v0.models.Project): play.api.libs.json.JsObject = {
@@ -166,11 +166,11 @@ package io.flow.rollbar.v0.models {
     }
 
     implicit def jsonReadsRollbarProjectAccessToken: play.api.libs.json.Reads[ProjectAccessToken] = {
-      (
-        (__ \ "project_id").read[Int] and
-        (__ \ "access_token").read[String] and
-        (__ \ "scopes").read[Seq[String]]
-      )(ProjectAccessToken.apply _)
+      for {
+        projectId <- (__ \ "project_id").read[Int]
+        accessToken <- (__ \ "access_token").read[String]
+        scopes <- (__ \ "scopes").read[Seq[String]]
+      } yield ProjectAccessToken(projectId, accessToken, scopes)
     }
 
     def jsObjectProjectAccessToken(obj: io.flow.rollbar.v0.models.ProjectAccessToken): play.api.libs.json.JsObject = {
@@ -190,10 +190,10 @@ package io.flow.rollbar.v0.models {
     }
 
     implicit def jsonReadsRollbarProjectAccessTokensResult: play.api.libs.json.Reads[ProjectAccessTokensResult] = {
-      (
-        (__ \ "err").read[Int] and
-        (__ \ "result").read[Seq[io.flow.rollbar.v0.models.ProjectAccessToken]]
-      )(ProjectAccessTokensResult.apply _)
+      for {
+        err <- (__ \ "err").read[Int]
+        result <- (__ \ "result").read[Seq[io.flow.rollbar.v0.models.ProjectAccessToken]]
+      } yield ProjectAccessTokensResult(err, result)
     }
 
     def jsObjectProjectAccessTokensResult(obj: io.flow.rollbar.v0.models.ProjectAccessTokensResult): play.api.libs.json.JsObject = {
@@ -212,10 +212,10 @@ package io.flow.rollbar.v0.models {
     }
 
     implicit def jsonReadsRollbarProjectsResult: play.api.libs.json.Reads[ProjectsResult] = {
-      (
-        (__ \ "err").read[Int] and
-        (__ \ "result").read[Seq[io.flow.rollbar.v0.models.Project]]
-      )(ProjectsResult.apply _)
+      for {
+        err <- (__ \ "err").read[Int]
+        result <- (__ \ "result").read[Seq[io.flow.rollbar.v0.models.Project]]
+      } yield ProjectsResult(err, result)
     }
 
     def jsObjectProjectsResult(obj: io.flow.rollbar.v0.models.ProjectsResult): play.api.libs.json.JsObject = {

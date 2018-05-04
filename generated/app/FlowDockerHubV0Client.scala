@@ -76,10 +76,10 @@ package io.flow.docker.hub.v0.models {
     }
 
     implicit def jsonReadsDockerHubJwtForm: play.api.libs.json.Reads[JwtForm] = {
-      (
-        (__ \ "username").read[String] and
-        (__ \ "password").read[String]
-      )(JwtForm.apply _)
+      for {
+        username <- (__ \ "username").read[String]
+        password <- (__ \ "password").read[String]
+      } yield JwtForm(username, password)
     }
 
     def jsObjectJwtForm(obj: io.flow.docker.hub.v0.models.JwtForm): play.api.libs.json.JsObject = {

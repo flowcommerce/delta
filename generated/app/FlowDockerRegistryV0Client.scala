@@ -114,17 +114,17 @@ package io.flow.docker.registry.v0.models {
     }
 
     implicit def jsonReadsDockerRegistryBuildForm: play.api.libs.json.Reads[BuildForm] = {
-      (
-        (__ \ "active").read[Boolean] and
-        (__ \ "build_tags").read[Seq[io.flow.docker.registry.v0.models.BuildTag]] and
-        (__ \ "description").read[String] and
-        (__ \ "dockerhub_repo_name").read[String] and
-        (__ \ "is_private").read[Boolean] and
-        (__ \ "name").read[String] and
-        (__ \ "namespace").read[String] and
-        (__ \ "provider").read[String] and
-        (__ \ "vcs_repo_name").read[String]
-      )(BuildForm.apply _)
+      for {
+        active <- (__ \ "active").read[Boolean]
+        buildTags <- (__ \ "build_tags").read[Seq[io.flow.docker.registry.v0.models.BuildTag]]
+        description <- (__ \ "description").read[String]
+        dockerhubRepoName <- (__ \ "dockerhub_repo_name").read[String]
+        isPrivate <- (__ \ "is_private").read[Boolean]
+        name <- (__ \ "name").read[String]
+        namespace <- (__ \ "namespace").read[String]
+        provider <- (__ \ "provider").read[String]
+        vcsRepoName <- (__ \ "vcs_repo_name").read[String]
+      } yield BuildForm(active, buildTags, description, dockerhubRepoName, isPrivate, name, namespace, provider, vcsRepoName)
     }
 
     def jsObjectBuildForm(obj: io.flow.docker.registry.v0.models.BuildForm): play.api.libs.json.JsObject = {
@@ -150,13 +150,13 @@ package io.flow.docker.registry.v0.models {
     }
 
     implicit def jsonReadsDockerRegistryBuildTag: play.api.libs.json.Reads[BuildTag] = {
-      (
-        (__ \ "dockerfile_location").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "source_name").read[String] and
-        (__ \ "source_type").read[String] and
-        (__ \ "id").readNullable[Long]
-      )(BuildTag.apply _)
+      for {
+        dockerfileLocation <- (__ \ "dockerfile_location").read[String]
+        name <- (__ \ "name").read[String]
+        sourceName <- (__ \ "source_name").read[String]
+        sourceType <- (__ \ "source_type").read[String]
+        id <- (__ \ "id").readNullable[Long]
+      } yield BuildTag(dockerfileLocation, name, sourceName, sourceType, id)
     }
 
     def jsObjectBuildTag(obj: io.flow.docker.registry.v0.models.BuildTag): play.api.libs.json.JsObject = {
@@ -180,11 +180,11 @@ package io.flow.docker.registry.v0.models {
     }
 
     implicit def jsonReadsDockerRegistryDeploykey: play.api.libs.json.Reads[Deploykey] = {
-      (
-        (__ \ "provider").readNullable[String] and
-        (__ \ "provider_key_id").readNullable[String] and
-        (__ \ "public_key").readNullable[String]
-      )(Deploykey.apply _)
+      for {
+        provider <- (__ \ "provider").readNullable[String]
+        providerKeyId <- (__ \ "provider_key_id").readNullable[String]
+        publicKey <- (__ \ "public_key").readNullable[String]
+      } yield Deploykey(provider, providerKeyId, publicKey)
     }
 
     def jsObjectDeploykey(obj: io.flow.docker.registry.v0.models.Deploykey): play.api.libs.json.JsObject = {
@@ -229,10 +229,10 @@ package io.flow.docker.registry.v0.models {
     }
 
     implicit def jsonReadsDockerRegistryTag: play.api.libs.json.Reads[Tag] = {
-      (
-        (__ \ "layer").read[String] and
-        (__ \ "name").read[String]
-      )(Tag.apply _)
+      for {
+        layer <- (__ \ "layer").read[String]
+        name <- (__ \ "name").read[String]
+      } yield Tag(layer, name)
     }
 
     def jsObjectTag(obj: io.flow.docker.registry.v0.models.Tag): play.api.libs.json.JsObject = {

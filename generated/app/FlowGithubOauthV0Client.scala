@@ -126,11 +126,11 @@ package io.flow.github.oauth.v0.models {
     }
 
     implicit def jsonReadsGithubOauthAccessToken: play.api.libs.json.Reads[AccessToken] = {
-      (
-        (__ \ "access_token").read[String] and
-        (__ \ "scope").read[String] and
-        (__ \ "token_type").read[io.flow.github.oauth.v0.models.TokenType]
-      )(AccessToken.apply _)
+      for {
+        accessToken <- (__ \ "access_token").read[String]
+        scope <- (__ \ "scope").read[String]
+        tokenType <- (__ \ "token_type").read[io.flow.github.oauth.v0.models.TokenType]
+      } yield AccessToken(accessToken, scope, tokenType)
     }
 
     def jsObjectAccessToken(obj: io.flow.github.oauth.v0.models.AccessToken): play.api.libs.json.JsObject = {
@@ -150,13 +150,13 @@ package io.flow.github.oauth.v0.models {
     }
 
     implicit def jsonReadsGithubOauthAccessTokenForm: play.api.libs.json.Reads[AccessTokenForm] = {
-      (
-        (__ \ "client_id").read[String] and
-        (__ \ "client_secret").read[String] and
-        (__ \ "code").read[String] and
-        (__ \ "redirect_uri").readNullable[String] and
-        (__ \ "state").readNullable[String]
-      )(AccessTokenForm.apply _)
+      for {
+        clientId <- (__ \ "client_id").read[String]
+        clientSecret <- (__ \ "client_secret").read[String]
+        code <- (__ \ "code").read[String]
+        redirectUri <- (__ \ "redirect_uri").readNullable[String]
+        state <- (__ \ "state").readNullable[String]
+      } yield AccessTokenForm(clientId, clientSecret, code, redirectUri, state)
     }
 
     def jsObjectAccessTokenForm(obj: io.flow.github.oauth.v0.models.AccessTokenForm): play.api.libs.json.JsObject = {

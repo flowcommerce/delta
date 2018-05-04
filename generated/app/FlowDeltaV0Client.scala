@@ -889,12 +889,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaBuild: play.api.libs.json.Reads[Build] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary] and
-        (__ \ "status").read[io.flow.delta.v0.models.Status] and
-        (__ \ "name").read[String]
-      )(Build.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        status <- (__ \ "status").read[io.flow.delta.v0.models.Status]
+        name <- (__ \ "name").read[String]
+      } yield Build(id, project, status, name)
     }
 
     def jsObjectBuild(obj: io.flow.delta.v0.models.Build): play.api.libs.json.JsObject = {
@@ -915,12 +915,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaBuildState: play.api.libs.json.Reads[BuildState] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "desired").readNullable[io.flow.delta.v0.models.State] and
-        (__ \ "last").readNullable[io.flow.delta.v0.models.State] and
-        (__ \ "latest_image").readNullable[String]
-      )(BuildState.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        desired <- (__ \ "desired").readNullable[io.flow.delta.v0.models.State]
+        last <- (__ \ "last").readNullable[io.flow.delta.v0.models.State]
+        latestImage <- (__ \ "latest_image").readNullable[String]
+      } yield BuildState(name, desired, last, latestImage)
     }
 
     def jsObjectBuildState(obj: io.flow.delta.v0.models.BuildState): play.api.libs.json.JsObject = {
@@ -949,12 +949,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaDashboardBuild: play.api.libs.json.Reads[DashboardBuild] = {
-      (
-        (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary] and
-        (__ \ "name").read[String] and
-        (__ \ "desired").read[io.flow.delta.v0.models.State] and
-        (__ \ "last").read[io.flow.delta.v0.models.State]
-      )(DashboardBuild.apply _)
+      for {
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        name <- (__ \ "name").read[String]
+        desired <- (__ \ "desired").read[io.flow.delta.v0.models.State]
+        last <- (__ \ "last").read[io.flow.delta.v0.models.State]
+      } yield DashboardBuild(project, name, desired, last)
     }
 
     def jsObjectDashboardBuild(obj: io.flow.delta.v0.models.DashboardBuild): play.api.libs.json.JsObject = {
@@ -975,10 +975,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaDocker: play.api.libs.json.Reads[Docker] = {
-      (
-        (__ \ "provider").read[io.flow.delta.v0.models.DockerProvider] and
-        (__ \ "organization").read[String]
-      )(Docker.apply _)
+      for {
+        provider <- (__ \ "provider").read[io.flow.delta.v0.models.DockerProvider]
+        organization <- (__ \ "organization").read[String]
+      } yield Docker(provider, organization)
     }
 
     def jsObjectDocker(obj: io.flow.delta.v0.models.Docker): play.api.libs.json.JsObject = {
@@ -997,10 +997,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaEcsAmiRegionImage: play.api.libs.json.Reads[EcsAmiRegionImage] = {
-      (
-        (__ \ "Name").read[String] and
-        (__ \ "ImageId").read[String]
-      )(EcsAmiRegionImage.apply _)
+      for {
+        Name <- (__ \ "Name").read[String]
+        ImageId <- (__ \ "ImageId").read[String]
+      } yield EcsAmiRegionImage(Name, ImageId)
     }
 
     def jsObjectEcsAmiRegionImage(obj: io.flow.delta.v0.models.EcsAmiRegionImage): play.api.libs.json.JsObject = {
@@ -1055,14 +1055,14 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaEvent: play.api.libs.json.Reads[Event] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary] and
-        (__ \ "type").read[io.flow.delta.v0.models.EventType] and
-        (__ \ "summary").read[String] and
-        (__ \ "error").readNullable[String]
-      )(Event.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        `type` <- (__ \ "type").read[io.flow.delta.v0.models.EventType]
+        summary <- (__ \ "summary").read[String]
+        error <- (__ \ "error").readNullable[String]
+      } yield Event(id, createdAt, project, `type`, summary, error)
     }
 
     def jsObjectEvent(obj: io.flow.delta.v0.models.Event): play.api.libs.json.JsObject = {
@@ -1105,12 +1105,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaGithubUser: play.api.libs.json.Reads[GithubUser] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "user").read[io.flow.delta.v0.models.Reference] and
-        (__ \ "github_user_id").read[Long] and
-        (__ \ "login").read[String]
-      )(GithubUser.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        githubUserId <- (__ \ "github_user_id").read[Long]
+        login <- (__ \ "login").read[String]
+      } yield GithubUser(id, user, githubUserId, login)
     }
 
     def jsObjectGithubUser(obj: io.flow.delta.v0.models.GithubUser): play.api.libs.json.JsObject = {
@@ -1131,11 +1131,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaGithubUserForm: play.api.libs.json.Reads[GithubUserForm] = {
-      (
-        (__ \ "user_id").read[String] and
-        (__ \ "github_user_id").read[Long] and
-        (__ \ "login").read[String]
-      )(GithubUserForm.apply _)
+      for {
+        userId <- (__ \ "user_id").read[String]
+        githubUserId <- (__ \ "github_user_id").read[Long]
+        login <- (__ \ "login").read[String]
+      } yield GithubUserForm(userId, githubUserId, login)
     }
 
     def jsObjectGithubUserForm(obj: io.flow.delta.v0.models.GithubUserForm): play.api.libs.json.JsObject = {
@@ -1173,12 +1173,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaImage: play.api.libs.json.Reads[Image] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "build").read[io.flow.delta.v0.models.Build] and
-        (__ \ "name").read[String] and
-        (__ \ "version").read[String]
-      )(Image.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        build <- (__ \ "build").read[io.flow.delta.v0.models.Build]
+        name <- (__ \ "name").read[String]
+        version <- (__ \ "version").read[String]
+      } yield Image(id, build, name, version)
     }
 
     def jsObjectImage(obj: io.flow.delta.v0.models.Image): play.api.libs.json.JsObject = {
@@ -1199,11 +1199,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaImageForm: play.api.libs.json.Reads[ImageForm] = {
-      (
-        (__ \ "build_id").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "version").read[String]
-      )(ImageForm.apply _)
+      for {
+        buildId <- (__ \ "build_id").read[String]
+        name <- (__ \ "name").read[String]
+        version <- (__ \ "version").read[String]
+      } yield ImageForm(buildId, name, version)
     }
 
     def jsObjectImageForm(obj: io.flow.delta.v0.models.ImageForm): play.api.libs.json.JsObject = {
@@ -1223,14 +1223,14 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaItem: play.api.libs.json.Reads[Item] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary] and
-        (__ \ "visibility").read[io.flow.delta.v0.models.Visibility] and
-        (__ \ "summary").read[io.flow.delta.v0.models.ItemSummary] and
-        (__ \ "label").read[String] and
-        (__ \ "description").readNullable[String]
-      )(Item.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        summary <- (__ \ "summary").read[io.flow.delta.v0.models.ItemSummary]
+        label <- (__ \ "label").read[String]
+        description <- (__ \ "description").readNullable[String]
+      } yield Item(id, organization, visibility, summary, label, description)
     }
 
     def jsObjectItem(obj: io.flow.delta.v0.models.Item): play.api.libs.json.JsObject = {
@@ -1255,12 +1255,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaMembership: play.api.libs.json.Reads[Membership] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "user").read[io.flow.delta.v0.models.UserSummary] and
-        (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary] and
-        (__ \ "role").read[io.flow.delta.v0.models.Role]
-      )(Membership.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.UserSummary]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        role <- (__ \ "role").read[io.flow.delta.v0.models.Role]
+      } yield Membership(id, user, organization, role)
     }
 
     def jsObjectMembership(obj: io.flow.delta.v0.models.Membership): play.api.libs.json.JsObject = {
@@ -1281,11 +1281,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaMembershipForm: play.api.libs.json.Reads[MembershipForm] = {
-      (
-        (__ \ "user_id").read[String] and
-        (__ \ "organization").read[String] and
-        (__ \ "role").read[io.flow.delta.v0.models.Role]
-      )(MembershipForm.apply _)
+      for {
+        userId <- (__ \ "user_id").read[String]
+        organization <- (__ \ "organization").read[String]
+        role <- (__ \ "role").read[io.flow.delta.v0.models.Role]
+      } yield MembershipForm(userId, organization, role)
     }
 
     def jsObjectMembershipForm(obj: io.flow.delta.v0.models.MembershipForm): play.api.libs.json.JsObject = {
@@ -1305,12 +1305,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaOrganization: play.api.libs.json.Reads[Organization] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "user").read[io.flow.delta.v0.models.UserSummary] and
-        (__ \ "docker").read[io.flow.delta.v0.models.Docker] and
-        (__ \ "travis").read[io.flow.delta.v0.models.Travis]
-      )(Organization.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.UserSummary]
+        docker <- (__ \ "docker").read[io.flow.delta.v0.models.Docker]
+        travis <- (__ \ "travis").read[io.flow.delta.v0.models.Travis]
+      } yield Organization(id, user, docker, travis)
     }
 
     def jsObjectOrganization(obj: io.flow.delta.v0.models.Organization): play.api.libs.json.JsObject = {
@@ -1331,11 +1331,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaOrganizationForm: play.api.libs.json.Reads[OrganizationForm] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "docker").read[io.flow.delta.v0.models.Docker] and
-        (__ \ "travis").read[io.flow.delta.v0.models.Travis]
-      )(OrganizationForm.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        docker <- (__ \ "docker").read[io.flow.delta.v0.models.Docker]
+        travis <- (__ \ "travis").read[io.flow.delta.v0.models.Travis]
+      } yield OrganizationForm(id, docker, travis)
     }
 
     def jsObjectOrganizationForm(obj: io.flow.delta.v0.models.OrganizationForm): play.api.libs.json.JsObject = {
@@ -1373,16 +1373,16 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaProject: play.api.libs.json.Reads[Project] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary] and
-        (__ \ "user").read[io.flow.delta.v0.models.Reference] and
-        (__ \ "visibility").read[io.flow.delta.v0.models.Visibility] and
-        (__ \ "scms").read[io.flow.delta.v0.models.Scms] and
-        (__ \ "name").read[String] and
-        (__ \ "uri").read[String] and
-        (__ \ "config").read[io.flow.delta.config.v0.models.Config]
-      )(Project.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        scms <- (__ \ "scms").read[io.flow.delta.v0.models.Scms]
+        name <- (__ \ "name").read[String]
+        uri <- (__ \ "uri").read[String]
+        config <- (__ \ "config").read[io.flow.delta.config.v0.models.Config]
+      } yield Project(id, organization, user, visibility, scms, name, uri, config)
     }
 
     def jsObjectProject(obj: io.flow.delta.v0.models.Project): play.api.libs.json.JsObject = {
@@ -1407,14 +1407,14 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaProjectForm: play.api.libs.json.Reads[ProjectForm] = {
-      (
-        (__ \ "organization").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "visibility").read[io.flow.delta.v0.models.Visibility] and
-        (__ \ "scms").read[io.flow.delta.v0.models.Scms] and
-        (__ \ "uri").read[String] and
-        (__ \ "config").readNullable[io.flow.delta.config.v0.models.ConfigProject]
-      )(ProjectForm.apply _)
+      for {
+        organization <- (__ \ "organization").read[String]
+        name <- (__ \ "name").read[String]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        scms <- (__ \ "scms").read[io.flow.delta.v0.models.Scms]
+        uri <- (__ \ "uri").read[String]
+        config <- (__ \ "config").readNullable[io.flow.delta.config.v0.models.ConfigProject]
+      } yield ProjectForm(organization, name, visibility, scms, uri, config)
     }
 
     def jsObjectProjectForm(obj: io.flow.delta.v0.models.ProjectForm): play.api.libs.json.JsObject = {
@@ -1439,12 +1439,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaProjectSummary: play.api.libs.json.Reads[ProjectSummary] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary] and
-        (__ \ "name").read[String] and
-        (__ \ "uri").read[String]
-      )(ProjectSummary.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        name <- (__ \ "name").read[String]
+        uri <- (__ \ "uri").read[String]
+      } yield ProjectSummary(id, organization, name, uri)
     }
 
     def jsObjectProjectSummary(obj: io.flow.delta.v0.models.ProjectSummary): play.api.libs.json.JsObject = {
@@ -1475,11 +1475,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaRepository: play.api.libs.json.Reads[Repository] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "visibility").read[io.flow.delta.v0.models.Visibility] and
-        (__ \ "uri").read[String]
-      )(Repository.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        uri <- (__ \ "uri").read[String]
+      } yield Repository(name, visibility, uri)
     }
 
     def jsObjectRepository(obj: io.flow.delta.v0.models.Repository): play.api.libs.json.JsObject = {
@@ -1499,13 +1499,13 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaSha: play.api.libs.json.Reads[Sha] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary] and
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "branch").read[String] and
-        (__ \ "hash").read[String]
-      )(Sha.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
+        branch <- (__ \ "branch").read[String]
+        hash <- (__ \ "hash").read[String]
+      } yield Sha(id, project, createdAt, branch, hash)
     }
 
     def jsObjectSha(obj: io.flow.delta.v0.models.Sha): play.api.libs.json.JsObject = {
@@ -1545,10 +1545,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaState: play.api.libs.json.Reads[State] = {
-      (
-        (__ \ "timestamp").read[_root_.org.joda.time.DateTime] and
-        (__ \ "versions").read[Seq[io.flow.delta.v0.models.Version]]
-      )(State.apply _)
+      for {
+        timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
+        versions <- (__ \ "versions").read[Seq[io.flow.delta.v0.models.Version]]
+      } yield State(timestamp, versions)
     }
 
     def jsObjectState(obj: io.flow.delta.v0.models.State): play.api.libs.json.JsObject = {
@@ -1585,11 +1585,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaSubscription: play.api.libs.json.Reads[Subscription] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "user").read[io.flow.delta.v0.models.Reference] and
-        (__ \ "publication").read[io.flow.delta.v0.models.Publication]
-      )(Subscription.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        publication <- (__ \ "publication").read[io.flow.delta.v0.models.Publication]
+      } yield Subscription(id, user, publication)
     }
 
     def jsObjectSubscription(obj: io.flow.delta.v0.models.Subscription): play.api.libs.json.JsObject = {
@@ -1609,10 +1609,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaSubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
-      (
-        (__ \ "user_id").read[String] and
-        (__ \ "publication").read[io.flow.delta.v0.models.Publication]
-      )(SubscriptionForm.apply _)
+      for {
+        userId <- (__ \ "user_id").read[String]
+        publication <- (__ \ "publication").read[io.flow.delta.v0.models.Publication]
+      } yield SubscriptionForm(userId, publication)
     }
 
     def jsObjectSubscriptionForm(obj: io.flow.delta.v0.models.SubscriptionForm): play.api.libs.json.JsObject = {
@@ -1631,13 +1631,13 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaTag: play.api.libs.json.Reads[Tag] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary] and
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "name").read[String] and
-        (__ \ "hash").read[String]
-      )(Tag.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
+        name <- (__ \ "name").read[String]
+        hash <- (__ \ "hash").read[String]
+      } yield Tag(id, project, createdAt, name, hash)
     }
 
     def jsObjectTag(obj: io.flow.delta.v0.models.Tag): play.api.libs.json.JsObject = {
@@ -1659,13 +1659,13 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaToken: play.api.libs.json.Reads[Token] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "user").read[io.flow.delta.v0.models.Reference] and
-        (__ \ "masked").read[String] and
-        (__ \ "cleartext").readNullable[String] and
-        (__ \ "description").readNullable[String]
-      )(Token.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        masked <- (__ \ "masked").read[String]
+        cleartext <- (__ \ "cleartext").readNullable[String]
+        description <- (__ \ "description").readNullable[String]
+      } yield Token(id, user, masked, cleartext, description)
     }
 
     def jsObjectToken(obj: io.flow.delta.v0.models.Token): play.api.libs.json.JsObject = {
@@ -1692,10 +1692,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaTokenForm: play.api.libs.json.Reads[TokenForm] = {
-      (
-        (__ \ "user_id").read[String] and
-        (__ \ "description").readNullable[String]
-      )(TokenForm.apply _)
+      for {
+        userId <- (__ \ "user_id").read[String]
+        description <- (__ \ "description").readNullable[String]
+      } yield TokenForm(userId, description)
     }
 
     def jsObjectTokenForm(obj: io.flow.delta.v0.models.TokenForm): play.api.libs.json.JsObject = {
@@ -1734,10 +1734,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaUserForm: play.api.libs.json.Reads[UserForm] = {
-      (
-        (__ \ "email").readNullable[String] and
-        (__ \ "name").readNullable[io.flow.common.v0.models.Name]
-      )(UserForm.apply _)
+      for {
+        email <- (__ \ "email").readNullable[String]
+        name <- (__ \ "name").readNullable[io.flow.common.v0.models.Name]
+      } yield UserForm(email, name)
     }
 
     def jsObjectUserForm(obj: io.flow.delta.v0.models.UserForm): play.api.libs.json.JsObject = {
@@ -1760,11 +1760,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaUserIdentifier: play.api.libs.json.Reads[UserIdentifier] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "user").read[io.flow.delta.v0.models.Reference] and
-        (__ \ "value").read[String]
-      )(UserIdentifier.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        value <- (__ \ "value").read[String]
+      } yield UserIdentifier(id, user, value)
     }
 
     def jsObjectUserIdentifier(obj: io.flow.delta.v0.models.UserIdentifier): play.api.libs.json.JsObject = {
@@ -1784,11 +1784,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaUserSummary: play.api.libs.json.Reads[UserSummary] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "email").readNullable[String] and
-        (__ \ "name").read[io.flow.common.v0.models.Name]
-      )(UserSummary.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        email <- (__ \ "email").readNullable[String]
+        name <- (__ \ "name").read[io.flow.common.v0.models.Name]
+      } yield UserSummary(id, email, name)
     }
 
     def jsObjectUserSummary(obj: io.flow.delta.v0.models.UserSummary): play.api.libs.json.JsObject = {
@@ -1810,10 +1810,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaUsernamePassword: play.api.libs.json.Reads[UsernamePassword] = {
-      (
-        (__ \ "username").read[String] and
-        (__ \ "password").readNullable[String]
-      )(UsernamePassword.apply _)
+      for {
+        username <- (__ \ "username").read[String]
+        password <- (__ \ "password").readNullable[String]
+      } yield UsernamePassword(username, password)
     }
 
     def jsObjectUsernamePassword(obj: io.flow.delta.v0.models.UsernamePassword): play.api.libs.json.JsObject = {
@@ -1834,12 +1834,12 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaVariable: play.api.libs.json.Reads[Variable] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary] and
-        (__ \ "key").read[String] and
-        (__ \ "value").read[String]
-      )(Variable.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        key <- (__ \ "key").read[String]
+        value <- (__ \ "value").read[String]
+      } yield Variable(id, organization, key, value)
     }
 
     def jsObjectVariable(obj: io.flow.delta.v0.models.Variable): play.api.libs.json.JsObject = {
@@ -1860,11 +1860,11 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaVariableForm: play.api.libs.json.Reads[VariableForm] = {
-      (
-        (__ \ "organization").read[String] and
-        (__ \ "key").read[String] and
-        (__ \ "value").read[String]
-      )(VariableForm.apply _)
+      for {
+        organization <- (__ \ "organization").read[String]
+        key <- (__ \ "key").read[String]
+        value <- (__ \ "value").read[String]
+      } yield VariableForm(organization, key, value)
     }
 
     def jsObjectVariableForm(obj: io.flow.delta.v0.models.VariableForm): play.api.libs.json.JsObject = {
@@ -1884,10 +1884,10 @@ package io.flow.delta.v0.models {
     }
 
     implicit def jsonReadsDeltaVersion: play.api.libs.json.Reads[Version] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "instances").read[Long]
-      )(Version.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        instances <- (__ \ "instances").read[Long]
+      } yield Version(name, instances)
     }
 
     def jsObjectVersion(obj: io.flow.delta.v0.models.Version): play.api.libs.json.JsObject = {

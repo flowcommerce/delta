@@ -411,13 +411,13 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiEnvVarData: play.api.libs.json.Reads[EnvVarData] = {
-      (
-        (__ \ "id").read[_root_.java.util.UUID] and
-        (__ \ "repository_id").read[Long] and
-        (__ \ "name").read[String] and
-        (__ \ "value").readNullable[String] and
-        (__ \ "public").read[Boolean]
-      )(EnvVarData.apply _)
+      for {
+        id <- (__ \ "id").read[_root_.java.util.UUID]
+        repositoryId <- (__ \ "repository_id").read[Long]
+        name <- (__ \ "name").read[String]
+        value <- (__ \ "value").readNullable[String]
+        public <- (__ \ "public").read[Boolean]
+      } yield EnvVarData(id, repositoryId, name, value, public)
     }
 
     def jsObjectEnvVarData(obj: io.flow.travis.ci.v0.models.EnvVarData): play.api.libs.json.JsObject = {
@@ -459,11 +459,11 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiEnvVarFormData: play.api.libs.json.Reads[EnvVarFormData] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "value").read[String] and
-        (__ \ "public").read[Boolean]
-      )(EnvVarFormData.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        value <- (__ \ "value").read[String]
+        public <- (__ \ "public").read[Boolean]
+      } yield EnvVarFormData(name, value, public)
     }
 
     def jsObjectEnvVarFormData(obj: io.flow.travis.ci.v0.models.EnvVarFormData): play.api.libs.json.JsObject = {
@@ -501,18 +501,18 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRepo: play.api.libs.json.Reads[Repo] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "slug").read[String] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "last_build_id").readNullable[Long] and
-        (__ \ "last_build_number").readNullable[String] and
-        (__ \ "last_build_state").readNullable[String] and
-        (__ \ "last_build_duration").readNullable[Long] and
-        (__ \ "last_build_started_at").readNullable[_root_.org.joda.time.DateTime] and
-        (__ \ "last_build_finished_at").readNullable[_root_.org.joda.time.DateTime] and
-        (__ \ "github_language").readNullable[String]
-      )(Repo.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        slug <- (__ \ "slug").read[String]
+        description <- (__ \ "description").readNullable[String]
+        lastBuildId <- (__ \ "last_build_id").readNullable[Long]
+        lastBuildNumber <- (__ \ "last_build_number").readNullable[String]
+        lastBuildState <- (__ \ "last_build_state").readNullable[String]
+        lastBuildDuration <- (__ \ "last_build_duration").readNullable[Long]
+        lastBuildStartedAt <- (__ \ "last_build_started_at").readNullable[_root_.org.joda.time.DateTime]
+        lastBuildFinishedAt <- (__ \ "last_build_finished_at").readNullable[_root_.org.joda.time.DateTime]
+        githubLanguage <- (__ \ "github_language").readNullable[String]
+      } yield Repo(id, slug, description, lastBuildId, lastBuildNumber, lastBuildState, lastBuildDuration, lastBuildStartedAt, lastBuildFinishedAt, githubLanguage)
     }
 
     def jsObjectRepo(obj: io.flow.travis.ci.v0.models.Repo): play.api.libs.json.JsObject = {
@@ -562,11 +562,11 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequest: play.api.libs.json.Reads[Request] = {
-      (
-        (__ \ "remaining_requests").read[Long] and
-        (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData] and
-        (__ \ "request").read[io.flow.travis.ci.v0.models.RequestPostData]
-      )(Request.apply _)
+      for {
+        remainingRequests <- (__ \ "remaining_requests").read[Long]
+        repository <- (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData]
+        request <- (__ \ "request").read[io.flow.travis.ci.v0.models.RequestPostData]
+      } yield Request(remainingRequests, repository, request)
     }
 
     def jsObjectRequest(obj: io.flow.travis.ci.v0.models.Request): play.api.libs.json.JsObject = {
@@ -605,18 +605,18 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestBuild: play.api.libs.json.Reads[RequestBuild] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "number").read[String] and
-        (__ \ "state").read[String] and
-        (__ \ "duration").readNullable[Long] and
-        (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType] and
-        (__ \ "previous_state").readNullable[String] and
-        (__ \ "pull_request_title").readNullable[String] and
-        (__ \ "pull_request_number").readNullable[Long] and
-        (__ \ "started_at").readNullable[_root_.org.joda.time.DateTime] and
-        (__ \ "finished_at").readNullable[_root_.org.joda.time.DateTime]
-      )(RequestBuild.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        number <- (__ \ "number").read[String]
+        state <- (__ \ "state").read[String]
+        duration <- (__ \ "duration").readNullable[Long]
+        eventType <- (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType]
+        previousState <- (__ \ "previous_state").readNullable[String]
+        pullRequestTitle <- (__ \ "pull_request_title").readNullable[String]
+        pullRequestNumber <- (__ \ "pull_request_number").readNullable[Long]
+        startedAt <- (__ \ "started_at").readNullable[_root_.org.joda.time.DateTime]
+        finishedAt <- (__ \ "finished_at").readNullable[_root_.org.joda.time.DateTime]
+      } yield RequestBuild(id, number, state, duration, eventType, previousState, pullRequestTitle, pullRequestNumber, startedAt, finishedAt)
     }
 
     def jsObjectRequestBuild(obj: io.flow.travis.ci.v0.models.RequestBuild): play.api.libs.json.JsObject = {
@@ -660,14 +660,14 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestCommit: play.api.libs.json.Reads[RequestCommit] = {
-      (
-        (__ \ "id").readNullable[Long] and
-        (__ \ "sha").readNullable[String] and
-        (__ \ "ref").readNullable[String] and
-        (__ \ "message").readNullable[String] and
-        (__ \ "compare_url").readNullable[String] and
-        (__ \ "committed_at").readNullable[_root_.org.joda.time.DateTime]
-      )(RequestCommit.apply _)
+      for {
+        id <- (__ \ "id").readNullable[Long]
+        sha <- (__ \ "sha").readNullable[String]
+        ref <- (__ \ "ref").readNullable[String]
+        message <- (__ \ "message").readNullable[String]
+        compareUrl <- (__ \ "compare_url").readNullable[String]
+        committedAt <- (__ \ "committed_at").readNullable[_root_.org.joda.time.DateTime]
+      } yield RequestCommit(id, sha, ref, message, compareUrl, committedAt)
     }
 
     def jsObjectRequestCommit(obj: io.flow.travis.ci.v0.models.RequestCommit): play.api.libs.json.JsObject = {
@@ -744,10 +744,10 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestConfigBranchesData: play.api.libs.json.Reads[RequestConfigBranchesData] = {
-      (
-        (__ \ "only").readNullable[Seq[String]] and
-        (__ \ "except").readNullable[Seq[String]]
-      )(RequestConfigBranchesData.apply _)
+      for {
+        only <- (__ \ "only").readNullable[Seq[String]]
+        except <- (__ \ "except").readNullable[Seq[String]]
+      } yield RequestConfigBranchesData(only, except)
     }
 
     def jsObjectRequestConfigBranchesData(obj: io.flow.travis.ci.v0.models.RequestConfigBranchesData): play.api.libs.json.JsObject = {
@@ -789,28 +789,28 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestConfigData: play.api.libs.json.Reads[RequestConfigData] = {
-      (
-        (__ \ "merge_mode").readNullable[io.flow.travis.ci.v0.models.MergeMode] and
-        (__ \ "language").readNullable[String] and
-        (__ \ "dist").readNullable[String] and
-        (__ \ "env").readNullable[Seq[String]] and
-        (__ \ "sudo").readNullable[String] and
-        (__ \ "services").readNullable[Seq[String]] and
-        (__ \ "addons").readNullable[io.flow.travis.ci.v0.models.RequestConfigAddonsData] and
-        (__ \ "before_install").readNullable[Seq[String]] and
-        (__ \ "install").readNullable[Seq[String]] and
-        (__ \ "before_script").readNullable[Seq[String]] and
-        (__ \ "script").readNullable[Seq[String]] and
-        (__ \ "before_cache").readNullable[Seq[String]] and
-        (__ \ "cache").readNullable[io.flow.travis.ci.v0.models.RequestConfigCacheData] and
-        (__ \ "after_success").readNullable[Seq[String]] and
-        (__ \ "after_failure").readNullable[Seq[String]] and
-        (__ \ "before_deploy").readNullable[Seq[String]] and
-        (__ \ "deploy").readNullable[String] and
-        (__ \ "after_deploy").readNullable[Seq[String]] and
-        (__ \ "after_script").readNullable[Seq[String]] and
-        (__ \ "branches").readNullable[io.flow.travis.ci.v0.models.RequestConfigBranchesData]
-      )(RequestConfigData.apply _)
+      for {
+        mergeMode <- (__ \ "merge_mode").readNullable[io.flow.travis.ci.v0.models.MergeMode]
+        language <- (__ \ "language").readNullable[String]
+        dist <- (__ \ "dist").readNullable[String]
+        env <- (__ \ "env").readNullable[Seq[String]]
+        sudo <- (__ \ "sudo").readNullable[String]
+        services <- (__ \ "services").readNullable[Seq[String]]
+        addons <- (__ \ "addons").readNullable[io.flow.travis.ci.v0.models.RequestConfigAddonsData]
+        beforeInstall <- (__ \ "before_install").readNullable[Seq[String]]
+        install <- (__ \ "install").readNullable[Seq[String]]
+        beforeScript <- (__ \ "before_script").readNullable[Seq[String]]
+        script <- (__ \ "script").readNullable[Seq[String]]
+        beforeCache <- (__ \ "before_cache").readNullable[Seq[String]]
+        cache <- (__ \ "cache").readNullable[io.flow.travis.ci.v0.models.RequestConfigCacheData]
+        afterSuccess <- (__ \ "after_success").readNullable[Seq[String]]
+        afterFailure <- (__ \ "after_failure").readNullable[Seq[String]]
+        beforeDeploy <- (__ \ "before_deploy").readNullable[Seq[String]]
+        deploy <- (__ \ "deploy").readNullable[String]
+        afterDeploy <- (__ \ "after_deploy").readNullable[Seq[String]]
+        afterScript <- (__ \ "after_script").readNullable[Seq[String]]
+        branches <- (__ \ "branches").readNullable[io.flow.travis.ci.v0.models.RequestConfigBranchesData]
+      } yield RequestConfigData(mergeMode, language, dist, env, sudo, services, addons, beforeInstall, install, beforeScript, script, beforeCache, cache, afterSuccess, afterFailure, beforeDeploy, deploy, afterDeploy, afterScript, branches)
     }
 
     def jsObjectRequestConfigData(obj: io.flow.travis.ci.v0.models.RequestConfigData): play.api.libs.json.JsObject = {
@@ -923,10 +923,10 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestOwner: play.api.libs.json.Reads[RequestOwner] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "login").read[String]
-      )(RequestOwner.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        login <- (__ \ "login").read[String]
+      } yield RequestOwner(id, login)
     }
 
     def jsObjectRequestOwner(obj: io.flow.travis.ci.v0.models.RequestOwner): play.api.libs.json.JsObject = {
@@ -945,14 +945,14 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestPostData: play.api.libs.json.Reads[RequestPostData] = {
-      (
-        (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData] and
-        (__ \ "user").read[io.flow.travis.ci.v0.models.RequestUserData] and
-        (__ \ "id").read[Long] and
-        (__ \ "branch").read[String] and
-        (__ \ "message").readNullable[String] and
-        (__ \ "config").read[io.flow.travis.ci.v0.models.RequestConfigData]
-      )(RequestPostData.apply _)
+      for {
+        repository <- (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData]
+        user <- (__ \ "user").read[io.flow.travis.ci.v0.models.RequestUserData]
+        id <- (__ \ "id").read[Long]
+        branch <- (__ \ "branch").read[String]
+        message <- (__ \ "message").readNullable[String]
+        config <- (__ \ "config").read[io.flow.travis.ci.v0.models.RequestConfigData]
+      } yield RequestPostData(repository, user, id, branch, message, config)
     }
 
     def jsObjectRequestPostData(obj: io.flow.travis.ci.v0.models.RequestPostData): play.api.libs.json.JsObject = {
@@ -995,11 +995,11 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestPostFormData: play.api.libs.json.Reads[RequestPostFormData] = {
-      (
-        (__ \ "branch").read[String] and
-        (__ \ "message").readNullable[String] and
-        (__ \ "config").read[io.flow.travis.ci.v0.models.RequestConfigData]
-      )(RequestPostFormData.apply _)
+      for {
+        branch <- (__ \ "branch").read[String]
+        message <- (__ \ "message").readNullable[String]
+        config <- (__ \ "config").read[io.flow.travis.ci.v0.models.RequestConfigData]
+      } yield RequestPostFormData(branch, message, config)
     }
 
     def jsObjectRequestPostFormData(obj: io.flow.travis.ci.v0.models.RequestPostFormData): play.api.libs.json.JsObject = {
@@ -1021,11 +1021,11 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestPostRepositoryData: play.api.libs.json.Reads[RequestPostRepositoryData] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "owner_name").read[String] and
-        (__ \ "name").read[String]
-      )(RequestPostRepositoryData.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        ownerName <- (__ \ "owner_name").read[String]
+        name <- (__ \ "name").read[String]
+      } yield RequestPostRepositoryData(id, ownerName, name)
     }
 
     def jsObjectRequestPostRepositoryData(obj: io.flow.travis.ci.v0.models.RequestPostRepositoryData): play.api.libs.json.JsObject = {
@@ -1045,12 +1045,12 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestRepositoryData: play.api.libs.json.Reads[RequestRepositoryData] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "name").read[String] and
-        (__ \ "owner_name").readNullable[String] and
-        (__ \ "slug").readNullable[String]
-      )(RequestRepositoryData.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        name <- (__ \ "name").read[String]
+        ownerName <- (__ \ "owner_name").readNullable[String]
+        slug <- (__ \ "slug").readNullable[String]
+      } yield RequestRepositoryData(id, name, ownerName, slug)
     }
 
     def jsObjectRequestRepositoryData(obj: io.flow.travis.ci.v0.models.RequestRepositoryData): play.api.libs.json.JsObject = {
@@ -1076,19 +1076,19 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiRequestRepositoryGetData: play.api.libs.json.Reads[RequestRepositoryGetData] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "state").readNullable[String] and
-        (__ \ "result").readNullable[String] and
-        (__ \ "message").readNullable[String] and
-        (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData] and
-        (__ \ "branch_name").read[io.flow.travis.ci.v0.models.RequestBranchName] and
-        (__ \ "commit").read[io.flow.travis.ci.v0.models.RequestCommit] and
-        (__ \ "builds").read[Seq[io.flow.travis.ci.v0.models.RequestBuild]] and
-        (__ \ "owner").read[io.flow.travis.ci.v0.models.RequestOwner] and
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType]
-      )(RequestRepositoryGetData.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        state <- (__ \ "state").readNullable[String]
+        result <- (__ \ "result").readNullable[String]
+        message <- (__ \ "message").readNullable[String]
+        repository <- (__ \ "repository").read[io.flow.travis.ci.v0.models.RequestRepositoryData]
+        branchName <- (__ \ "branch_name").read[io.flow.travis.ci.v0.models.RequestBranchName]
+        commit <- (__ \ "commit").read[io.flow.travis.ci.v0.models.RequestCommit]
+        builds <- (__ \ "builds").read[Seq[io.flow.travis.ci.v0.models.RequestBuild]]
+        owner <- (__ \ "owner").read[io.flow.travis.ci.v0.models.RequestOwner]
+        createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
+        eventType <- (__ \ "event_type").read[io.flow.travis.ci.v0.models.EventType]
+      } yield RequestRepositoryGetData(id, state, result, message, repository, branchName, commit, builds, owner, createdAt, eventType)
     }
 
     def jsObjectRequestRepositoryGetData(obj: io.flow.travis.ci.v0.models.RequestRepositoryGetData): play.api.libs.json.JsObject = {
@@ -1160,12 +1160,12 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiSettingsData: play.api.libs.json.Reads[SettingsData] = {
-      (
-        (__ \ "builds_only_with_travis_yml").read[Boolean] and
-        (__ \ "build_pushes").read[Boolean] and
-        (__ \ "build_pull_requests").read[Boolean] and
-        (__ \ "maximum_number_of_builds").read[Int]
-      )(SettingsData.apply _)
+      for {
+        buildsOnlyWithTravisYml <- (__ \ "builds_only_with_travis_yml").read[Boolean]
+        buildPushes <- (__ \ "build_pushes").read[Boolean]
+        buildPullRequests <- (__ \ "build_pull_requests").read[Boolean]
+        maximumNumberOfBuilds <- (__ \ "maximum_number_of_builds").read[Int]
+      } yield SettingsData(buildsOnlyWithTravisYml, buildPushes, buildPullRequests, maximumNumberOfBuilds)
     }
 
     def jsObjectSettingsData(obj: io.flow.travis.ci.v0.models.SettingsData): play.api.libs.json.JsObject = {
@@ -1204,12 +1204,12 @@ package io.flow.travis.ci.v0.models {
     }
 
     implicit def jsonReadsTravisCiSettingsPatchFormData: play.api.libs.json.Reads[SettingsPatchFormData] = {
-      (
-        (__ \ "builds_only_with_travis_yml").readNullable[Boolean] and
-        (__ \ "build_pushes").readNullable[Boolean] and
-        (__ \ "build_pull_requests").readNullable[Boolean] and
-        (__ \ "maximum_number_of_builds").readNullable[Int]
-      )(SettingsPatchFormData.apply _)
+      for {
+        buildsOnlyWithTravisYml <- (__ \ "builds_only_with_travis_yml").readNullable[Boolean]
+        buildPushes <- (__ \ "build_pushes").readNullable[Boolean]
+        buildPullRequests <- (__ \ "build_pull_requests").readNullable[Boolean]
+        maximumNumberOfBuilds <- (__ \ "maximum_number_of_builds").readNullable[Int]
+      } yield SettingsPatchFormData(buildsOnlyWithTravisYml, buildPushes, buildPullRequests, maximumNumberOfBuilds)
     }
 
     def jsObjectSettingsPatchFormData(obj: io.flow.travis.ci.v0.models.SettingsPatchFormData): play.api.libs.json.JsObject = {

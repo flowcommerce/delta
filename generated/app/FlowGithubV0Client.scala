@@ -716,13 +716,13 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubBlob: play.api.libs.json.Reads[Blob] = {
-      (
-        (__ \ "content").read[String] and
-        (__ \ "encoding").read[io.flow.github.v0.models.Encoding] and
-        (__ \ "url").read[String] and
-        (__ \ "sha").read[String] and
-        (__ \ "size").read[Long]
-      )(Blob.apply _)
+      for {
+        content <- (__ \ "content").read[String]
+        encoding <- (__ \ "encoding").read[io.flow.github.v0.models.Encoding]
+        url <- (__ \ "url").read[String]
+        sha <- (__ \ "sha").read[String]
+        size <- (__ \ "size").read[Long]
+      } yield Blob(content, encoding, url, sha, size)
     }
 
     def jsObjectBlob(obj: io.flow.github.v0.models.Blob): play.api.libs.json.JsObject = {
@@ -744,10 +744,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubBlobCreated: play.api.libs.json.Reads[BlobCreated] = {
-      (
-        (__ \ "url").read[String] and
-        (__ \ "sha").read[String]
-      )(BlobCreated.apply _)
+      for {
+        url <- (__ \ "url").read[String]
+        sha <- (__ \ "sha").read[String]
+      } yield BlobCreated(url, sha)
     }
 
     def jsObjectBlobCreated(obj: io.flow.github.v0.models.BlobCreated): play.api.libs.json.JsObject = {
@@ -766,10 +766,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubBlobForm: play.api.libs.json.Reads[BlobForm] = {
-      (
-        (__ \ "content").read[String] and
-        (__ \ "encoding").read[io.flow.github.v0.models.Encoding]
-      )(BlobForm.apply _)
+      for {
+        content <- (__ \ "content").read[String]
+        encoding <- (__ \ "encoding").read[io.flow.github.v0.models.Encoding]
+      } yield BlobForm(content, encoding)
     }
 
     def jsObjectBlobForm(obj: io.flow.github.v0.models.BlobForm): play.api.libs.json.JsObject = {
@@ -788,16 +788,16 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubCommit: play.api.libs.json.Reads[Commit] = {
-      (
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "html_url").read[String] and
-        (__ \ "author").read[io.flow.github.v0.models.Person] and
-        (__ \ "committer").read[io.flow.github.v0.models.Person] and
-        (__ \ "tree").read[io.flow.github.v0.models.TreeSummary] and
-        (__ \ "message").read[String] and
-        (__ \ "parents").read[Seq[io.flow.github.v0.models.CommitSummary]]
-      )(Commit.apply _)
+      for {
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+        htmlUrl <- (__ \ "html_url").read[String]
+        author <- (__ \ "author").read[io.flow.github.v0.models.Person]
+        committer <- (__ \ "committer").read[io.flow.github.v0.models.Person]
+        tree <- (__ \ "tree").read[io.flow.github.v0.models.TreeSummary]
+        message <- (__ \ "message").read[String]
+        parents <- (__ \ "parents").read[Seq[io.flow.github.v0.models.CommitSummary]]
+      } yield Commit(sha, url, htmlUrl, author, committer, tree, message, parents)
     }
 
     def jsObjectCommit(obj: io.flow.github.v0.models.Commit): play.api.libs.json.JsObject = {
@@ -822,13 +822,13 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubCommitForm: play.api.libs.json.Reads[CommitForm] = {
-      (
-        (__ \ "message").read[String] and
-        (__ \ "tree").read[String] and
-        (__ \ "parents").read[Seq[String]] and
-        (__ \ "author").read[io.flow.github.v0.models.Person] and
-        (__ \ "committer").read[io.flow.github.v0.models.Person]
-      )(CommitForm.apply _)
+      for {
+        message <- (__ \ "message").read[String]
+        tree <- (__ \ "tree").read[String]
+        parents <- (__ \ "parents").read[Seq[String]]
+        author <- (__ \ "author").read[io.flow.github.v0.models.Person]
+        committer <- (__ \ "committer").read[io.flow.github.v0.models.Person]
+      } yield CommitForm(message, tree, parents, author, committer)
     }
 
     def jsObjectCommitForm(obj: io.flow.github.v0.models.CommitForm): play.api.libs.json.JsObject = {
@@ -850,15 +850,15 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubCommitResponse: play.api.libs.json.Reads[CommitResponse] = {
-      (
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "author").read[io.flow.github.v0.models.Person] and
-        (__ \ "committer").read[io.flow.github.v0.models.Person] and
-        (__ \ "message").read[String] and
-        (__ \ "tree").read[io.flow.github.v0.models.TreeSummary] and
-        (__ \ "parents").read[Seq[io.flow.github.v0.models.TreeSummary]]
-      )(CommitResponse.apply _)
+      for {
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+        author <- (__ \ "author").read[io.flow.github.v0.models.Person]
+        committer <- (__ \ "committer").read[io.flow.github.v0.models.Person]
+        message <- (__ \ "message").read[String]
+        tree <- (__ \ "tree").read[io.flow.github.v0.models.TreeSummary]
+        parents <- (__ \ "parents").read[Seq[io.flow.github.v0.models.TreeSummary]]
+      } yield CommitResponse(sha, url, author, committer, message, tree, parents)
     }
 
     def jsObjectCommitResponse(obj: io.flow.github.v0.models.CommitResponse): play.api.libs.json.JsObject = {
@@ -882,10 +882,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubCommitSummary: play.api.libs.json.Reads[CommitSummary] = {
-      (
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String]
-      )(CommitSummary.apply _)
+      for {
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+      } yield CommitSummary(sha, url)
     }
 
     def jsObjectCommitSummary(obj: io.flow.github.v0.models.CommitSummary): play.api.libs.json.JsObject = {
@@ -904,19 +904,19 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubContents: play.api.libs.json.Reads[Contents] = {
-      (
-        (__ \ "type").read[io.flow.github.v0.models.ContentsType] and
-        (__ \ "encoding").read[io.flow.github.v0.models.Encoding] and
-        (__ \ "size").read[Long] and
-        (__ \ "name").read[String] and
-        (__ \ "path").read[String] and
-        (__ \ "content").readNullable[String] and
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "git_url").read[String] and
-        (__ \ "html_url").read[String] and
-        (__ \ "download_url").read[String]
-      )(Contents.apply _)
+      for {
+        `type` <- (__ \ "type").read[io.flow.github.v0.models.ContentsType]
+        encoding <- (__ \ "encoding").read[io.flow.github.v0.models.Encoding]
+        size <- (__ \ "size").read[Long]
+        name <- (__ \ "name").read[String]
+        path <- (__ \ "path").read[String]
+        content <- (__ \ "content").readNullable[String]
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+        gitUrl <- (__ \ "git_url").read[String]
+        htmlUrl <- (__ \ "html_url").read[String]
+        downloadUrl <- (__ \ "download_url").read[String]
+      } yield Contents(`type`, encoding, size, name, path, content, sha, url, gitUrl, htmlUrl, downloadUrl)
     }
 
     def jsObjectContents(obj: io.flow.github.v0.models.Contents): play.api.libs.json.JsObject = {
@@ -946,10 +946,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubCreateTreeForm: play.api.libs.json.Reads[CreateTreeForm] = {
-      (
-        (__ \ "base_tree").read[String] and
-        (__ \ "tree").read[Seq[io.flow.github.v0.models.TreeForm]]
-      )(CreateTreeForm.apply _)
+      for {
+        baseTree <- (__ \ "base_tree").read[String]
+        tree <- (__ \ "tree").read[Seq[io.flow.github.v0.models.TreeForm]]
+      } yield CreateTreeForm(baseTree, tree)
     }
 
     def jsObjectCreateTreeForm(obj: io.flow.github.v0.models.CreateTreeForm): play.api.libs.json.JsObject = {
@@ -968,11 +968,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubCreateTreeResponse: play.api.libs.json.Reads[CreateTreeResponse] = {
-      (
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "tree_result").read[io.flow.github.v0.models.Tree]
-      )(CreateTreeResponse.apply _)
+      for {
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+        treeResult <- (__ \ "tree_result").read[io.flow.github.v0.models.Tree]
+      } yield CreateTreeResponse(sha, url, treeResult)
     }
 
     def jsObjectCreateTreeResponse(obj: io.flow.github.v0.models.CreateTreeResponse): play.api.libs.json.JsObject = {
@@ -992,11 +992,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubError: play.api.libs.json.Reads[Error] = {
-      (
-        (__ \ "resource").read[String] and
-        (__ \ "field").read[String] and
-        (__ \ "code").read[String]
-      )(Error.apply _)
+      for {
+        resource <- (__ \ "resource").read[String]
+        field <- (__ \ "field").read[String]
+        code <- (__ \ "code").read[String]
+      } yield Error(resource, field, code)
     }
 
     def jsObjectError(obj: io.flow.github.v0.models.Error): play.api.libs.json.JsObject = {
@@ -1016,11 +1016,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubGithubObject: play.api.libs.json.Reads[GithubObject] = {
-      (
-        (__ \ "type").read[String] and
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String]
-      )(GithubObject.apply _)
+      for {
+        `type` <- (__ \ "type").read[String]
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+      } yield GithubObject(`type`, sha, url)
     }
 
     def jsObjectGithubObject(obj: io.flow.github.v0.models.GithubObject): play.api.libs.json.JsObject = {
@@ -1040,18 +1040,18 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubHook: play.api.libs.json.Reads[Hook] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "url").read[String] and
-        (__ \ "test_url").read[String] and
-        (__ \ "ping_url").read[String] and
-        (__ \ "name").read[String] and
-        (__ \ "events").read[Seq[io.flow.github.v0.models.HookEvent]] and
-        (__ \ "active").read[Boolean] and
-        (__ \ "config").read[io.flow.github.v0.models.HookConfig] and
-        (__ \ "updated_at").read[_root_.org.joda.time.DateTime] and
-        (__ \ "created_at").read[_root_.org.joda.time.DateTime]
-      )(Hook.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        url <- (__ \ "url").read[String]
+        testUrl <- (__ \ "test_url").read[String]
+        pingUrl <- (__ \ "ping_url").read[String]
+        name <- (__ \ "name").read[String]
+        events <- (__ \ "events").read[Seq[io.flow.github.v0.models.HookEvent]]
+        active <- (__ \ "active").read[Boolean]
+        config <- (__ \ "config").read[io.flow.github.v0.models.HookConfig]
+        updatedAt <- (__ \ "updated_at").read[_root_.org.joda.time.DateTime]
+        createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
+      } yield Hook(id, url, testUrl, pingUrl, name, events, active, config, updatedAt, createdAt)
     }
 
     def jsObjectHook(obj: io.flow.github.v0.models.Hook): play.api.libs.json.JsObject = {
@@ -1078,10 +1078,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubHookConfig: play.api.libs.json.Reads[HookConfig] = {
-      (
-        (__ \ "url").readNullable[String] and
-        (__ \ "content_type").readNullable[String]
-      )(HookConfig.apply _)
+      for {
+        url <- (__ \ "url").readNullable[String]
+        contentType <- (__ \ "content_type").readNullable[String]
+      } yield HookConfig(url, contentType)
     }
 
     def jsObjectHookConfig(obj: io.flow.github.v0.models.HookConfig): play.api.libs.json.JsObject = {
@@ -1104,12 +1104,12 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubHookForm: play.api.libs.json.Reads[HookForm] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "config").read[io.flow.github.v0.models.HookConfig] and
-        (__ \ "events").read[Seq[io.flow.github.v0.models.HookEvent]] and
-        (__ \ "active").read[Boolean]
-      )(HookForm.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        config <- (__ \ "config").read[io.flow.github.v0.models.HookConfig]
+        events <- (__ \ "events").read[Seq[io.flow.github.v0.models.HookEvent]]
+        active <- (__ \ "active").read[Boolean]
+      } yield HookForm(name, config, events, active)
     }
 
     def jsObjectHookForm(obj: io.flow.github.v0.models.HookForm): play.api.libs.json.JsObject = {
@@ -1130,14 +1130,14 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubNode: play.api.libs.json.Reads[Node] = {
-      (
-        (__ \ "path").read[String] and
-        (__ \ "mode").read[String] and
-        (__ \ "type").read[io.flow.github.v0.models.NodeType] and
-        (__ \ "size").read[Long] and
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String]
-      )(Node.apply _)
+      for {
+        path <- (__ \ "path").read[String]
+        mode <- (__ \ "mode").read[String]
+        `type` <- (__ \ "type").read[io.flow.github.v0.models.NodeType]
+        size <- (__ \ "size").read[Long]
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+      } yield Node(path, mode, `type`, size, sha, url)
     }
 
     def jsObjectNode(obj: io.flow.github.v0.models.Node): play.api.libs.json.JsObject = {
@@ -1160,12 +1160,12 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubNodeForm: play.api.libs.json.Reads[NodeForm] = {
-      (
-        (__ \ "path").read[String] and
-        (__ \ "mode").read[String] and
-        (__ \ "type").read[io.flow.github.v0.models.NodeType] and
-        (__ \ "sha").read[String]
-      )(NodeForm.apply _)
+      for {
+        path <- (__ \ "path").read[String]
+        mode <- (__ \ "mode").read[String]
+        `type` <- (__ \ "type").read[io.flow.github.v0.models.NodeType]
+        sha <- (__ \ "sha").read[String]
+      } yield NodeForm(path, mode, `type`, sha)
     }
 
     def jsObjectNodeForm(obj: io.flow.github.v0.models.NodeForm): play.api.libs.json.JsObject = {
@@ -1186,11 +1186,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubPerson: play.api.libs.json.Reads[Person] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "date").read[_root_.org.joda.time.DateTime]
-      )(Person.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        email <- (__ \ "email").read[String]
+        date <- (__ \ "date").read[_root_.org.joda.time.DateTime]
+      } yield Person(name, email, date)
     }
 
     def jsObjectPerson(obj: io.flow.github.v0.models.Person): play.api.libs.json.JsObject = {
@@ -1210,11 +1210,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubPullRequest: play.api.libs.json.Reads[PullRequest] = {
-      (
-        (__ \ "id").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "number").read[String]
-      )(PullRequest.apply _)
+      for {
+        id <- (__ \ "id").read[String]
+        url <- (__ \ "url").read[String]
+        number <- (__ \ "number").read[String]
+      } yield PullRequest(id, url, number)
     }
 
     def jsObjectPullRequest(obj: io.flow.github.v0.models.PullRequest): play.api.libs.json.JsObject = {
@@ -1234,12 +1234,12 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubPullRequestForm: play.api.libs.json.Reads[PullRequestForm] = {
-      (
-        (__ \ "title").read[String] and
-        (__ \ "head").read[String] and
-        (__ \ "base").read[String] and
-        (__ \ "body").readNullable[String]
-      )(PullRequestForm.apply _)
+      for {
+        title <- (__ \ "title").read[String]
+        head <- (__ \ "head").read[String]
+        base <- (__ \ "base").read[String]
+        body <- (__ \ "body").readNullable[String]
+      } yield PullRequestForm(title, head, base, body)
     }
 
     def jsObjectPullRequestForm(obj: io.flow.github.v0.models.PullRequestForm): play.api.libs.json.JsObject = {
@@ -1262,11 +1262,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubRef: play.api.libs.json.Reads[Ref] = {
-      (
-        (__ \ "ref").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "object").read[io.flow.github.v0.models.GithubObject]
-      )(Ref.apply _)
+      for {
+        ref <- (__ \ "ref").read[String]
+        url <- (__ \ "url").read[String]
+        `object` <- (__ \ "object").read[io.flow.github.v0.models.GithubObject]
+      } yield Ref(ref, url, `object`)
     }
 
     def jsObjectRef(obj: io.flow.github.v0.models.Ref): play.api.libs.json.JsObject = {
@@ -1286,10 +1286,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubRefForm: play.api.libs.json.Reads[RefForm] = {
-      (
-        (__ \ "ref").read[String] and
-        (__ \ "sha").read[String]
-      )(RefForm.apply _)
+      for {
+        ref <- (__ \ "ref").read[String]
+        sha <- (__ \ "sha").read[String]
+      } yield RefForm(ref, sha)
     }
 
     def jsObjectRefForm(obj: io.flow.github.v0.models.RefForm): play.api.libs.json.JsObject = {
@@ -1326,16 +1326,16 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubRepository: play.api.libs.json.Reads[Repository] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "owner").read[io.flow.github.v0.models.User] and
-        (__ \ "name").read[String] and
-        (__ \ "full_name").read[String] and
-        (__ \ "private").read[Boolean] and
-        (__ \ "description").readNullable[String] and
-        (__ \ "url").read[String] and
-        (__ \ "html_url").read[String]
-      )(Repository.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        owner <- (__ \ "owner").read[io.flow.github.v0.models.User]
+        name <- (__ \ "name").read[String]
+        fullName <- (__ \ "full_name").read[String]
+        `private` <- (__ \ "private").read[Boolean]
+        description <- (__ \ "description").readNullable[String]
+        url <- (__ \ "url").read[String]
+        htmlUrl <- (__ \ "html_url").read[String]
+      } yield Repository(id, owner, name, fullName, `private`, description, url, htmlUrl)
     }
 
     def jsObjectRepository(obj: io.flow.github.v0.models.Repository): play.api.libs.json.JsObject = {
@@ -1362,14 +1362,14 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTag: play.api.libs.json.Reads[Tag] = {
-      (
-        (__ \ "tag").read[String] and
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "message").read[String] and
-        (__ \ "tagger").read[io.flow.github.v0.models.Tagger] and
-        (__ \ "object").read[io.flow.github.v0.models.GithubObject]
-      )(Tag.apply _)
+      for {
+        tag <- (__ \ "tag").read[String]
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+        message <- (__ \ "message").read[String]
+        tagger <- (__ \ "tagger").read[io.flow.github.v0.models.Tagger]
+        `object` <- (__ \ "object").read[io.flow.github.v0.models.GithubObject]
+      } yield Tag(tag, sha, url, message, tagger, `object`)
     }
 
     def jsObjectTag(obj: io.flow.github.v0.models.Tag): play.api.libs.json.JsObject = {
@@ -1392,13 +1392,13 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTagForm: play.api.libs.json.Reads[TagForm] = {
-      (
-        (__ \ "tag").read[String] and
-        (__ \ "message").read[String] and
-        (__ \ "object").read[String] and
-        (__ \ "type").read[String] and
-        (__ \ "tagger").read[io.flow.github.v0.models.Tagger]
-      )(TagForm.apply _)
+      for {
+        tag <- (__ \ "tag").read[String]
+        message <- (__ \ "message").read[String]
+        `object` <- (__ \ "object").read[String]
+        `type` <- (__ \ "type").read[String]
+        tagger <- (__ \ "tagger").read[io.flow.github.v0.models.Tagger]
+      } yield TagForm(tag, message, `object`, `type`, tagger)
     }
 
     def jsObjectTagForm(obj: io.flow.github.v0.models.TagForm): play.api.libs.json.JsObject = {
@@ -1420,10 +1420,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTagSummary: play.api.libs.json.Reads[TagSummary] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "commit").read[io.flow.github.v0.models.CommitSummary]
-      )(TagSummary.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        commit <- (__ \ "commit").read[io.flow.github.v0.models.CommitSummary]
+      } yield TagSummary(name, commit)
     }
 
     def jsObjectTagSummary(obj: io.flow.github.v0.models.TagSummary): play.api.libs.json.JsObject = {
@@ -1442,11 +1442,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTagger: play.api.libs.json.Reads[Tagger] = {
-      (
-        (__ \ "name").read[String] and
-        (__ \ "email").read[String] and
-        (__ \ "date").read[_root_.org.joda.time.DateTime]
-      )(Tagger.apply _)
+      for {
+        name <- (__ \ "name").read[String]
+        email <- (__ \ "email").read[String]
+        date <- (__ \ "date").read[_root_.org.joda.time.DateTime]
+      } yield Tagger(name, email, date)
     }
 
     def jsObjectTagger(obj: io.flow.github.v0.models.Tagger): play.api.libs.json.JsObject = {
@@ -1466,12 +1466,12 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTree: play.api.libs.json.Reads[Tree] = {
-      (
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String] and
-        (__ \ "truncated").read[Boolean] and
-        (__ \ "tree").read[Seq[io.flow.github.v0.models.Node]]
-      )(Tree.apply _)
+      for {
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+        truncated <- (__ \ "truncated").read[Boolean]
+        tree <- (__ \ "tree").read[Seq[io.flow.github.v0.models.Node]]
+      } yield Tree(sha, url, truncated, tree)
     }
 
     def jsObjectTree(obj: io.flow.github.v0.models.Tree): play.api.libs.json.JsObject = {
@@ -1492,13 +1492,13 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTreeForm: play.api.libs.json.Reads[TreeForm] = {
-      (
-        (__ \ "path").read[String] and
-        (__ \ "mode").read[String] and
-        (__ \ "type").read[io.flow.github.v0.models.NodeType] and
-        (__ \ "sha").readNullable[String] and
-        (__ \ "content").readNullable[String]
-      )(TreeForm.apply _)
+      for {
+        path <- (__ \ "path").read[String]
+        mode <- (__ \ "mode").read[String]
+        `type` <- (__ \ "type").read[io.flow.github.v0.models.NodeType]
+        sha <- (__ \ "sha").readNullable[String]
+        content <- (__ \ "content").readNullable[String]
+      } yield TreeForm(path, mode, `type`, sha, content)
     }
 
     def jsObjectTreeForm(obj: io.flow.github.v0.models.TreeForm): play.api.libs.json.JsObject = {
@@ -1525,14 +1525,14 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTreeResult: play.api.libs.json.Reads[TreeResult] = {
-      (
-        (__ \ "path").read[String] and
-        (__ \ "mode").read[String] and
-        (__ \ "type").read[io.flow.github.v0.models.NodeType] and
-        (__ \ "size").read[Long] and
-        (__ \ "sha").read[String] and
-        (__ \ "url").read[String]
-      )(TreeResult.apply _)
+      for {
+        path <- (__ \ "path").read[String]
+        mode <- (__ \ "mode").read[String]
+        `type` <- (__ \ "type").read[io.flow.github.v0.models.NodeType]
+        size <- (__ \ "size").read[Long]
+        sha <- (__ \ "sha").read[String]
+        url <- (__ \ "url").read[String]
+      } yield TreeResult(path, mode, `type`, size, sha, url)
     }
 
     def jsObjectTreeResult(obj: io.flow.github.v0.models.TreeResult): play.api.libs.json.JsObject = {
@@ -1555,10 +1555,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubTreeSummary: play.api.libs.json.Reads[TreeSummary] = {
-      (
-        (__ \ "url").read[String] and
-        (__ \ "sha").read[String]
-      )(TreeSummary.apply _)
+      for {
+        url <- (__ \ "url").read[String]
+        sha <- (__ \ "sha").read[String]
+      } yield TreeSummary(url, sha)
     }
 
     def jsObjectTreeSummary(obj: io.flow.github.v0.models.TreeSummary): play.api.libs.json.JsObject = {
@@ -1577,10 +1577,10 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubUnprocessableEntity: play.api.libs.json.Reads[UnprocessableEntity] = {
-      (
-        (__ \ "message").read[String] and
-        (__ \ "errors").readNullable[Seq[io.flow.github.v0.models.Error]]
-      )(UnprocessableEntity.apply _)
+      for {
+        message <- (__ \ "message").read[String]
+        errors <- (__ \ "errors").readNullable[Seq[io.flow.github.v0.models.Error]]
+      } yield UnprocessableEntity(message, errors)
     }
 
     def jsObjectUnprocessableEntity(obj: io.flow.github.v0.models.UnprocessableEntity): play.api.libs.json.JsObject = {
@@ -1601,17 +1601,17 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubUser: play.api.libs.json.Reads[User] = {
-      (
-        (__ \ "id").read[Long] and
-        (__ \ "login").read[String] and
-        (__ \ "name").readNullable[String] and
-        (__ \ "email").readNullable[String] and
-        (__ \ "avatar_url").readNullable[String] and
-        (__ \ "gravatar_id").readNullable[String] and
-        (__ \ "url").read[String] and
-        (__ \ "html_url").read[String] and
-        (__ \ "type").read[io.flow.github.v0.models.OwnerType]
-      )(User.apply _)
+      for {
+        id <- (__ \ "id").read[Long]
+        login <- (__ \ "login").read[String]
+        name <- (__ \ "name").readNullable[String]
+        email <- (__ \ "email").readNullable[String]
+        avatarUrl <- (__ \ "avatar_url").readNullable[String]
+        gravatarId <- (__ \ "gravatar_id").readNullable[String]
+        url <- (__ \ "url").read[String]
+        htmlUrl <- (__ \ "html_url").read[String]
+        `type` <- (__ \ "type").read[io.flow.github.v0.models.OwnerType]
+      } yield User(id, login, name, email, avatarUrl, gravatarId, url, htmlUrl, `type`)
     }
 
     def jsObjectUser(obj: io.flow.github.v0.models.User): play.api.libs.json.JsObject = {
@@ -1648,11 +1648,11 @@ package io.flow.github.v0.models {
     }
 
     implicit def jsonReadsGithubUserEmail: play.api.libs.json.Reads[UserEmail] = {
-      (
-        (__ \ "email").read[String] and
-        (__ \ "verified").read[Boolean] and
-        (__ \ "primary").read[Boolean]
-      )(UserEmail.apply _)
+      for {
+        email <- (__ \ "email").read[String]
+        verified <- (__ \ "verified").read[Boolean]
+        primary <- (__ \ "primary").read[Boolean]
+      } yield UserEmail(email, verified, primary)
     }
 
     def jsObjectUserEmail(obj: io.flow.github.v0.models.UserEmail): play.api.libs.json.JsObject = {
