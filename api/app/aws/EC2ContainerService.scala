@@ -1,8 +1,9 @@
 package io.flow.delta.aws
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.ec2.AmazonEC2Client
-import com.amazonaws.services.ecs.AmazonECSClient
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.services.ec2.AmazonEC2ClientBuilder
+import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
 import io.flow.delta.v0.models.Version
 import org.joda.time.DateTime
@@ -32,10 +33,19 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
 
-  private[this] lazy val ec2Client = new AmazonEC2Client(credentials.aws, configuration.aws)
+  private[this] lazy val ec2Client = AmazonEC2ClientBuilder.
+    standard().
+    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
+    withClientConfiguration(configuration.aws).
+    build()
 
-  private[this] lazy val client = new AmazonECSClient(credentials.aws, configuration.aws)
-  
+  private[this] lazy val client = AmazonECSClientBuilder.
+    standard().
+    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
+    withClientConfiguration(configuration.aws).
+    build()
+
+
   def getBaseName(imageName: String, imageVersion: Option[String] = None): String = {
     Seq(
       Some(s"${imageName.replaceAll("_", "-").replaceAll("[/]","-")}"), // flow/registry becomes flow-registry

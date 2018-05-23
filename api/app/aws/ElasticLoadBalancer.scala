@@ -1,7 +1,8 @@
 package io.flow.delta.aws
 
 import akka.actor.ActorSystem
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClient
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder
 import com.amazonaws.services.elasticloadbalancing.model._
 import play.api.Logger
 
@@ -23,7 +24,12 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
 
-  private[this] lazy val client = new AmazonElasticLoadBalancingClient(credentials.aws, configuration.aws)
+  private[this] lazy val client = AmazonElasticLoadBalancingClientBuilder.
+    standard().
+    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
+    withClientConfiguration(configuration.aws).
+    build()
+
 
   def getHealthyInstances(projectId: String): Seq[String] = {
     val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
@@ -82,9 +88,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
           .withSecurityGroups(Seq(settings.elbSecurityGroup).asJava)
       )
     } catch {
-      case e: DuplicateLoadBalancerNameException => {
-
-      }
+      case _: DuplicateLoadBalancerNameException => // no-op already exists
     }
 
     try {
@@ -125,7 +129,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
           )
       )
     } catch {
-      case e: LoadBalancerNotFoundException => sys.error("Cannot find load balancer $name: $e")
+      case _: LoadBalancerNotFoundException => sys.error("Cannot find load balancer $name: $e")
     }
   }
 

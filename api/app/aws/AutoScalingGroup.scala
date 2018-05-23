@@ -1,9 +1,11 @@
 package io.flow.delta.aws
 
-import io.flow.play.util.Config
+import java.util
 
-import com.amazonaws.services.ec2.AmazonEC2Client
-import com.amazonaws.services.autoscaling.AmazonAutoScalingClient
+import com.amazonaws.auth.AWSStaticCredentialsProvider
+import io.flow.play.util.Config
+import com.amazonaws.services.ec2.{AmazonEC2, AmazonEC2ClientBuilder}
+import com.amazonaws.services.autoscaling.{AmazonAutoScaling, AmazonAutoScalingClientBuilder}
 import com.amazonaws.services.autoscaling.model._
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest
 import play.api.Logger
@@ -28,14 +30,24 @@ class AutoScalingGroup @javax.inject.Inject() (
   private[this] lazy val awsOpsworksLayerId = config.requiredString("aws.opsworks.layer.id")
   private[this] lazy val awsOpsworksSnsTopicArn = config.requiredString("aws.opsworks.sns.topic.arn")
 
-  lazy val ec2Client = new AmazonEC2Client(credentials.aws, configuration.aws)
-  lazy val client = new AmazonAutoScalingClient(credentials.aws, configuration.aws)
+  lazy val ec2Client: AmazonEC2 = AmazonEC2ClientBuilder.
+    standard().
+    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
+    withClientConfiguration(configuration.aws).
+    build()
+
+  lazy val client: AmazonAutoScaling = AmazonAutoScalingClientBuilder.
+    standard().
+    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
+    withClientConfiguration(configuration.aws).
+    build()
+
   lazy val encoder = new BASE64Encoder()
 
   /**
   * Defined Values, probably make object vals somewhere?
   */
-  val launchConfigBlockDeviceMappings = Seq(
+  val launchConfigBlockDeviceMappings: util.List[BlockDeviceMapping] = Seq(
     new BlockDeviceMapping()
       .withDeviceName("/dev/xvda")
       .withEbs(new Ebs()
@@ -79,7 +91,7 @@ class AutoScalingGroup @javax.inject.Inject() (
       case e: AlreadyExistsException => println(s"Launch Configuration '$name' already exists")
     }
 
-    return name
+    name
   }
 
   def deleteAutoScalingGroup(id: String): String = {
@@ -282,9 +294,9 @@ class AutoScalingGroup @javax.inject.Inject() (
     )
 
     val allSteps = if (settings.remoteLogging) {
-      (ecsClusterRegistration ++ setupSumoCollector ++ completeEcsAndAwsSetup)
+      ecsClusterRegistration ++ setupSumoCollector ++ completeEcsAndAwsSetup
     } else {
-      (ecsClusterRegistration ++ completeEcsAndAwsSetup)
+      ecsClusterRegistration ++ completeEcsAndAwsSetup
     }
 
     allSteps.mkString("\n")
