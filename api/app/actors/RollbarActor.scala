@@ -41,7 +41,11 @@ class RollbarActor @Inject()(
 
   private val logger = Logger(getClass)
 
-  private val accessToken = config.requiredString("rollbar.access_token")
+  private val ConfigName = "rollbar.access_token"
+  private val accessToken = config.optionalString(ConfigName)
+  if (accessToken.isEmpty) {
+    Logger.info(s"[RollbarActor] disable as configuration param[$ConfigName] not found")
+  }
 
   private case class Project(name: String, id: Int, postAccessKey: String)
 
@@ -54,50 +58,52 @@ class RollbarActor @Inject()(
   def receive = akka.event.LoggingReceive {
 
     case msg @ RollbarActor.Messages.Deployment(buildId, diffs) => withErrorHandler(msg) {
+      accessToken.foreach { token =>
+        buildsDao.findById(Authorization.All, buildId) match {
+          case None => throw new IllegalArgumentException(buildId)
+          case Some(build) =>
+            diffs.headOption match { // do we ever have more than 1 statediff?
+              case None => throw new IllegalArgumentException(diffs.toString)
+              case Some(diff) =>
 
-      buildsDao.findById(Authorization.All, buildId) match {
-        case None => throw new IllegalArgumentException(buildId)
-        case Some(build) =>
-          diffs.headOption match { // do we ever have more than 1 statediff?
-            case None => throw new IllegalArgumentException(diffs.toString)
-            case Some(diff) =>
+                // log to determine whether we should only post when lastInstances == 0
+                logger.warn(s"got deploy for ${build.project.id}, diffs = ${diffs.mkString(", ")}")
 
-              // log to determine whether we should only post when lastInstances == 0
-              logger.warn(s"got deploy for ${build.project.id}, diffs = ${diffs}")
+                if (diff.desiredInstances > diff.lastInstances) { // scale up
+                  tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
+                    case None =>
+                    case Some(tag) =>
 
-              if (diff.desiredInstances > diff.lastInstances) { // scale up
-                tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
-                  case None =>
-                  case Some(tag) =>
-
-                    if (projectCache.containsKey(build.project.id)) {
-                      rollbar.deploys.post(Deploy(
-                        accessToken = projectCache.get(build.project.id).postAccessKey,
-                        environment = FlowEnvironment.Current.toString,
-                        revision = tag.hash
-                      )) onComplete {
-                        case Success(_) => logger.info(s"success posting $msg")
-                        case Failure(e) => logger.error(s"failed to post deploy $msg", e)
+                      if (projectCache.containsKey(build.project.id)) {
+                        rollbar.deploys.post(Deploy(
+                          accessToken = projectCache.get(build.project.id).postAccessKey,
+                          environment = FlowEnvironment.Current.toString,
+                          revision = tag.hash
+                        )) onComplete {
+                          case Success(_) => logger.info(s"success posting $msg")
+                          case Failure(e) => logger.error(s"failed to post deploy $msg", e)
+                        }
+                      } else {
+                        logger.warn(s"no project or access key for `${build.project.id}' exist in rollbar")
                       }
-                    } else {
-                      logger.warn(s"no project or access key for `${build.project.id}' exist in rollbar")
-                    }
+                  }
                 }
-              }
-          }
+            }
+        }
       }
     }
 
     case msg @ RollbarActor.Messages.Refresh => withErrorHandler(msg) {
-
-      rollbar.projects.getProjects(accessToken).flatMap { projects =>
-        Future.sequence(projects.result.map { project =>
-          rollbar.projects.getProjectAndAccessTokensByProjectId(project.id, accessToken).map { accessTokens =>
-            accessTokens.result.find(_.scopes.contains("post_server_item")).foreach { token =>
-              projectCache.put(project.name, Project(project.name, project.id, token.accessToken))
+      accessToken.foreach { token =>
+        rollbar.projects.getProjects(token).flatMap { projects =>
+          Future.sequence(projects.result.map { project =>
+            rollbar.projects.getProjectAndAccessTokensByProjectId(project.id, token).map { accessTokens =>
+              accessTokens.result.find(_.scopes.contains("post_server_item")).foreach { token =>
+                projectCache.put(project.name, Project(project.name, project.id, token.accessToken))
+              }
             }
-          }
-        })
+          })
+        }
       }
 
     }

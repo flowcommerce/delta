@@ -75,7 +75,9 @@ class SnsMessageAmis @Inject()(
         logger.info(s"Subscribing to SNS topic ${message.getTopicArn}")
         Try(message.confirmSubscription()) match {
           case Failure(exception: SdkClientException) =>
-            logger.error("FlowError: subscribing to SNS topic failed", exception)
+            logger.error("FlowAlertError: subscribing to SNS topic failed w/ SdkClientException", exception)
+          case Failure(exception: Throwable) =>
+            logger.error("FlowAlertError: subscribing to SNS topic failed", exception)
           case Success(_: ConfirmSubscriptionResult) =>
             logger.info("Subscribed")
         }
