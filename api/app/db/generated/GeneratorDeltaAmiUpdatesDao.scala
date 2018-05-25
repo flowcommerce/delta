@@ -1,6 +1,7 @@
 package db.generated
 
 import anorm._
+import anorm.JodaParameterMetaData._
 import io.flow.common.v0.models.UserReference
 import io.flow.postgresql.{OrderBy, Query}
 import io.flow.postgresql.play.db.DbHelpers
@@ -42,11 +43,17 @@ class AmiUpdatesDao @Inject() (
       |   from ami_updates
   """.stripMargin)
 
-  private[this] val InsertQuery = Query("""
+  private[this] val UpsertQuery = Query("""
     | insert into ami_updates
     | (id, name, hash_code)
     | values
     | ({id}, {name}, {hash_code}::bigint)
+    | on conflict (id)
+    | do update
+    |    set name = {name},
+    |        hash_code = {hash_code}::bigint
+    |  where ami_updates.hash_code != {hash_code}::bigint
+    | returning id
   """.stripMargin)
 
   private[this] val UpdateQuery = Query("""
@@ -63,17 +70,44 @@ class AmiUpdatesDao @Inject() (
       bind("hash_code", form.hashCode())
   }
 
-  def insert(updatedBy: UserReference, form: AmiUpdateForm) {
-    db.withConnection { implicit c =>
-      insert(c, updatedBy, form)
+  private[this] def toNamedParameter(updatedBy: UserReference, form: AmiUpdateForm): Seq[NamedParameter] = {
+    Seq(
+      'id -> form.id,
+      'name -> form.name,
+      'hash_code -> form.hashCode()
+    )
+  }
+
+  def upsertIfChangedById(updatedBy: UserReference, form: AmiUpdateForm) {
+    if (!findById(form.id).map(_.form).contains(form)) {
+      upsertById(updatedBy, form)
     }
   }
 
-  def insert(implicit c: Connection, updatedBy: UserReference, form: AmiUpdateForm) {
-    bindQuery(InsertQuery, form).
+  def upsertById(updatedBy: UserReference, form: AmiUpdateForm) {
+    db.withConnection { implicit c =>
+      upsertById(c, updatedBy, form)
+    }
+  }
+
+  def upsertById(implicit c: Connection, updatedBy: UserReference, form: AmiUpdateForm) {
+    bindQuery(UpsertQuery, form).
       bind("id", form.id).
       bind("updated_by_user_id", updatedBy.id).
       anormSql.execute()
+  }
+
+  def upsertBatchById(updatedBy: UserReference, forms: Seq[AmiUpdateForm]) {
+    db.withConnection { implicit c =>
+      upsertBatchById(c, updatedBy, forms)
+    }
+  }
+
+  def upsertBatchById(implicit c: Connection, updatedBy: UserReference, forms: Seq[AmiUpdateForm]) {
+    if (forms.nonEmpty) {
+      val params = forms.map(toNamedParameter(updatedBy, _))
+      BatchSql(UpsertQuery.sql(), params.head, params.tail: _*).execute()
+    }
   }
 
   def updateIfChangedById(updatedBy: UserReference, id: String, form: AmiUpdateForm) {
@@ -131,6 +165,7 @@ class AmiUpdatesDao @Inject() (
 
   def findAll(
     ids: Option[Seq[String]] = None,
+    id: Option[String] = None,
     limit: Long,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ami_updates.id")
@@ -141,6 +176,7 @@ class AmiUpdatesDao @Inject() (
       findAllWithConnection(
         c,
         ids = ids,
+        id = id,
         limit = limit,
         offset = offset,
         orderBy = orderBy
@@ -151,6 +187,7 @@ class AmiUpdatesDao @Inject() (
   def findAllWithConnection(
     c: java.sql.Connection,
     ids: Option[Seq[String]] = None,
+    id: Option[String] = None,
     limit: Long,
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ami_updates.id")
@@ -159,6 +196,7 @@ class AmiUpdatesDao @Inject() (
   ): Seq[AmiUpdate] = {
     customQueryModifier(BaseQuery).
       optionalIn("ami_updates.id", ids).
+      equals("ami_updates.id", id).
       limit(limit).
       offset(offset).
       orderBy(orderBy.sql).
