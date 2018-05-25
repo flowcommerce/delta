@@ -52,7 +52,7 @@ class SnsMessageAmis @Inject()(
             ami.ECSAmis.foreach { amis =>
               logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${amis.Regions.usEast1.ImageId}")
 
-              dao.insert(Constants.SystemUser, AmiUpdateForm(
+              dao.upsertIfChangedById(Constants.SystemUser, AmiUpdateForm(
                 amis.Regions.usEast1.ImageId,
                 amis.Regions.usEast1.Name
               ))
