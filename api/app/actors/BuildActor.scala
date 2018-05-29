@@ -268,7 +268,6 @@ class BuildActor @javax.inject.Inject() (
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
     val latestAmi = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id
-    Logger.info(s"latest AMI is $latestAmi")
 
     // if `memory` passed in to .delta, use that (previously deprecated feature that could still be useful)
     // otherwise default to InstanceTypeDefaults.jvm
@@ -290,7 +289,7 @@ class BuildActor @javax.inject.Inject() (
       elbSecurityGroup = config.requiredString("aws.service.security.group"),
       elbCrossZoneLoadBalancing = crossZoneLoadBalancing,
       ec2KeyName = config.requiredString("aws.service.key"),
-      launchConfigImageId = config.requiredString("aws.launch.configuration.ami"),
+      launchConfigImageId = latestAmi,
       launchConfigIamInstanceProfile = config.requiredString("aws.launch.configuration.role"),
       serviceRole = config.requiredString("aws.service.role"),
       instanceType = instanceType,
