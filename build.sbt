@@ -36,8 +36,13 @@ lazy val api = project
   .aggregate(generated, lib)
   .enablePlugins(PlayScala)
   .enablePlugins(NewRelic)
+  .enablePlugins(JavaAppPackaging, JavaAgent)
   .settings(commonSettings: _*)
   .settings(
+    javaAgents += "org.aspectj" % "aspectjweaver" % "1.8.13",
+    javaOptions in Universal += "-Dorg.aspectj.tracing.factory=default",
+    javaOptions in Test += "-Dkamon.modules.kamon-system-metrics.auto-start=false",
+    javaOptions in Test += "-Dkamon.show-aspectj-missing-warning=no",
     routesImport += "io.flow.delta.v0.Bindables.Core._",
     routesImport += "io.flow.delta.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
@@ -52,7 +57,8 @@ lazy val api = project
       "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.2.1",
       "org.postgresql" % "postgresql" % "42.2.2",
-      "com.typesafe.play" %% "play-json-joda" % "2.6.9"
+      "com.typesafe.play" %% "play-json-joda" % "2.6.9",
+      "io.flow" %% "lib-play-graphite-play26" % "0.0.23"
     )
   )
 
