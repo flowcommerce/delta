@@ -5,9 +5,7 @@ import java.util.UUID
 import io.flow.common.v0.models.Name
 import io.flow.delta.v0.models.UserForm
 
-class UsersSpec extends MockClient {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+class UsersSpec extends MockClient with db.Helpers {
 
   lazy val user1 = createUser()
   lazy val user2 = createUser()

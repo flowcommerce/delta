@@ -2,9 +2,7 @@ package controllers
 
 import java.util.UUID
 
-class ProjectsSpec extends MockClient {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+class ProjectsSpec extends MockClient with db.Helpers {
 
   lazy val org = createOrganization()
   lazy val project1 = createProject(org)()

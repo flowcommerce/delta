@@ -5,8 +5,6 @@ import io.flow.test.utils.FlowPlaySpec
 
 class SetDesiredStateSpec extends FlowPlaySpec with db.Helpers {
 
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   "no-op if no tags" in {
     val build = upsertBuild()
     SetDesiredState.run(build).map(_ must be(SupervisorResult.Checkpoint("Project does not have any tags")))

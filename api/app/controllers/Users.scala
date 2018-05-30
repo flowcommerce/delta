@@ -11,18 +11,16 @@ import io.flow.play.util.Validation
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class Users @javax.inject.Inject() (
   usersDao: UsersDao,
   userIdentifiersDao: UserIdentifiersDao,
   usersWriteDao: UsersWriteDao,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends FlowController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   def get(
     id: Option[String],
     email: Option[String],

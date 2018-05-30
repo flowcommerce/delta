@@ -23,7 +23,8 @@ class DockerHubToken @javax.inject.Inject() (
   organizationsDao: OrganizationsDao,
   usersDao: UsersDao,
   variablesDao: VariablesDao,
-  wSClient: WSClient
+  wSClient: WSClient,
+  implicit val ec: ExecutionContext
 ) {
 
   private[this] val tokenKey = "DOCKER_JWT_TOKEN"
@@ -70,7 +71,6 @@ class DockerHubToken @javax.inject.Inject() (
     * Blocking call to create a new token
     */
   def generate(): String = {
-    import scala.concurrent.ExecutionContext.Implicits.global
     Try(
       Await.result(generateTokenFuture(), Duration(10, TimeUnit.SECONDS))
     ) match {

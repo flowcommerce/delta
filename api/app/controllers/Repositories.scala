@@ -11,7 +11,7 @@ import io.flow.play.util.Validation
 import play.api.libs.json._
 import play.api.mvc._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 @javax.inject.Singleton
 class Repositories @javax.inject.Inject() (
@@ -20,11 +20,9 @@ class Repositories @javax.inject.Inject() (
   organizationsDao: OrganizationsDao,
   projectsDao: ProjectsDao,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends BaseIdentifiedRestController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   def get(
     owner: Option[String] = None, // Ex: flowcommerce
     name: Option[String] = None,  // Ex: user

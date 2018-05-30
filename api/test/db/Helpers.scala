@@ -10,6 +10,9 @@ import io.flow.delta.v0.models._
 import io.flow.play.util.{Constants, Random}
 import io.flow.postgresql.Authorization
 import io.flow.test.utils.FlowPlaySpec
+import play.api.Application
+
+import scala.concurrent.ExecutionContext
 
 trait Helpers {
   self: FlowPlaySpec =>
@@ -17,6 +20,8 @@ trait Helpers {
   import scala.language.implicitConversions
 
   def injector = app.injector
+
+  implicit def ec(implicit app: Application): ExecutionContext = app.injector.instanceOf[ExecutionContext]
 
   lazy val database = init[play.api.db.Database]
 

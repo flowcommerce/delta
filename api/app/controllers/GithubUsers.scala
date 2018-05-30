@@ -10,15 +10,14 @@ import play.api.libs.json._
 import play.api.mvc._
 import io.flow.error.v0.models.json._
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 class GithubUsers @javax.inject.Inject() (
   val github: Github,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
+  implicit val ec: ExecutionContext
 ) extends FlowController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
 
   def postGithub() = Action.async(parse.json) { request =>
     request.body.validate[GithubAuthenticationForm] match {

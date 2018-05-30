@@ -8,8 +8,6 @@ import io.flow.test.utils.FlowPlaySpec
 import play.api.inject.BindingKey
 
 class DeployerSpec extends FlowPlaySpec with db.Helpers {
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   private val mainActor =  app.injector.instanceOf(BindingKey(classOf[ActorRef]).qualifiedWith("main-actor"))
 
   def last(build: Build): State = {

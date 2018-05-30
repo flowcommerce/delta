@@ -4,10 +4,7 @@ import io.flow.delta.api.lib.MockGithubData
 import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.github.v0.models.{OwnerType, User => GithubUser}
 
-class GithubUsersSpec extends MockClient {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
+class GithubUsersSpec extends MockClient with db.Helpers {
   def createLocalGithubUser(): GithubUser = {
     val login = createTestKey()
     GithubUser(

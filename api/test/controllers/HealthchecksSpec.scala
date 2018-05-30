@@ -4,9 +4,7 @@ import io.flow.healthcheck.v0.Client
 import io.flow.healthcheck.v0.models.Healthcheck
 import io.flow.test.utils.FlowPlaySpec
 
-class HealthchecksSpec extends FlowPlaySpec {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
+class HealthchecksSpec extends FlowPlaySpec with db.Helpers {
 
   lazy val client = new Client(wsClient, s"http://localhost:$port")
 

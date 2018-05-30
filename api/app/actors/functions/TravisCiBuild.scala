@@ -1,8 +1,8 @@
 package io.flow.delta.actors.functions
 
 import java.util.concurrent.TimeoutException
-import javax.inject.Inject
 
+import javax.inject.Inject
 import db._
 import io.flow.delta.actors.{BuildEventLog, DataBuild, DataProject}
 import io.flow.delta.api.lib.{BuildLockUtil, EventLogProcessor}
@@ -14,8 +14,7 @@ import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.Await
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, ExecutionContext}
 import scala.concurrent.duration._
 
 case class TravisCiBuild(
@@ -44,7 +43,8 @@ class TravisCiDockerImageBuilder @Inject()(
   config: Config,
   eventsDao: EventsDao,
   eventLogProcessor: EventLogProcessor,
-  wSClient: WSClient
+  wsClient: WSClient,
+  implicit val ec: ExecutionContext
 ) extends DataBuild with DataProject with BuildEventLog {
 
   def buildDockerImage(travisCiBuild: TravisCiBuild) {
@@ -203,7 +203,7 @@ class TravisCiDockerImageBuilder @Inject()(
       "https://api.travis-ci.com"
     }
 
-    new Client(wSClient, baseUrl, None, createRequestHeaders(travisCiBuild))
+    new Client(wsClient, baseUrl, None, createRequestHeaders(travisCiBuild))
   }
 
   private def travisRepositorySlug(travisCiBuild: TravisCiBuild): String = {

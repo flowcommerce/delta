@@ -1,8 +1,8 @@
 package controllers
 
 import java.io.ByteArrayInputStream
-import javax.inject.Inject
 
+import javax.inject.Inject
 import com.amazonaws.SdkClientException
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sns.message._
@@ -20,16 +20,15 @@ import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 class SnsMessageAmis @Inject()(
   val controllerComponents: ControllerComponents,
   dao: AmiUpdatesDao,
-  queue: Queue
+  queue: Queue,
+  implicit val ec: ExecutionContext
 ) extends BaseController {
-
-  import scala.concurrent.ExecutionContext.Implicits.global
-
   private val logger = Logger(getClass)
 
   private val emails = queue.producer[Email]()
