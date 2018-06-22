@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.6"
 
-val awsVersion = "1.11.349"
+val awsVersion = "1.11.353"
 
 lazy val generated = project
   .in(file("generated"))
@@ -48,8 +48,8 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.2.12",
-      "io.flow" %% "lib-event-play26" % "0.3.38",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.2.14",
+      "io.flow" %% "lib-event-play26" % "0.3.39",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
@@ -58,7 +58,7 @@ lazy val api = project
       "com.sendgrid" %  "sendgrid-java" % "4.2.1",
       "org.postgresql" % "postgresql" % "42.2.2",
       "com.typesafe.play" %% "play-json-joda" % "2.6.9",
-      "io.flow" %% "lib-play-graphite-play26" % "0.0.26"
+      "io.flow" %% "lib-play-graphite-play26" % "0.0.27"
     )
   )
 
@@ -94,8 +94,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.4.71",
-    "io.flow" %% "lib-test-utils" % "0.0.12" % Test
+    "io.flow" %% "lib-play-play26" % "0.4.73",
+    "io.flow" %% "lib-test-utils" % "0.0.13" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
