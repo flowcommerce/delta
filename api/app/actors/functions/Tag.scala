@@ -145,10 +145,11 @@ class Tag @Inject()(
             }
           }
         }
-      }.recover {
-        case e: Throwable => {
+      }.transform {
+        case scala.util.Success(a) => scala.util.Success(a)
+        case scala.util.Failure(e) => {
           play.api.Logger.warn(s"creating tag failed for name[$name] sha[$sha] project[$project] repo[$repo]", e)
-          Future.failed(e)
+          scala.util.Failure(e)
         }
       }
     }
