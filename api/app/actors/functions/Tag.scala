@@ -145,12 +145,9 @@ class Tag @Inject()(
             }
           }
         }
-      }.transform {
-        case scala.util.Success(a) => scala.util.Success(a)
-        case scala.util.Failure(e) => {
-          play.api.Logger.warn(s"creating tag failed for name[$name] sha[$sha] project[$project] repo[$repo]", e)
-          scala.util.Failure(e)
-        }
+      }.recoverWith { case throwable: Throwable =>
+        play.api.Logger.warn(s"creating tag failed for name[$name] sha[$sha] project[$project] repo[$repo]", throwable)
+        Future.failed(throwable)
       }
     }
   }
