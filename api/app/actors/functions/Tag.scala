@@ -145,6 +145,11 @@ class Tag @Inject()(
             }
           }
         }
+      }.recover {
+        case e: Throwable => {
+          play.api.Logger.warn(s"creating tag failed for name[$name] sha[$sha] project[$project] repo[$repo]", e)
+          Future.failed(e)
+        }
       }
     }
   }
