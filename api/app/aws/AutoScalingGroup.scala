@@ -156,6 +156,7 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withLoadBalancerNames(Seq(loadBalancerName).asJava)
           .withVPCZoneIdentifier(settings.asgSubnets.mkString(","))
           .withNewInstancesProtectedFromScaleIn(false)
+          .withHealthCheckType("EC2")
           .withHealthCheckGracePeriod(settings.asgHealthCheckGracePeriod)
           .withMinSize(settings.asgMinSize)
           .withMaxSize(settings.asgMaxSize)
