@@ -171,6 +171,8 @@ class TravisCiDockerImageBuilder @Inject()(
             "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
             s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
           )),
+          jobs = None,
+          stages = None,
           afterScript = Option(Seq("echo Delta: skipping after_script step")),
           afterSuccess = Option(Seq("echo Delta: skipping after_success step")),
           afterFailure = Option(Seq("echo Delta: skipping after_failure step")),
