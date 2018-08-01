@@ -15,6 +15,7 @@ import io.flow.email.v0.models.json._
 import io.flow.email.v0.models.AmiUpdateNotification
 import io.flow.event.v2.Queue
 import io.flow.play.util.Constants
+import io.flow.util.IdGenerator
 import org.joda.time.DateTime
 import play.api.Logger
 import play.api.libs.json.{JsError, JsSuccess, Json}
@@ -32,6 +33,8 @@ class SnsMessageAmis @Inject()(
   private val logger = Logger(getClass)
 
   private val emails = queue.producer[Email]()
+
+  private val idg = IdGenerator("evt")
 
   def post() = Action(parse.tolerantText) { request =>
 
@@ -57,9 +60,10 @@ class SnsMessageAmis @Inject()(
               ))
 
               emails.publish(AmiUpdateNotification(
+                eventId = idg.randomId(),
+                timestamp = new DateTime(),
                 amiName = amis.Regions.usEast1.Name,
                 amiId = amis.Regions.usEast1.ImageId,
-                timestamp = new DateTime()
               ))
             }
 
