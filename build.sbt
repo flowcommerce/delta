@@ -94,7 +94,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.4.92",
+    "io.flow" %% "lib-play-play26" % "0.5.0",
     "io.flow" %% "lib-test-utils" % "0.0.18" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
