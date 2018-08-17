@@ -17,6 +17,8 @@ class UrlsSpec extends PlaySpec with Factories {
     override def optionalList(name: String): Option[Seq[String]] = ???
 
     override def get(name: String): Option[String] = ???
+
+    override def optionalMap(name: String): Option[Map[String, Seq[String]]] = ???
   }
 
   private[this] lazy val urls = Urls(mockConfig)
