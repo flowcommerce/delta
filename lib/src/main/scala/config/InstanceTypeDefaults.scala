@@ -36,6 +36,12 @@ object InstanceTypeDefaults {
       case InstanceType.T2Medium => MemoryDefault(4000, 3500, 3000)
       case InstanceType.T2Large => MemoryDefault(8000, 7500, 6500)
 
+      case InstanceType.T3Micro => MemoryDefault(1000, 750, 675)
+      case InstanceType.T3Small => MemoryDefault(2000, 1500, 1350)
+      case InstanceType.T3Medium => MemoryDefault(4000, 3500, 3000)
+      case InstanceType.T3Large => MemoryDefault(8000, 7500, 6500)
+      case InstanceType.T3Xlarge => MemoryDefault(16000, 14000, 12000)
+
       case InstanceType.UNDEFINED(other) => {
         Logger.warn(s"Undefined instance type[$other]. Using default memory setting")
         MemoryDefault(1000, 750, 675) // default to similar to t2.micro

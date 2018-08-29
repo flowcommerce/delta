@@ -40,7 +40,12 @@
         { "name": "t2.micro" },
         { "name": "t2.small" },
         { "name": "t2.medium" },
-        { "name": "t2.large" }
+        { "name": "t2.large" },
+        { "name": "t3.micro" },
+        { "name": "t3.small" },
+        { "name": "t3.medium" },
+        { "name": "t3.large" },
+        { "name": "t3.xlarge" }
       ]
     },
 
