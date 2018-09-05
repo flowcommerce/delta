@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.6"
 
-val awsVersion = "1.11.393"
+val awsVersion = "1.11.401"
 
 lazy val generated = project
   .in(file("generated"))
@@ -26,7 +26,7 @@ lazy val lib = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % "1.21"
+      "org.yaml" % "snakeyaml" % "1.23"
     )
   )
 
@@ -48,17 +48,17 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.2.37",
-      "io.flow" %% "lib-event-play26" % "0.4.4",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.2.38",
+      "io.flow" %% "lib-event-play26" % "0.4.7",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.2.1",
-      "org.postgresql" % "postgresql" % "42.2.4",
+      "org.postgresql" % "postgresql" % "42.2.5",
       "com.typesafe.play" %% "play-json-joda" % "2.6.9",
-      "io.flow" %% "lib-play-graphite-play26" % "0.0.44"
+      "io.flow" %% "lib-play-graphite-play26" % "0.0.45"
     )
   )
 
@@ -78,7 +78,7 @@ lazy val www = project
       "org.webjars" %% "webjars-play" % "2.6.3",
       "org.webjars" % "bootstrap" % "3.3.7",
       "org.webjars.bower" % "bootstrap-social" % "5.1.1",
-      "org.webjars" % "font-awesome" % "5.2.0",
+      "org.webjars" % "font-awesome" % "5.3.1",
       "org.webjars" % "jquery" % "2.1.4"
     )
   )
@@ -94,7 +94,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.5.1",
+    "io.flow" %% "lib-play-play26" % "0.5.2",
     "io.flow" %% "lib-test-utils" % "0.0.18" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
