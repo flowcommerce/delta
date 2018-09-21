@@ -44,11 +44,3 @@ flow:
   rollbar:
     play_2_6_client:
     - generated/app/FlowRollbarV0Client.scala
-  permission:
-    play_2_x_json:
-    - generated/app/FlowPermissionV0Models.scala
-  healthcheck:
-    play_2_6_client:
-    - generated/app/FlowHealthcheckV0Client.scala
-    play_2_x_routes:
-    - api/conf/healthcheck.routes

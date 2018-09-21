@@ -1,7 +1,7 @@
 code:
   flow:
     common:
-      version: latest
+      version: 0.1.59
       generators:
         anorm_2_6_parsers: api/app/generated
         play_2_x_json: generated/app
@@ -45,12 +45,3 @@ code:
       version: latest
       generators:
         play_2_6_client: generated/app
-    permission:
-      version: latest
-      generators:
-        play_2_x_json: generated/app
-    healthcheck:
-      version: latest
-      generators:
-        play_2_6_client: generated/app
-        play_2_x_routes: api/conf/healthcheck.routes
