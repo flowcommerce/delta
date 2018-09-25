@@ -15,15 +15,16 @@ class UsersDao @javax.inject.Inject() (
   private[db] val SystemEmailAddress = "otto@flow.io"
   private[db] val AnonymousEmailAddress = "anonymous@flow.io"
 
-  lazy val systemUser = io.flow.play.util.Constants.SystemUser
+  lazy val systemUser = io.flow.util.Constants.SystemUser
 
-  lazy val anonymousUser = io.flow.play.util.Constants.AnonymousUser
+  lazy val anonymousUser = io.flow.util.Constants.AnonymousUser
 
   private[this] val BaseQuery = Query(s"""
     select users.id,
            users.email,
            users.first_name as name_first,
-           users.last_name as name_last
+           users.last_name as name_last,
+           users.status
       from users
   """)
 
