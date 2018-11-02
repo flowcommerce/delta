@@ -7,7 +7,7 @@ import io.flow.delta.actors.{ProjectSupervisorFunction, SupervisorResult}
 import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
 import io.flow.delta.v0.models.Project
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import play.api.Application
 

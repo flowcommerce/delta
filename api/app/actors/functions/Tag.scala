@@ -9,7 +9,7 @@ import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
 import io.flow.delta.lib.Semver
 import io.flow.delta.v0.models.Project
 import io.flow.github.v0.models.{RefForm, TagForm, Tagger}
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import org.joda.time.DateTime
 import play.api.Application

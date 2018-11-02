@@ -7,7 +7,7 @@ import akka.actor._
 import db.{BuildsDao, ItemsDao, ProjectsDao}
 import io.flow.delta.api.lib.StateDiff
 import io.flow.play.actors.{ErrorHandler, Scheduler}
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, Pager}
 import javax.inject.Named
 import play.api.libs.concurrent.InjectedActorSupport

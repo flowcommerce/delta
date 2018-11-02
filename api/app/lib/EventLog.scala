@@ -6,7 +6,7 @@ import javax.inject.Inject
 import db.EventsDao
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.EventType
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import org.joda.time.DateTime
 
 import scala.concurrent.{ExecutionContext, Future}

@@ -7,7 +7,7 @@ import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
 import io.flow.delta.config.v0.models.{BuildStage, ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm, Version}
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, OrderBy}
 import play.api.Application
 
