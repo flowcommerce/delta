@@ -8,7 +8,7 @@ import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.lib.{BuildNames, Semver}
 import io.flow.delta.v0.models.{Build, Docker, ImageForm}
 import io.flow.docker.registry.v0.Client
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import play.api.Application
 import play.api.libs.ws.WSClient

@@ -14,7 +14,7 @@ import io.flow.email.v0.models.Email
 import io.flow.email.v0.models.json._
 import io.flow.email.v0.models.AmiUpdateNotification
 import io.flow.event.v2.Queue
-import io.flow.play.util.Constants
+import io.flow.util.Constants
 import io.flow.util.IdGenerator
 import org.joda.time.DateTime
 import play.api.Logger
