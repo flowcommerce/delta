@@ -1,21 +1,25 @@
 <!--
-  ~ Copyright (C) 2009-2015 Typesafe Inc. <http://www.typesafe.com>
-  -->
-<!-- The default logback configuration that Play uses if no other configuration is provided -->
+    Logging configuration for production, outputing JSON
+    https://www.playframework.com/documentation/latest/SettingsLogger
+-->
 <configuration>
 
-    <conversionRule conversionWord="coloredLevel" converterClass="play.api.libs.logback.ColoredLevel" />
-
     <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-        <file>${application.home}/logs/application.log</file>
+        <file>${application.home:-.}/logs/application.log</file>
         <encoder>
-            <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSSXXX", UTC} [%level] from %logger in %thread - %message%n%xException</pattern>
+            <pattern>%date [%level] from %logger in %thread - %message %marker%n%xException</pattern>
         </encoder>
     </appender>
 
-    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-        <encoder>
-            <pattern>%date{"yyyy-MM-dd'T'HH:mm:ss.SSSXXX", UTC} %coloredLevel %logger{15} - %message%n%xException{1000}</pattern>
+    <appender name="JSON" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder">
+            <fieldNames>
+                <levelValue>[ignore]</levelValue>
+                <version>[ignore]</version>
+                <thread>[ignore]</thread>
+            </fieldNames>
+            <includeContext>false</includeContext>
+            <jsonFactoryDecorator class="io.flow.log.SerializePlayJson"/>
         </encoder>
     </appender>
 
@@ -24,19 +28,19 @@
     </appender>
 
     <appender name="ASYNCSTDOUT" class="ch.qos.logback.classic.AsyncAppender">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="JSON" />
     </appender>
 
     <logger name="play" level="INFO" />
     <logger name="application" level="DEBUG" />
 
-    <!-- Off these ones as they are annoying, and anyway we manage configuration ourself -->
+    <!-- Off these ones as they are annoying, and anyway we manage configuration ourselves -->
     <logger name="com.avaje.ebean.config.PropertyMapLoader" level="OFF" />
     <logger name="com.avaje.ebeaninternal.server.core.XmlConfigLoader" level="OFF" />
     <logger name="com.avaje.ebeaninternal.server.lib.BackgroundThread" level="OFF" />
     <logger name="com.gargoylesoftware.htmlunit.javascript" level="OFF" />
 
-    <root level="WARN">
+    <root level="INFO">
         <appender-ref ref="ASYNCFILE" />
         <appender-ref ref="ASYNCSTDOUT" />
     </root>
