@@ -32,7 +32,7 @@ code:
       version: latest
       generators:
         anorm_2_6_parsers: api/app/generated      
-        play_2_x_json: generated/app
+        play_2_6_client: generated/app
     travis-ci:
       version: latest
       generators:
