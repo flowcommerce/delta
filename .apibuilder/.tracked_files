@@ -33,8 +33,8 @@ flow:
     anorm_2_6_parsers:
     - api/app/generated/FlowDeltaConfigV0Conversions.scala
     - api/app/generated/FlowDeltaConfigV0Parsers.scala
-    play_2_x_json:
-    - generated/app/FlowDeltaConfigV0Models.scala
+    play_2_6_client:
+    - generated/app/FlowDeltaConfigV0Client.scala
   travis-ci:
     play_2_6_client:
     - generated/app/FlowTravisCiV0Client.scala
