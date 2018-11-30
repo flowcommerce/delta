@@ -6,7 +6,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.7"
 
-val awsVersion = "1.11.453"
+val awsVersion = "1.11.461"
 
 lazy val generated = project
   .in(file("generated"))
@@ -49,7 +49,7 @@ lazy val api = project
     libraryDependencies ++= Seq(
       jdbc,
       "io.flow" %% "lib-postgresql-play-play26" % "0.2.65",
-      "io.flow" %% "lib-event-play26" % "0.4.23",
+      "io.flow" %% "lib-event-play26" % "0.4.24",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
