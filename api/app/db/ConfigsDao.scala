@@ -94,23 +94,19 @@ class ConfigsDao @javax.inject.Inject() (
 
   def updateIfChanged(createdBy: UserReference, projectId: String, newConfig: Config) {
     val existing: Option[Config] = findByProjectId(Authorization.All, projectId).map(_.config)
-    Logger.info(s"upsertIfChanged[$projectId] existing: $existing")
-    Logger.info(s"upsertIfChanged[$projectId] newConfig: $newConfig")
 
     existing match {
       case None => {
-        Logger.info(s"upsertIfChanged[$projectId] Setting initial configuration")
         upsert(createdBy, projectId, newConfig)
       }
 
       case Some(ex) => {
         ex == newConfig match {
           case false => {
-            Logger.info(s"upsertIfChanged[$projectId] Updating configuration")
             upsert(createdBy, projectId, newConfig)
           }
           case true => {
-            Logger.info(s"upsertIfChanged[$projectId] No change in configuration")
+            // noop - no change
           }
         }
       }

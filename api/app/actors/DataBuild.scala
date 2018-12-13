@@ -3,10 +3,13 @@ package io.flow.delta.actors
 import db.BuildsDao
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.v0.models.{Build, Status}
+import io.flow.log.RollbarLogger
 import io.flow.postgresql.Authorization
 
 
 trait DataBuild extends DataProject {
+
+  val logger: RollbarLogger
 
   def buildsDao: BuildsDao
 
@@ -20,7 +23,7 @@ trait DataBuild extends DataProject {
     buildsDao.findById(Authorization.All, id) match {
       case None => {
         dataBuild = None
-        Logger.warn(s"Could not find build with id[$id]")
+        logger.withKeyValue("build_id", id).warn(s"Could not find build")
       }
       case Some(b) => {
         setProjectId(b.project.id)

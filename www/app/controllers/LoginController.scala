@@ -41,7 +41,6 @@ class LoginController @javax.inject.Inject() (
           u
         }
       }
-      Logger.info(s"Redirecting to url [$url]")
       Redirect(url).withIdentifiedCookieUser(UserReference(user.id.toString))
     }.recover {
       case response: io.flow.delta.v0.errors.GenericErrorResponse => {

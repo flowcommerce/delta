@@ -9,6 +9,7 @@ import io.flow.delta.api.lib.{BuildLockUtil, EventLogProcessor}
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Organization, Project, Visibility, EventType => DeltaEventType}
+import io.flow.log.RollbarLogger
 import io.flow.play.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
@@ -44,6 +45,7 @@ class TravisCiDockerImageBuilder @Inject()(
   eventsDao: EventsDao,
   eventLogProcessor: EventLogProcessor,
   wsClient: WSClient,
+  override val logger: RollbarLogger,
   implicit val ec: ExecutionContext
 ) extends DataBuild with DataProject with BuildEventLog {
 

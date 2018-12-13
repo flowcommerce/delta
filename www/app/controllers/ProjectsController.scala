@@ -155,8 +155,7 @@ class ProjectsController @javax.inject.Inject() (
                 }
 
                 case ConfigUndefinedType(other) => Future {
-                  Logger.warn(s"$owner/$repo returned ConfigUndefinedType[$other]")
-                  Redirect(routes.ProjectsController.githubOrg(orgId)).flashing("warning" -> s"Unknown error parsing .delta config file")
+                  Redirect(routes.ProjectsController.githubOrg(orgId)).flashing("warning" -> s"Unknown error parsing .delta config file. Undefined config type[$other]")
                 }
 
                 case c: ConfigProject => {

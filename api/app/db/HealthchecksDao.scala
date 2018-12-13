@@ -1,14 +1,15 @@
 package db
 
 import anorm._
-
+import io.flow.log.RollbarLogger
 import play.api.db._
 
 import scala.util.{Failure, Success, Try}
 
 @javax.inject.Singleton
 class HealthchecksDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  @NamedDatabase("default") db: Database,
+  logger: RollbarLogger
 ) {
 
   private[this] val Query = "select 1 as num"
@@ -23,7 +24,7 @@ class HealthchecksDao @javax.inject.Inject() (
     } match {
       case Success(_) => true
       case Failure(ex) => {
-        Logger.error(s"DB healthcheck query failed", ex)
+        logger.error("DB healthcheck query failed", ex)
         false
       }
     }

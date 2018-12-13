@@ -4,10 +4,15 @@ import db.{ConfigsDao, OrganizationsDao, ProjectsDao}
 import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.v0.models.{Organization, Project}
+import io.flow.delta.v0.models.json._
+import io.flow.log.RollbarLogger
 import io.flow.postgresql.Authorization
+import play.api.libs.json.Json
 
 
 trait DataProject {
+
+  val logger: RollbarLogger
 
   def configsDao: ConfigsDao
   def organizationsDao: OrganizationsDao
@@ -22,7 +27,7 @@ trait DataProject {
   def setProjectId(id: String) {
     dataProject = projectsDao.findById(Authorization.All, id)
     if (dataProject.isEmpty) {
-      Logger.warn(s"Could not find project with id[$id]")
+      logger.withKeyValue("project_id", id).warn(s"Could not find project")
     }
   }
 
@@ -54,7 +59,7 @@ trait DataProject {
     dataProject.flatMap { project =>
       configsDao.findByProjectId(Authorization.All, project.id).map(_.config) match {
         case None => {
-          Logger.info(s"Project[${project.id}] does not have a configuration")
+          logger.withKeyValue("project_id", project.id).info(s"Project does not have a configuration")
           None
         }
 
@@ -63,7 +68,7 @@ trait DataProject {
             Some(f(c))
           }
           case ConfigError(_) | ConfigUndefinedType(_) => {
-            Logger.info(s"Project[${project.id}] has an erroneous configuration")
+            logger.withKeyValue("project_id", project.id).info(s"Project has an erroneous configuration")
             None
           }
         }
@@ -80,7 +85,7 @@ trait DataProject {
     dataProject.flatMap { project =>
       GithubUtil.parseUri(project.uri) match {
         case Left(error) => {
-          Logger.warn(s"Cannot parse repo from project id[${project.id}] uri[${project.uri}]: $error")
+          logger.withKeyValue("project", Json.toJson(project)).withKeyValue("error", error).warn(s"Cannot parse repo from project")
           None
         }
         case Right(repo) => {

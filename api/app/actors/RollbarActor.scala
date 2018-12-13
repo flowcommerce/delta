@@ -3,13 +3,13 @@ package actors
 import akka.actor.{Actor, ActorSystem}
 import db.{BuildsDao, TagsDao}
 import io.flow.delta.api.lib.StateDiff
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.{ErrorHandler, Scheduler}
 import io.flow.play.util.{Config, FlowEnvironment}
 import io.flow.postgresql.Authorization
 import io.flow.rollbar.v0.models.Deploy
 import io.flow.rollbar.v0.{Client => Rollbar}
 import javax.inject.{Inject, Singleton}
-
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
@@ -32,6 +32,7 @@ class RollbarActor @Inject()(
   system: ActorSystem,
   buildsDao: BuildsDao,
   tagsDao: TagsDao,
+  logger: RollbarLogger,
   val config: Config
 ) extends Actor with ErrorHandler with Scheduler {
 
@@ -39,12 +40,10 @@ class RollbarActor @Inject()(
 
   private val rollbar = new Rollbar(ws)
 
-  private val logger = Logger(getClass)
-
   private val ConfigName = "rollbar.access_token"
   private val accessToken = config.optionalString(ConfigName)
   if (accessToken.isEmpty) {
-    Logger.info(s"[RollbarActor] disable as configuration param[$ConfigName] not found")
+    logger.fingerprint("RollbarActor").withKeyValue("config", ConfigName).info(s"[RollbarActor] disable as configuration not found")
   }
 
   private case class Project(name: String, id: Int, postAccessKey: String)
@@ -67,7 +66,7 @@ class RollbarActor @Inject()(
               case Some(diff) =>
 
                 // log to determine whether we should only post when lastInstances == 0
-                logger.warn(s"got deploy for ${build.project.id}, diffs = ${diffs.mkString(", ")}")
+                logger.fingerprint("RollbarActor").withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).withKeyValue("diffs", diffs.map(_.toString)).warn(s"got deploy")
 
                 if (diff.desiredInstances > diff.lastInstances) { // scale up
                   tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
@@ -84,7 +83,7 @@ class RollbarActor @Inject()(
                           case Failure(e) => logger.error(s"failed to post deploy $msg", e)
                         }
                       } else {
-                        logger.warn(s"no project or access key for `${build.project.id}' exist in rollbar")
+                        logger.fingerprint("RollbarActor").withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).warn(s"no project or access key for project exist in rollbar")
                       }
                   }
                 }

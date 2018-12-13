@@ -9,10 +9,10 @@ import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models._
 import io.flow.docker.registry.v0.Client
 import io.flow.docker.registry.v0.models.{BuildForm => DockerBuildForm, BuildTag => DockerBuildTag}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import org.joda.time.DateTime
-
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await
@@ -57,7 +57,8 @@ class DockerHubActor @javax.inject.Inject() (
   syncDockerImages: SyncDockerImages,
   system: ActorSystem,
   travisCiDockerImageBuilder: TravisCiDockerImageBuilder,
-  wSClient: WSClient
+  wSClient: WSClient,
+  override val logger: RollbarLogger
 ) extends Actor with ErrorHandler with DataBuild with DataProject with BuildEventLog {
 
   private[this] implicit val ec = system.dispatchers.lookup("dockerhub-actor-context")
@@ -155,7 +156,7 @@ class DockerHubActor @javax.inject.Inject() (
 
     val vcsRepoName = io.flow.delta.api.lib.GithubUtil.parseUri(scmsUri) match {
       case Left(errors) => {
-        Logger.warn(s"Error parsing VCS URI[$scmsUri]. defaulting vcsRepoName to[$fullName]: ${errors.mkString(", ")}")
+        logger.withKeyValue("scms_uri", scmsUri).withKeyValue("full_name", fullName).withKeyValue("errors", errors).warn(s"Error parsing VCS URI. defaulting vcsRepoName to full name")
         fullName
       }
       case Right(repo) => {

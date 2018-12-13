@@ -8,7 +8,7 @@ import com.amazonaws.services.ec2.{AmazonEC2, AmazonEC2ClientBuilder}
 import com.amazonaws.services.autoscaling.{AmazonAutoScaling, AmazonAutoScalingClientBuilder}
 import com.amazonaws.services.autoscaling.model._
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest
-
+import io.flow.log.RollbarLogger
 import sun.misc.BASE64Encoder
 
 import collection.JavaConverters._
@@ -17,7 +17,8 @@ import collection.JavaConverters._
 class AutoScalingGroup @javax.inject.Inject() (
   config: Config,
   credentials: Credentials,
-  configuration: Configuration
+  configuration: Configuration,
+  logger: RollbarLogger
 ) {
 
   private[this] lazy val dockerHubToken = config.requiredString("dockerhub.delta.auth.token")
@@ -74,7 +75,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     val name = getLaunchConfigurationName(settings, id)
 
     try {
-      Logger.info(s"AWS AutoScalingGroup createLaunchConfiguration id[$id]")
+      logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).info(s"AWS AutoScalingGroup createLaunchConfiguration")
       client.createLaunchConfiguration(
         new CreateLaunchConfigurationRequest()
           .withLaunchConfigurationName(name)
@@ -96,7 +97,7 @@ class AutoScalingGroup @javax.inject.Inject() (
 
   def deleteAutoScalingGroup(id: String): String = {
     val name = getAutoScalingGroupName(id)
-    Logger.info(s"AWS delete ASG projectId[$id]")
+    logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).info(s"AWS delete ASG")
 
     try {
       client.deleteAutoScalingGroup(
@@ -105,7 +106,7 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withForceDelete(true)
       )
     } catch {
-      case e: Throwable => Logger.error(s"Error deleting autoscaling group $name - Error: ${e.getMessage}")
+      case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).withKeyValue("name", name).error(s"Error deleting autoscaling group", e)
     }
 
     name
@@ -113,12 +114,12 @@ class AutoScalingGroup @javax.inject.Inject() (
 
   def deleteLaunchConfiguration(settings: Settings, id: String): String = {
     val name = getLaunchConfigurationName(settings, id)
-    Logger.info(s"AWS delete launch config projectId[$id]")
+    logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).withKeyValue("name", name).info(s"AWS delete launch config")
 
     try {
       client.deleteLaunchConfiguration(new DeleteLaunchConfigurationRequest().withLaunchConfigurationName(name))
     } catch {
-      case e: Throwable => Logger.error(s"Error deleting launch configuration $name - Error: ${e.getMessage}")
+      case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).withKeyValue("name", name).error(s"Error deleting launch configuration", e)
     }
 
     name
@@ -148,7 +149,7 @@ class AutoScalingGroup @javax.inject.Inject() (
 
   def createAutoScalingGroup(settings: Settings, name: String, launchConfigName: String, loadBalancerName: String) {
     try {
-      Logger.info(s"AWS AutoScalingGroup createAutoScalingGroup $name")
+      logger.fingerprint("AutoScalingGroup").withKeyValue("launchConfigName", launchConfigName).withKeyValue("name", name).info(s"AWS AutoScalingGroup createAutoScalingGroup")
       client.createAutoScalingGroup(
         new CreateAutoScalingGroupRequest()
           .withAutoScalingGroupName(name)
@@ -182,7 +183,7 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withNotificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
       )
     } catch {
-      case e: Throwable => Logger.error(s"Error creating autoscaling group $name with launch config $launchConfigName and load balancer $loadBalancerName. Error: ${e.getMessage}")
+      case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("launchConfigName", launchConfigName).withKeyValue("name", name).error(s"Error creating autoscaling group", e)
     }
   }
 
@@ -196,7 +197,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     try {
       updateGroupLaunchConfiguration(name, newlaunchConfigName)
     } catch {
-      case e: Throwable => Logger.error(s"FlowError Error updating autoscaling group $name with launch config $newlaunchConfigName. Error: ${e.getMessage}")
+      case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("newlaunchConfigName", newlaunchConfigName).withKeyValue("oldLaunchConfigurationName", oldLaunchConfigurationName).withKeyValue("name", name).error(s"FlowError Error updating autoscaling group")
     }
   }
 

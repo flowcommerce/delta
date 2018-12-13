@@ -14,10 +14,10 @@ import io.flow.email.v0.models.Email
 import io.flow.email.v0.models.json._
 import io.flow.email.v0.models.AmiUpdateNotification
 import io.flow.event.v2.Queue
+import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.util.IdGenerator
 import org.joda.time.DateTime
-
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 
@@ -28,21 +28,18 @@ class SnsMessageAmis @Inject()(
   val controllerComponents: ControllerComponents,
   dao: AmiUpdatesDao,
   queue: Queue,
+  logger: RollbarLogger,
   implicit val ec: ExecutionContext
 ) extends BaseController {
-  private val logger = Logger(getClass)
 
   private val emails = queue.producer[Email]()
 
   private val idg = IdGenerator("evt")
 
   def post() = Action(parse.tolerantText) { request =>
-
-    logger.info(s"SNS handler received: ${request.body}")
+    logger.withKeyValue("request", request.body).info(s"AMI update - got message")
 
     val manager = new SnsMessageManager(Regions.US_EAST_1.getName)
-
-    logger.info(s"AMI update - got message: ${request.body}")
 
     // the SDK will verify that the message is signed by AWS
     manager.handleMessage(new ByteArrayInputStream(request.body.getBytes), new SnsMessageHandler {
@@ -52,7 +49,7 @@ class SnsMessageAmis @Inject()(
           case JsSuccess(ami, _) =>
 
             ami.ECSAmis.foreach { amis =>
-              logger.info(s"Latest ECS-optimized AMI for us-east-1 is ${amis.Regions.usEast1.ImageId}")
+              logger.withKeyValue("image_id", amis.Regions.usEast1.ImageId).info(s"Latest ECS-optimized AMI for us-east-1")
 
               dao.upsertIfChangedById(Constants.SystemUser, AmiUpdateForm(
                 amis.Regions.usEast1.ImageId,
@@ -68,8 +65,7 @@ class SnsMessageAmis @Inject()(
             }
 
           case JsError(errors) =>
-
-            logger.error(s"FlowError: Invalid message received: body=${request.body}\nparsed message=${message}\nerrors=$errors")
+            logger.withKeyValue("request_body", request.body).withKeyValue("message", message.getMessage).withKeyValue("errors", errors.mkString(",")).error(s"FlowError: Invalid message received")
         }
 
       }
@@ -87,7 +83,7 @@ class SnsMessageAmis @Inject()(
       }
 
       override def handle(message: SnsUnsubscribeConfirmation): Unit = {
-        logger.info(s"Unsubscribed from ${message.getTopicArn}")
+        logger.withKeyValue("topic", message.getTopicArn).info(s"Unsubscribed from topic")
       }
 
       override def handle(message: SnsUnknownMessage): Unit = {}

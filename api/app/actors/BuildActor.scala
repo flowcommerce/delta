@@ -9,10 +9,10 @@ import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.lib.config.InstanceTypeDefaults
 import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
 import io.flow.delta.v0.models.{Build, Docker, StateForm}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import io.flow.postgresql.OrderBy
-
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -62,6 +62,7 @@ class BuildActor @javax.inject.Inject() (
   eventLogProcessor: EventLogProcessor,
   usersDao: UsersDao,
   system: ActorSystem,
+  override val logger: RollbarLogger,
   @com.google.inject.assistedinject.Assisted buildId: String
 ) extends Actor with ErrorHandler with DataBuild with DataProject with BuildEventLog {
 
@@ -87,7 +88,7 @@ class BuildActor @javax.inject.Inject() (
     case msg @ BuildActor.Messages.Delete => withErrorHandler(msg) {
       withBuild { build =>
         //removeAwsResources(build)
-        Logger.info(s"Called BuildActor.Messages.Delete for build id - ${build.id}, name - ${build.name}")
+        logger.withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Called BuildActor.Messages.Delete for build")
       }
     }
 
@@ -150,7 +151,7 @@ class BuildActor @javax.inject.Inject() (
         elb <- deleteLoadBalancer(build)
         lc <- deleteLaunchConfiguration(build)
       } yield {
-        Logger.info(s"Deleted cluster $cluster, autoscaling group $asg, elb $elb, launch config $lc")
+        logger.withKeyValue("lc", lc).withKeyValue("elb", elb).withKeyValue("cluster", cluster).withKeyValue("asg", asg).withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Deleted AWS resources")
       }
     }
   }
@@ -219,9 +220,6 @@ class BuildActor @javax.inject.Inject() (
     if (diff.lastInstances == 0) {
       self ! BuildActor.Messages.ConfigureAWS
       val instances = diff.desiredInstances - diff.lastInstances
-
-      Logger.info(s"DeltaDebug project $projectName, scale up ${diff.desiredInstances} of ${diff.versionName}")
-
       eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log(build.project.id)) {
         ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
       }
@@ -229,7 +227,6 @@ class BuildActor @javax.inject.Inject() (
   }
 
   def captureLastState(build: Build): Future[String] = {
-    Logger.info(s"BuildActor[$buildId] captureLastState this.id[$this]")
     ecs.getClusterInfo(BuildNames.projectName(build)).map { versions =>
       buildLastStatesDao.upsert(
         usersDao.systemUser,

@@ -7,10 +7,10 @@ import db.{OrganizationsDao, UsersDao, VariablesDao}
 import io.flow.delta.v0.models.VariableForm
 import io.flow.docker.hub.v0.Client
 import io.flow.docker.hub.v0.models.{Jwt, JwtForm}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import io.flow.postgresql.Authorization
-
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.duration.Duration
@@ -24,6 +24,7 @@ class DockerHubToken @javax.inject.Inject() (
   usersDao: UsersDao,
   variablesDao: VariablesDao,
   wSClient: WSClient,
+  logger: RollbarLogger,
   implicit val ec: ExecutionContext
 ) {
 
@@ -88,13 +89,13 @@ class DockerHubToken @javax.inject.Inject() (
       generateTokenFuture.map { jwt =>
         val form = VariableForm(organization.id, tokenKey, jwt.token)
         variablesDao.upsert(Authorization.All, usersDao.systemUser, form) match {
-          case Left(errors) => Logger.error(s"Error refreshing docker hub JWT token: $errors")
+          case Left(errors) => logger.withKeyValue("errors", errors).error(s"Error refreshing docker hub JWT token")
           case Right(variable) => {
             orgTokenMap += (organization.id -> variable.value)
           }
         }
       }.recover {
-        case ex: Throwable => Logger.error(s"Error refreshing docker hub JWT token: ${ex.getMessage}")
+        case ex: Throwable => logger.error(s"Error refreshing docker hub JWT token", ex)
       }
     }
   }
