@@ -7,10 +7,10 @@ import io.flow.delta.api.lib.{GitHubHelper, Github, Repo}
 import io.flow.delta.lib.config.{Defaults, Parser}
 import io.flow.delta.v0.models.Project
 import io.flow.github.v0.models.{HookConfig, HookEvent, HookForm}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.{Config, Constants}
 import io.flow.postgresql.Authorization
-import play.api.Logger
 
 import scala.concurrent.duration._
 
@@ -44,6 +44,7 @@ class ProjectActor @javax.inject.Inject() (
   parser: Parser,
   gitHubHelper: GitHubHelper,
   eventsDao: EventsDao,
+  override val logger: RollbarLogger,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
   @com.google.inject.assistedinject.Assisted projectId: String
 ) extends Actor with ErrorHandler with DataBuild with DataProject with EventLog {
@@ -115,7 +116,7 @@ class ProjectActor @javax.inject.Inject() (
   private[this] def createHooks(project: Project, repo: Repo) {
     gitHubHelper.apiClientFromUser(project.user.id) match {
       case None => {
-        Logger.warn(s"Could not create github client for user[${project.user.id}]")
+        logger.withKeyValue("user_id", project.user.id).withKeyValue("project", project.id).warn(s"Could not create github client for user[${project.user.id}]")
       }
       case Some(client) => {
         client.hooks.get(repo.owner, repo.project).map { hooks =>
@@ -140,10 +141,10 @@ class ProjectActor @javax.inject.Inject() (
                 )
               )
             }.map { hook =>
-              Logger.info("Created githib webhook for project[${project.id}]: $hook")
+              logger.withKeyValue("user_id", project.user.id).withKeyValue("project", project.id).withKeyValue("hook", hook.name).info("Created githib webhook for project")
             }.recover {
               case e: Throwable => {
-                Logger.error("Project[${project.id}] Error creating hook: " + e)
+                logger.withKeyValue("user_id", project.user.id).withKeyValue("project", project.id).error("Error creating hook", e)
               }
             }
           }

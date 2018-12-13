@@ -6,7 +6,7 @@ import io.flow.delta.v0.models._
 import io.flow.delta.www.lib.DeltaClientProvider
 import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
-import play.api.Logger
+
 import play.api.data.Forms._
 import play.api.data._
 import play.api.i18n.MessagesApi
@@ -155,8 +155,7 @@ class ProjectsController @javax.inject.Inject() (
                 }
 
                 case ConfigUndefinedType(other) => Future {
-                  Logger.warn(s"$owner/$repo returned ConfigUndefinedType[$other]")
-                  Redirect(routes.ProjectsController.githubOrg(orgId)).flashing("warning" -> s"Unknown error parsing .delta config file")
+                  Redirect(routes.ProjectsController.githubOrg(orgId)).flashing("warning" -> s"Unknown error parsing .delta config file. Undefined config type[$other]")
                 }
 
                 case c: ConfigProject => {

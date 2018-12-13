@@ -1,7 +1,7 @@
 package io.flow.delta.lib.config
 
 import io.flow.delta.config.v0.models.InstanceType
-import play.api.Logger
+
 
 case class MemoryDefault(
   instance: Int,  // actual memory of the instance type, per aws
@@ -42,10 +42,8 @@ object InstanceTypeDefaults {
       case InstanceType.T3Large => MemoryDefault(8000, 7500, 6500)
       case InstanceType.T3Xlarge => MemoryDefault(16000, 14000, 12000)
 
-      case InstanceType.UNDEFINED(other) => {
-        Logger.warn(s"Undefined instance type[$other]. Using default memory setting")
-        MemoryDefault(1000, 750, 675) // default to similar to t2.micro
-      }
+      // default to similar to t2.micro
+      case InstanceType.UNDEFINED(other) => MemoryDefault(1000, 750, 675)
     }
   }
 

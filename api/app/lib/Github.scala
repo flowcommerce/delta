@@ -1,7 +1,6 @@
 package io.flow.delta.api.lib
 
 import javax.inject.Inject
-
 import db._
 import io.flow.common.v0.models.{Name, User, UserReference}
 import io.flow.delta.v0.models.{GithubUserForm, UserForm}
@@ -10,9 +9,9 @@ import io.flow.github.oauth.v0.{Client => GithubOauthClient}
 import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding, Repository => GithubRepository, User => GithubUser}
 import io.flow.github.v0.{Client => GithubClient}
+import io.flow.log.RollbarLogger
 import io.flow.play.util.{Config, IdGenerator}
 import org.apache.commons.codec.binary.Base64
-import play.api.Logger
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -29,7 +28,8 @@ case class GithubUserData(
 class GitHubHelper @javax.inject.Inject() (
   tokensDao: TokensDao,
   usersDao: UsersDao,
-  wsClient: WSClient
+  wsClient: WSClient,
+  logger: RollbarLogger
 ) {
 
 
@@ -41,7 +41,7 @@ class GitHubHelper @javax.inject.Inject() (
       tokensDao.getCleartextGithubOauthTokenByUserId(u.id)
     } match {
       case None => {
-        Logger.warn(s"No oauth token for user[${userId}]")
+        logger.withKeyValue("user", userId).warn(s"No Github oauth token for user")
         None
       }
       case Some(token) => {

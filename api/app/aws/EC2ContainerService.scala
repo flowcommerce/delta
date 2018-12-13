@@ -6,8 +6,8 @@ import com.amazonaws.services.ec2.AmazonEC2ClientBuilder
 import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
 import io.flow.delta.v0.models.Version
+import io.flow.log.RollbarLogger
 import org.joda.time.DateTime
-import play.api.Logger
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
@@ -28,7 +28,8 @@ case class EC2ContainerService @javax.inject.Inject() (
   credentials: Credentials,
   configuration: Configuration,
   elb: ElasticLoadBalancer,
-  system: ActorSystem
+  system: ActorSystem,
+  logger: RollbarLogger
 ) {
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
@@ -71,17 +72,17 @@ case class EC2ContainerService @javax.inject.Inject() (
   def ensureContainerAgentHealth(projectId: String): Future[Unit] = {
     Future {
       val cluster = EC2ContainerService.getClusterName(projectId)
-      Logger.info(s"ensureContainerAgentHealth for lunch $cluster")
+      logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"ensureContainerAgentHealth for cluster")
       try {
         val containerInstanceArns = client.listContainerInstances(new ListContainerInstancesRequest().withCluster(cluster)).getContainerInstanceArns
         val result = client.describeContainerInstances(new DescribeContainerInstancesRequest().withCluster(cluster).withContainerInstances(containerInstanceArns))
         val badEc2Instances = result.getContainerInstances.asScala.filter(_.getAgentConnected == false).map(_.getEc2InstanceId)
         if (badEc2Instances.nonEmpty) {
           //ec2Client.terminateInstances(new TerminateInstancesRequest().withInstanceIds(badEc2Instances.asJava))
-          Logger.info(s"FlowDeltaError - ensureContainerAgentHealth cluster $cluster ec2 instances [${badEc2Instances.mkString(",")}] are unhealthy - please take a look")
+          logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).withKeyValue("instances", badEc2Instances).info(s"FlowDeltaError - ensureContainerAgentHealth cluster are unhealthy - please take a look")
         }
       } catch {
-        case e: Throwable => Logger.error(s"Failed ensureContainerAgentHealth cluster [$cluster] - Error: ${e.getMessage}")
+        case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).error(s"Failed ensureContainerAgentHealth", e)
       }
     }
   }
@@ -93,7 +94,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     Future {
       try {
         val cluster = EC2ContainerService.getClusterName(projectId)
-        Logger.info(s"AWS EC2ContainerService listServices projectId[$projectId]")
+        logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService listServices")
 
         val serviceArns = getServiceArns(cluster)
         serviceArns match {
@@ -110,7 +111,7 @@ case class EC2ContainerService @javax.inject.Inject() (
                   val oneDayAgo = new DateTime().minusDays(1)
 
                   if (service.getDesiredCount == 0 && service.getRunningCount == 0 && eventDateTime.isBefore(oneDayAgo)) {
-                    Logger.info(s"AWS EC2ContainerService deleteService projectId[$projectId], service: ${service.getServiceName}")
+                    logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).withKeyValue("service",service.getServiceName).info(s"AWS EC2ContainerService deleteService")
                     client.deleteService(new DeleteServiceRequest().withCluster(cluster).withService(service.getServiceName))
                   }
                 }
@@ -130,7 +131,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         val cluster = EC2ContainerService.getClusterName(projectId)
 
         // find all the container instances for this cluster
-        Logger.info(s"AWS EC2ContainerService listContainerInstances projectId[$projectId]")
+        logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService listContainerInstances")
         val containerInstanceArns = client.listContainerInstances(
           new ListContainerInstancesRequest()
           .withCluster(cluster)
@@ -138,7 +139,7 @@ case class EC2ContainerService @javax.inject.Inject() (
 
         // call update for each container instance
         containerInstanceArns.map{ containerInstanceArn =>
-          Logger.info(s"AWS EC2ContainerService updateContainerAgent projectId[$projectId]")
+          logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService updateContainerAgent")
           val result = client.updateContainerAgent(
             new UpdateContainerAgentRequest()
             .withCluster(cluster)
@@ -157,24 +158,24 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   def deleteCluster(projectId: String): String = {
     val name = EC2ContainerService.getClusterName(projectId)
-    Logger.info(s"AWS EC2ContainerService deleteCluster projectId[$projectId]")
+    logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).info(s"AWS EC2ContainerService deleteCluster")
 
     try {
       client.deleteCluster(new DeleteClusterRequest().withCluster(name))
     } catch {
-      case e: Throwable => Logger.error(s"Error deleting cluster $name - Error ${e.getMessage}")
+      case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).error(s"Error deleting cluster", e)
     }
     name
   }
 
   def createCluster(projectId: String): String = {
     val name = EC2ContainerService.getClusterName(projectId)
-    Logger.info(s"AWS EC2ContainerService createCluster projectId[$projectId]")
+    logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).info(s"AWS EC2ContainerService createCluster")
 
     try {
       client.createCluster(new CreateClusterRequest().withClusterName(name))
     } catch {
-      case e: Throwable => Logger.error(s"Error creating cluster $name - Error ${e.getMessage}")
+      case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).error(s"Error creating cluster", e)
     }
 
     name
@@ -262,8 +263,6 @@ case class EC2ContainerService @javax.inject.Inject() (
             }
           }
 
-          Logger.info(s"DeltaDebug projectId: ${projectId}, versions: ${versions}")
-
           versions
         }
       }
@@ -276,7 +275,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     var nextToken: String = null // null nextToken gets the first page
 
     while (hasMore) {
-      Logger.info(s"AWS EC2ContainerService listServices cluster[$cluster] nextToken[$nextToken]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("next_token", nextToken).info(s"AWS EC2ContainerService listServices")
       var result = client.listServices(
         new ListServicesRequest()
           .withCluster(cluster)
@@ -304,7 +303,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     var servicesToDescribe = serviceNames.take(batchSize)
 
     while (!servicesToDescribe.isEmpty) {
-      Logger.info(s"AWS EC2ContainerService getServicesInfo cluster[$cluster], services[${servicesToDescribe.mkString(", ")}]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("services", servicesToDescribe).info(s"AWS EC2ContainerService getServicesInfo")
       services += client.describeServices(
         new DescribeServicesRequest().withCluster(cluster).withServices(servicesToDescribe.asJava)
       ).getServices().asScala.toList
@@ -325,7 +324,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     val taskName = getTaskName(imageName, imageVersion)
     val containerName = getContainerName(imageName, imageVersion, settings)
 
-    Logger.info(s"AWS EC2ContainerService registerTaskDefinition projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
+    logger.fingerprint(this.getClass.getName).withKeyValue("task",taskName).withKeyValue("container",containerName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService registerTaskDefinition")
 
     // bin/[service]-[api|www] script generated by "sbt stage" uses this when passed to JAVA_OPTS below
     val jvmMemorySetting = s"-Xms${settings.jvmMemory}m -Xmx${settings.jvmMemory}m -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/opt"
@@ -380,7 +379,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     val serviceName = getServiceName(imageName, imageVersion, settings)
 
     Future {
-      Logger.info(s"AWS EC2ContainerService describeTasks projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeTasks")
       val taskArns = client.listTasks(
         new ListTasksRequest().withCluster(clusterName).withServiceName(serviceName)
       ).getTaskArns
@@ -389,7 +388,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         new DescribeTasksRequest().withCluster(clusterName).withTasks(taskArns)
       ).getTasks.asScala.map(_.getContainerInstanceArn).asJava
 
-      Logger.info(s"AWS EC2ContainerService describeContainerInstances projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeContainerInstances")
       client.describeContainerInstances(
         new DescribeContainerInstancesRequest()
         .withCluster(clusterName)
@@ -413,9 +412,9 @@ case class EC2ContainerService @javax.inject.Inject() (
       val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
 
       // allows ECS to deploy new task definitions
-      val (serviceDesiredCount,minimumHealthyPercent) = (desiredCount.toInt, 50) 
+      val (serviceDesiredCount,minimumHealthyPercent) = (desiredCount.toInt, 50)
 
-      Logger.info(s"AWS EC2ContainerService describeServices projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeServices")
       val resp = client.describeServices(
         new DescribeServicesRequest()
           .withCluster(clusterName)
@@ -426,7 +425,7 @@ case class EC2ContainerService @javax.inject.Inject() (
           (!resp.getServices().isEmpty() && resp.getServices().get(0).getStatus() == "INACTIVE")) {
         // If there are failures (because the service doesn't exist)
         // or the service exists but is INACTIVE, then create the service
-        Logger.info(s"AWS EC2ContainerService createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")
+        logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService createOrUpdateService")
         client.createService(
           // MaximumPercent is set to 200 to allow services with only 1 
           // instance to be deployed with ECS.
@@ -453,7 +452,7 @@ case class EC2ContainerService @javax.inject.Inject() (
 
       } else {
         // Service exists in cluster, update service task definition
-        Logger.info(s"AWS EC2ContainerService 1.1 createOrUpdateService projectId[$projectId] imageName[$imageName] imageVersion[$imageVersion]")        
+        logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService 1.1 createOrUpdateService")
         client.updateService(
           new UpdateServiceRequest()
             .withCluster(clusterName)

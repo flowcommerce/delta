@@ -1,7 +1,6 @@
 package io.flow.delta.actors
 
 import javax.inject.Inject
-
 import akka.actor.{Actor, ActorSystem}
 import com.google.inject.assistedinject.Assisted
 import db._
@@ -9,6 +8,7 @@ import io.flow.delta.actors.functions.SyncDockerImages
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.v0.models.{Build, Version}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
 import play.api.Application
@@ -41,6 +41,7 @@ class BuildSupervisorActor @Inject()(
   override val configsDao: ConfigsDao,
   override val projectsDao: ProjectsDao,
   override val organizationsDao: OrganizationsDao,
+  override val logger: RollbarLogger,
   buildDesiredStatesDao: BuildDesiredStatesDao,
   eventLogProcessor: EventLogProcessor,
   syncDockerImages: SyncDockerImages,

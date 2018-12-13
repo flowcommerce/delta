@@ -1,13 +1,13 @@
 package io.flow.delta.actors
 
 import javax.inject.Inject
-
 import akka.actor.{Actor, ActorSystem}
 import com.google.inject.assistedinject.Assisted
 import db.{BuildsDao, ConfigsDao, OrganizationsDao, ProjectsDao}
 import io.flow.delta.api.lib.EventLogProcessor
 import io.flow.delta.config.v0.models.ConfigProject
 import io.flow.delta.v0.models.Project
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
 import play.api.{Application, Logger}
@@ -40,6 +40,7 @@ class ProjectSupervisorActor @Inject()(
   override val configsDao: ConfigsDao,
   override val projectsDao: ProjectsDao,
   override val organizationsDao: OrganizationsDao,
+  override val logger: RollbarLogger,
   eventLogProcessor: EventLogProcessor,
   system: ActorSystem,
   implicit val app: Application,

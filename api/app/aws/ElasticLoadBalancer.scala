@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder
 import com.amazonaws.services.elasticloadbalancing.model._
-import play.api.Logger
+import io.flow.log.RollbarLogger
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future
@@ -19,7 +19,8 @@ object ElasticLoadBalancer {
 case class ElasticLoadBalancer @javax.inject.Inject() (
   credentials: Credentials,
   configuration: Configuration,
-  system: ActorSystem
+  system: ActorSystem,
+  logger: RollbarLogger
 ) {
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
@@ -33,7 +34,8 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
 
   def getHealthyInstances(projectId: String): Seq[String] = {
     val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
-    Logger.info(s"AWS ElasticLoadBalancer describeInstanceHealth projectId[$projectId]")
+    logger.fingerprint(this.getClass.getName).withKeyValue("project", projectId).info(s"AWS ElasticLoadBalancer describeInstanceHealth")
+
     client.describeInstanceHealth(
       new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancerName)
     ).getInstanceStates.asScala.filter(_.getState == "InService").map(_.getInstanceId)
@@ -52,12 +54,12 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
 
   def deleteLoadBalancer(projectId: String): String = {
     val name = ElasticLoadBalancer.getLoadBalancerName(projectId)
-    Logger.info(s"AWS delete load balancer projectId[$projectId]")
+    logger.fingerprint(this.getClass.getName).withKeyValue("project", projectId).info(s"AWS delete load balancer")
 
     try {
       client.deleteLoadBalancer(new DeleteLoadBalancerRequest().withLoadBalancerName(name))
     } catch {
-      case e: Throwable => Logger.error(s"Error deleting load balancer $name - Error: ${e.getMessage}")
+      case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("project", projectId).withKeyValue("name", name).error(s"Error deleting load balancer", e)
     }
     name
   }
@@ -79,7 +81,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
     val elbListeners = Seq(https)
 
     try {
-      Logger.info(s"AWS ElasticLoadBalancer createLoadBalancer name[$name]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("name", name).info(s"AWS ElasticLoadBalancer createLoadBalancer")
       client.createLoadBalancer(
         new CreateLoadBalancerRequest()
           .withLoadBalancerName(name)
@@ -109,13 +111,13 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
           )
       )
     } catch {
-      case e: Throwable => Logger.error(s"Error setting ELB connection drain settings: ${e.getMessage}")
+      case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("name", name).error(s"Error setting ELB connection drain settings", e)
     }
   }
 
   def configureHealthCheck(name: String, externalPort: Long, healthcheckUrl: String) {
     try {
-      Logger.info(s"AWS ElasticLoadBalancer configureHealthCheck name[$name]")
+      logger.fingerprint(this.getClass.getName).withKeyValue("name", name).info(s"AWS ElasticLoadBalancer configureHealthCheck")
       client.configureHealthCheck(
         new ConfigureHealthCheckRequest()
           .withLoadBalancerName(name)
