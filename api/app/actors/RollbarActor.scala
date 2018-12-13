@@ -9,7 +9,7 @@ import io.flow.postgresql.Authorization
 import io.flow.rollbar.v0.models.Deploy
 import io.flow.rollbar.v0.{Client => Rollbar}
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future

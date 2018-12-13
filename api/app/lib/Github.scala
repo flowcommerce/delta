@@ -12,7 +12,7 @@ import io.flow.github.v0.models.{Contents, Encoding, Repository => GithubReposit
 import io.flow.github.v0.{Client => GithubClient}
 import io.flow.play.util.{Config, IdGenerator}
 import org.apache.commons.codec.binary.Base64
-import play.api.Logger
+
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{ExecutionContext, Future}

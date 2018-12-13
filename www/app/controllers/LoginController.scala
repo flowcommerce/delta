@@ -5,7 +5,7 @@ import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.delta.www.lib.{DeltaClientProvider, UiData}
 import io.flow.play.controllers.IdentifiedCookie._
 import io.flow.play.controllers.{FlowController, FlowControllerComponents}
-import play.api.Logger
+
 import play.api.i18n._
 import play.api.mvc.ControllerComponents
 

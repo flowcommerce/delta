@@ -1,7 +1,7 @@
 package io.flow.delta.lib.config
 
 import io.flow.delta.config.v0.models.InstanceType
-import play.api.Logger
+
 
 case class MemoryDefault(
   instance: Int,  // actual memory of the instance type, per aws

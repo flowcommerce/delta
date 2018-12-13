@@ -12,7 +12,7 @@ import io.flow.delta.v0.models.{Build, Docker, StateForm}
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import io.flow.postgresql.OrderBy
-import play.api.Logger
+
 
 import scala.concurrent.Future
 import scala.concurrent.duration._

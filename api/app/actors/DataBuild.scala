@@ -4,7 +4,7 @@ import db.BuildsDao
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
-import play.api.Logger
+
 
 trait DataBuild extends DataProject {
 

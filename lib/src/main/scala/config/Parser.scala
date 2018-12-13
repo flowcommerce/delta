@@ -3,7 +3,7 @@ package io.flow.delta.lib.config
 import io.flow.delta.config.v0.models.{Branch, Build, BuildStage, Config, ConfigError, ConfigProject, InstanceType, ProjectStage}
 import org.yaml.snakeyaml.Yaml
 import org.yaml.snakeyaml.scanner.ScannerException
-import play.api.Logger
+
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 

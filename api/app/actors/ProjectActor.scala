@@ -10,7 +10,7 @@ import io.flow.github.v0.models.{HookConfig, HookEvent, HookForm}
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.{Config, Constants}
 import io.flow.postgresql.Authorization
-import play.api.Logger
+
 
 import scala.concurrent.duration._
 

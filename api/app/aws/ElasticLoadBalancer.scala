@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder
 import com.amazonaws.services.elasticloadbalancing.model._
-import play.api.Logger
+
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future

@@ -7,7 +7,7 @@ import io.flow.delta.config.v0.models.json._
 import io.flow.delta.v0.models.Reference
 import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, OrderBy, Query}
-import play.api.Logger
+
 import play.api.db._
 import play.api.libs.json._
 

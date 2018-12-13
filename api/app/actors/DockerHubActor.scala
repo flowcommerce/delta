@@ -12,7 +12,7 @@ import io.flow.docker.registry.v0.models.{BuildForm => DockerBuildForm, BuildTag
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import org.joda.time.DateTime
-import play.api.Logger
+
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Await

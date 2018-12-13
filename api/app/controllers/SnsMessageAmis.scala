@@ -17,7 +17,7 @@ import io.flow.event.v2.Queue
 import io.flow.util.Constants
 import io.flow.util.IdGenerator
 import org.joda.time.DateTime
-import play.api.Logger
+
 import play.api.libs.json.{JsError, JsSuccess, Json}
 import play.api.mvc.{BaseController, ControllerComponents}
 

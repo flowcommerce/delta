@@ -10,7 +10,7 @@ import io.flow.docker.hub.v0.models.{Jwt, JwtForm}
 import io.flow.play.actors.ErrorHandler
 import io.flow.play.util.Config
 import io.flow.postgresql.Authorization
-import play.api.Logger
+
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.duration.Duration

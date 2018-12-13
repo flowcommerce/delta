@@ -8,7 +8,7 @@ import com.amazonaws.services.ec2.{AmazonEC2, AmazonEC2ClientBuilder}
 import com.amazonaws.services.autoscaling.{AmazonAutoScaling, AmazonAutoScalingClientBuilder}
 import com.amazonaws.services.autoscaling.model._
 import com.amazonaws.services.ec2.model.TerminateInstancesRequest
-import play.api.Logger
+
 import sun.misc.BASE64Encoder
 
 import collection.JavaConverters._

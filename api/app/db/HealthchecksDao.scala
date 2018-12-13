@@ -1,7 +1,7 @@
 package db
 
 import anorm._
-import play.api.Logger
+
 import play.api.db._
 
 import scala.util.{Failure, Success, Try}

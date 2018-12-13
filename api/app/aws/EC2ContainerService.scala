@@ -7,7 +7,7 @@ import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
 import io.flow.delta.v0.models.Version
 import org.joda.time.DateTime
-import play.api.Logger
+
 
 import scala.collection.JavaConverters._
 import scala.concurrent.Future

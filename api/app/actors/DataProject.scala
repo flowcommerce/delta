@@ -5,7 +5,7 @@ import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.v0.models.{Organization, Project}
 import io.flow.postgresql.Authorization
-import play.api.Logger
+
 
 trait DataProject {
 
