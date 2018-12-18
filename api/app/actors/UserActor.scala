@@ -1,12 +1,12 @@
 package io.flow.delta.actors
 
 import javax.inject.Inject
-
 import akka.actor.Actor
 import com.google.inject.assistedinject.Assisted
 import db.{SubscriptionsDao, UserIdentifiersDao, UsersDao}
 import io.flow.common.v0.models.{User, UserReference}
 import io.flow.delta.v0.models.{Publication, SubscriptionForm}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 
 object UserActor {
@@ -25,6 +25,7 @@ object UserActor {
 }
 
 class UserActor @Inject()(
+  override val logger: RollbarLogger,
   subscriptionsDao: SubscriptionsDao,
   usersDao: UsersDao,
   userIdentifiersDao: UserIdentifiersDao,
