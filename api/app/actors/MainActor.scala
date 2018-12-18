@@ -80,7 +80,7 @@ class MainActor @javax.inject.Inject() (
 
   private[this] val name = "main"
 
-  private[this] val searchActor = system.actorOf(Props[SearchActor](new SearchActor(projectsDao, itemsDao)), name = s"$name:SearchActor")
+  private[this] val searchActor = system.actorOf(Props[SearchActor](new SearchActor(logger, projectsDao, itemsDao)), name = s"$name:SearchActor")
   private[this] val dockerHubTokenActor = injectedChild(dockerHubTokenFactory(), name = s"main:DockerHubActor")
 
   private[this] val buildActors = scala.collection.mutable.Map[String, ActorRef]()
