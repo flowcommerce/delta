@@ -28,11 +28,11 @@ object RollbarActor {
 
 @Singleton
 class RollbarActor @Inject()(
+  override val logger: RollbarLogger,
   ws: WSClient,
   system: ActorSystem,
   buildsDao: BuildsDao,
   tagsDao: TagsDao,
-  logger: RollbarLogger,
   val config: Config
 ) extends Actor with ErrorHandler with Scheduler {
 

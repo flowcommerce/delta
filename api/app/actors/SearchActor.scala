@@ -2,6 +2,7 @@ package io.flow.delta.actors
 
 import akka.actor.Actor
 import db.{ItemsDao, ProjectsDao}
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
 
@@ -16,6 +17,7 @@ object SearchActor {
 }
 
 class SearchActor(
+  override val logger: RollbarLogger,
   projectsDao: ProjectsDao,
   itemsDao: ItemsDao
 ) extends Actor with ErrorHandler {
