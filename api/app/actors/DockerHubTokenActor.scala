@@ -126,6 +126,7 @@ object DockerHubTokenActor {
 }
 
 class DockerHubTokenActor @javax.inject.Inject() (
+  override val logger: RollbarLogger,
   system: ActorSystem,
   dockerHubToken: DockerHubToken
 ) extends Actor with ErrorHandler {

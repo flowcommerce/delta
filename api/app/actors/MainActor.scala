@@ -5,7 +5,9 @@ import java.util.UUID
 import actors.RollbarActor
 import akka.actor._
 import db.{BuildsDao, ItemsDao, ProjectsDao}
+import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.StateDiff
+import io.flow.log.RollbarLogger
 import io.flow.play.actors.{ErrorHandler, Scheduler}
 import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, Pager}
@@ -15,7 +17,7 @@ import play.api.{Environment, Logger, Mode}
 
 object MainActor {
 
-  lazy val SystemUser = Constants.SystemUser
+  lazy val SystemUser: UserReference = Constants.SystemUser
 
   object Messages {
 
@@ -57,6 +59,8 @@ object MainActor {
 
 @javax.inject.Singleton
 class MainActor @javax.inject.Inject() (
+  override val logger: RollbarLogger,
+  override val config: io.flow.play.util.Config,
   buildFactory: BuildActor.Factory,
   dockerHubFactory: DockerHubActor.Factory,
   dockerHubTokenFactory: DockerHubTokenActor.Factory,
@@ -64,7 +68,6 @@ class MainActor @javax.inject.Inject() (
   userActorFactory: UserActor.Factory,
   projectSupervisorActorFactory: ProjectSupervisorActor.Factory,
   buildSupervisorActorFactory: BuildSupervisorActor.Factory,
-  override val config: io.flow.play.util.Config,
   system: ActorSystem,
   playEnv: Environment,
   buildsDao: BuildsDao,
@@ -157,7 +160,7 @@ class MainActor @javax.inject.Inject() (
       }
 
       case msg @ MainActor.Messages.BuildDeleted(id) => withErrorHandler(msg) {
-        (buildActors -= id).map { case (id, actor) =>
+        (buildActors -= id).map { case (_, actor) =>
           actor ! BuildActor.Messages.Delete
           actor ! PoisonPill
         }
@@ -209,19 +212,19 @@ class MainActor @javax.inject.Inject() (
         upsertBuildActor(buildId) ! BuildActor.Messages.Scale(diffs)
       }
 
-      case msg @ MainActor.Messages.ShaUpserted(projectId, id) => withErrorHandler(msg) {
+      case msg @ MainActor.Messages.ShaUpserted(projectId, _) => withErrorHandler(msg) {
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.PursueDesiredState
       }
 
-      case msg @ MainActor.Messages.TagCreated(projectId, id, name) => withErrorHandler(msg) {
+      case msg @ MainActor.Messages.TagCreated(projectId, _, name) => withErrorHandler(msg) {
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.CheckTag(name)
       }
 
-      case msg @ MainActor.Messages.TagUpdated(projectId, id, name) => withErrorHandler(msg) {
+      case msg @ MainActor.Messages.TagUpdated(projectId, _, name) => withErrorHandler(msg) {
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.CheckTag(name)
       }
 
-      case msg @ MainActor.Messages.ImageCreated(buildId, id, version) => withErrorHandler(msg) {
+      case msg @ MainActor.Messages.ImageCreated(buildId, _, version) => withErrorHandler(msg) {
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.CheckTag(version)
       }
 
@@ -319,12 +322,12 @@ class MainActor @javax.inject.Inject() (
 
   def upsertBuildSupervisorActor(id: String): ActorRef = {
     this.synchronized {
-      buildSupervisorActors.lift(id).getOrElse {
+      buildSupervisorActors.getOrElse(id, {
         val ref = injectedChild(buildSupervisorActorFactory(id), name = randomName())
         ref ! BuildSupervisorActor.Messages.Data(id)
         buildSupervisorActors += (id -> ref)
         ref
-      }
+      })
     }
   }
 
