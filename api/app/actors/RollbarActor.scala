@@ -40,10 +40,13 @@ class RollbarActor @Inject()(
 
   private val rollbar = new Rollbar(ws)
 
-  private val ConfigName = "rollbar.access_token"
+  private val ConfigName = "rollbar.account_token"
   private val accessToken = config.optionalString(ConfigName)
   if (accessToken.isEmpty) {
-    logger.fingerprint("RollbarActor").withKeyValue("config", ConfigName).info(s"[RollbarActor] disable as configuration not found")
+    logger
+      .fingerprint("RollbarActor")
+      .withKeyValue("config", ConfigName)
+      .error(s"Rollbar will not know about deploys because rollbar.account_token (ROLLBAR_ACCESS_TOKEN in env) is missing")
   }
 
   private case class Project(name: String, id: Int, postAccessKey: String)
