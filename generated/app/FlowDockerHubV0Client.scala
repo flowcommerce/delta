@@ -265,8 +265,8 @@ package io.flow.docker.hub.v0 {
         value <- values
       } yield s"$name=$value"
       val url = s"${req.url}${queryComponents.mkString("?", "&", "")}"
-      auth.fold(logger.info(s"curl -X $method $url")) { _ =>
-        logger.info(s"curl -X $method -u '[REDACTED]:' $url")
+      auth.fold(logger.info(s"curl -X $method '$url'")) { _ =>
+        logger.info(s"curl -X $method -u '[REDACTED]:' '$url'")
       }
       req
     }
