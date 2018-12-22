@@ -48,7 +48,7 @@ lazy val api = project
     routesGenerator := InjectedRoutesGenerator,
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.2.72",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.2.73",
       "io.flow" %% "lib-event-play26" % "0.4.31",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
