@@ -2,11 +2,13 @@ package controllers
 
 import java.util.UUID
 
+import io.flow.delta.v0.models.{Organization, Project}
+
 class ProjectsSpec extends MockClient with db.Helpers {
 
-  lazy val org = createOrganization()
-  lazy val project1 = createProject(org)()
-  lazy val project2 = createProject(org)()
+  private[this] lazy val org: Organization = createOrganization()
+  private[this] lazy val project1: Project = createProject(org)()
+  private[this] lazy val project2: Project = createProject(org)()
 
   "GET /projects by id" in {
     await(
