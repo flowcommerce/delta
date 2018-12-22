@@ -9,7 +9,6 @@ import io.flow.log.RollbarLogger
 import io.flow.postgresql.Authorization
 import play.api.libs.json.Json
 
-
 trait DataProject {
 
   val logger: RollbarLogger

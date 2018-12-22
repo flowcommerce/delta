@@ -13,7 +13,7 @@ import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, Pager}
 import javax.inject.Named
 import play.api.libs.concurrent.InjectedActorSupport
-import play.api.{Environment, Logger, Mode}
+import play.api.{Environment, Mode}
 
 object MainActor {
 
@@ -92,7 +92,7 @@ class MainActor @javax.inject.Inject() (
 
   playEnv.mode match {
     case Mode.Test => {
-      Logger.info("[MainActor] Background actors are disabled in Test")
+      logger.info("[MainActor] Background actors are disabled in Test")
     }
 
     case _ => {
@@ -136,7 +136,7 @@ class MainActor @javax.inject.Inject() (
         Pager.create { offset =>
           projectsDao.findAll(Authorization.All, offset = offset, minutesSinceLastEvent = Some(15))
         }.foreach { project =>
-          Logger.info(s"Sending ProjectSync(${project.id}) - no events found in last 15 minutes")
+          logger.withKeyValue("project_id", project.id).info("Sending ProjectSync - no events found in last 15 minutes")
           self ! MainActor.Messages.ProjectSync(project.id)
         }
       }
@@ -146,7 +146,7 @@ class MainActor @javax.inject.Inject() (
   def receive = playEnv.mode match {
     case Mode.Test => {
       case msg => {
-        Logger.info(s"[MainActor TEST] Discarding received message: $msg")
+        logger.withKeyValue("message", msg.toString).info("[MainActor TEST] Discarding received message")
       }
     }
 
