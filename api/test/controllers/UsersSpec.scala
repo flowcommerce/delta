@@ -1,19 +1,26 @@
 package controllers
 
-import java.util.UUID
-
-import io.flow.common.v0.models.Name
+import io.flow.common.v0.models.{Name, User}
 import io.flow.delta.v0.models.UserForm
+import java.util.UUID
 
 class UsersSpec extends MockClient with db.Helpers {
 
-  lazy val user1 = createUser()
-  lazy val user2 = createUser()
+  private[this] lazy val user1: User = createUser()
+  private[this] lazy val user2: User = createUser()
 
-  "GET /users requires auth" in {
-    expectNotAuthorized {
+  "GET /users requires a parameter" in {
+    expectErrors {
       anonClient.users.get()
-    }
+    }.genericError.messages must equal(
+      Seq("Must specify id, email or identifier")
+    )
+  }
+
+  "GET /users allows anonymous access" in {
+    await {
+      anonClient.users.get(id = Some(createTestId()))
+    } must be(Nil)
   }
 
   "GET /users/:id - not authorized" in {

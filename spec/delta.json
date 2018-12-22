@@ -465,7 +465,8 @@
           ],
           "responses": {
             "200": { "type": "[io.flow.common.v0.models.user]" },
-            "401": { "type": "unit" }
+            "401": { "type": "unit" },
+            "422": { "type": "io.flow.error.v0.models.generic_error" }
           }
         },
 
