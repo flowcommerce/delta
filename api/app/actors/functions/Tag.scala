@@ -1,7 +1,6 @@
 package io.flow.delta.actors.functions
 
 import javax.inject.Inject
-
 import db.{ShasDao, TagsWriteDao}
 import io.flow.delta.actors.{ProjectSupervisorFunction, SupervisorResult}
 import io.flow.delta.api.lib.{Email, GithubUtil, Repo}
@@ -9,6 +8,7 @@ import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
 import io.flow.delta.lib.Semver
 import io.flow.delta.v0.models.Project
 import io.flow.github.v0.models.{RefForm, TagForm, Tagger}
+import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import org.joda.time.DateTime
@@ -43,6 +43,7 @@ object Tag extends ProjectSupervisorFunction {
 }
 
 class Tag @Inject()(
+  logger: RollbarLogger,
   github: Github,
   shasDao: ShasDao,
   tagsWriteDao: TagsWriteDao,
@@ -122,7 +123,7 @@ class Tag @Inject()(
             date = new DateTime()
           )
         )
-      ).flatMap { githubTag =>
+      ).flatMap { _ =>
         client.refs.post(
           repo.owner,
           repo.project,
@@ -130,7 +131,7 @@ class Tag @Inject()(
             ref = s"refs/tags/$name",
             sha = sha
           )
-        ).map { githubRef =>
+        ).map { _ =>
           tagsWriteDao.upsert(Constants.SystemUser, project.id, name, sha)
           SupervisorResult.Change(s"Created tag $name for sha[$sha]")
         }.recover {
@@ -146,7 +147,14 @@ class Tag @Inject()(
           }
         }
       }.recoverWith { case throwable: Throwable =>
-        play.api.Logger.warn(s"creating tag failed for name[$name] sha[$sha] project[$project] repo[$repo]", throwable)
+        logger.
+          withKeyValue("name", name).
+          withKeyValue("sha", name).
+          withKeyValue("project_id", project.id).
+          withKeyValue("project_name", project.name).
+          withKeyValue("repo_owner", repo.owner).
+          withKeyValue("repo_project", repo.project).
+          warn("Error creating tag", throwable)
         Future.failed(throwable)
       }
     }

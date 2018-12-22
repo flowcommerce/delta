@@ -10,7 +10,7 @@ import io.flow.delta.v0.models.Project
 import io.flow.log.RollbarLogger
 import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
-import play.api.{Application, Logger}
+import play.api.Application
 
 object ProjectSupervisorActor {
 
@@ -57,9 +57,13 @@ class ProjectSupervisorActor @Inject()(
 
     case msg @ ProjectSupervisorActor.Messages.PursueDesiredState => withErrorHandler(msg) {
       withProject { project =>
-        Logger.info(s"PursueDesiredState project[${project.id}]")
         withConfig { config =>
-          Logger.info(s"  - config: $config")
+          logger.
+            fingerprint("ProjectSupervisorActor").
+            withKeyValue("project_id", project.id).
+            withKeyValue("config", config.toString).
+            info(s"PursueDesiredState starting")
+
           eventLogProcessor.runSync("PursueDesiredState", log = log(id)) {
             run(project, config, ProjectSupervisorActor.Functions)
 

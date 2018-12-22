@@ -21,7 +21,6 @@ class GithubWebhooks @javax.inject.Inject() (
         NotFound
       }
       case Some(project) => {
-        play.api.Logger.info(s"Received github webhook for project[${project.id}] name[${project.name}]")
         mainActor ! MainActor.Messages.ProjectSync(project.id)
         Ok(Json.toJson(Map("result" -> "success")))
       }

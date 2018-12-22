@@ -21,7 +21,6 @@ class AwsActors @javax.inject.Inject() (
         NotFound
       }
       case Some(build) => {
-        play.api.Logger.info(s"Received request for build[${build.id}] name[${build.name}]")
         mainActor ! MainActor.Messages.ConfigureAWS(build.id)
         Ok(Json.toJson(Map("result" -> "success")))
       }
