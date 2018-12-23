@@ -36,14 +36,16 @@ class VariablesDao @javax.inject.Inject() (
   """
 
   private[this] def validate(form: VariableForm): Seq[String] = {
-    val keyErrors = (form.key.trim.isEmpty) match {
-      case true => Seq("Key cannot be empty")
-      case false => Nil
+    val keyErrors = if (form.key.trim.isEmpty) {
+      Seq("Key cannot be empty")
+    } else {
+      Nil
     }
 
-    val valueErrors = (form.value.trim.isEmpty) match {
-      case true => Seq("Value cannot be empty")
-      case false => Nil
+    val valueErrors = if (form.value.trim.isEmpty) {
+      Seq("Value cannot be empty")
+    } else {
+      Nil
     }
 
     keyErrors ++ valueErrors
@@ -52,27 +54,23 @@ class VariablesDao @javax.inject.Inject() (
   def upsert(auth: Authorization, updatedBy: UserReference, form: VariableForm): Either[Seq[String], Variable] = {
     validate(form) match {
       case Nil => {
-        val organization = form.organization
-        val id = findByOrganizationAndKey(auth, organization, form.key) match {
-          case None => idGenerator.randomId
-          case Some(variable) => variable.id
-        }
-
         db.withConnection { implicit c =>
           SQL(UpsertQuery).on(
-            'id -> id,
-            'organization_id -> organization,
+            'id -> idGenerator.randomId,
+            'organization_id -> form.organization,
             'key -> form.key,
             'value -> form.value,
             'updated_by_user_id -> updatedBy.id
           ).execute
         }
 
-        findById(auth, id) match {
-          case Some(variable) => Right(variable)
-          case None => Left(Seq(s"Could not upsert variable org: $organization, key: ${form.key}"))
-        }
+        Right(
+          findByOrganizationAndKey(auth, form.organization, form.key).getOrElse {
+            sys.error("Could not upsert variable org: ${form.organization}, key: ${form.key}")
+          }
+        )
       }
+
       case errors => Left(errors)
     }
   }
