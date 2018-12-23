@@ -221,7 +221,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
       case Nil => {
 
         val org = organizationsDao.findById(Authorization.All, form.organization).getOrElse {
-          sys.error("Could not find organization with id[${form.organization}]")
+          sys.error(s"Could not find organization with id[${form.organization}]")
         }
         
         val id = urlKey.generate(form.name.trim)

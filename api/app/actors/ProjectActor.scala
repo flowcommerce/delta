@@ -4,7 +4,7 @@ import akka.actor.{Actor, ActorSystem}
 import db._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.{GitHubHelper, Github, Repo}
-import io.flow.delta.lib.config.{Defaults, Parser}
+import io.flow.delta.lib.config.Parser
 import io.flow.delta.v0.models.Project
 import io.flow.github.v0.models.{HookConfig, HookEvent, HookForm}
 import io.flow.log.RollbarLogger
@@ -51,6 +51,13 @@ class ProjectActor @javax.inject.Inject() (
 
   private[this] implicit val ec = system.dispatchers.lookup("project-actor-context")
 
+  private[this] def log(project: Project): RollbarLogger = {
+    logger.
+      withKeyValue("user_id", project.user.id).
+      withKeyValue("project_id", project.id).
+      withKeyValue("project_name", project.name)
+  }
+
   def receive = {
 
     case msg @ ProjectActor.Messages.Setup => withErrorHandler(msg) {
@@ -71,22 +78,22 @@ class ProjectActor @javax.inject.Inject() (
     }
 
     case msg @ ProjectActor.Messages.SyncBuilds => withErrorHandler(msg) {
-      withProject { project =>
-        buildsDao.findAllByProjectId(Authorization.All, projectId).foreach { build =>
-          mainActor ! MainActor.Messages.BuildDesiredStateUpdated(build.id)
-        }
+      buildsDao.findAllByProjectId(Authorization.All, projectId).foreach { build =>
+        mainActor ! MainActor.Messages.BuildDesiredStateUpdated(build.id)
       }
     }
 
     case msg @ ProjectActor.Messages.SyncConfig => withErrorHandler(msg) {
       withProject { project =>
         withRepo { repo =>
-          github.dotDeltaFile(UserReference(project.user.id), repo.owner, repo.project).map { configOption =>
-            val currentConfig = configOption match {
-              case None => Defaults.Config
-              case Some(cfg) => parser.parse(cfg)
+          github.dotDeltaFile(UserReference(project.user.id), repo.owner, repo.project).map {
+            case None => {
+              log(project).warn("Project repo is missing a .delta file - cannot configure")
             }
-            configsDao.updateIfChanged(Constants.SystemUser, project.id, currentConfig)
+            case Some(cfg) => {
+              val latestConfig = parser.parse(cfg)
+              configsDao.updateIfChanged(Constants.SystemUser, project.id, latestConfig)
+            }
           }
         }
       }
@@ -116,7 +123,7 @@ class ProjectActor @javax.inject.Inject() (
   private[this] def createHooks(project: Project, repo: Repo) {
     gitHubHelper.apiClientFromUser(project.user.id) match {
       case None => {
-        logger.withKeyValue("user_id", project.user.id).withKeyValue("project", project.id).warn(s"Could not create github client for user[${project.user.id}]")
+        log(project).warn("Could not create github client")
       }
       case Some(client) => {
         client.hooks.get(repo.owner, repo.project).map { hooks =>
@@ -141,10 +148,10 @@ class ProjectActor @javax.inject.Inject() (
                 )
               )
             }.map { hook =>
-              logger.withKeyValue("user_id", project.user.id).withKeyValue("project", project.id).withKeyValue("hook", hook.name).info("Created githib webhook for project")
+              log(project).withKeyValue("hook", hook.name).info("Created githib webhook for project")
             }.recover {
               case e: Throwable => {
-                logger.withKeyValue("user_id", project.user.id).withKeyValue("project", project.id).error("Error creating hook", e)
+                log(project).error("Error creating hook", e)
               }
             }
           }
