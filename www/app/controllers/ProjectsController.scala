@@ -112,13 +112,14 @@ class ProjectsController @javax.inject.Inject() (
   }
 
   def githubOrg(orgId: String, repositoriesPage: Int = 0) = User.async { implicit request =>
+    val limit = 100
     withOrganization(request, orgId) { org =>
       for {
         repositories <- deltaClient(request).repositories.get(
           organizationId = Some(org.id),
           existingProject = Some(false),
-          limit = Pagination.DefaultLimit+1,
-          offset = repositoriesPage * Pagination.DefaultLimit
+          limit = limit+1,
+          offset = repositoriesPage * limit
         )
       } yield {
         Ok(

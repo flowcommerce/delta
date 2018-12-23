@@ -25,19 +25,20 @@ object InternalTokenForm {
   private[this] val TokenLength = 64
 
   case class GithubOauth(userId: String, token: String) extends InternalTokenForm {
-    override val tag = GithubOauthTag
-    override val description = None
+    override val tag: String = GithubOauthTag
+    override val description: Option[String] = None
   }
 
   case class UserCreated(form: TokenForm) extends InternalTokenForm {
-    override val tag = UserCreatedTag
-    override val userId = form.userId
-    override val description = form.description
-    def token = random.alphaNumeric(TokenLength)
+    override val tag: String = UserCreatedTag
+    override val userId: String = form.userId
+    override val description: Option[String] = form.description
+    def token: String = random.alphaNumeric(TokenLength)
   }
 
 }
 
+private[db] case class CleartextToken(token: String, numberViews: Long)
 
 @javax.inject.Singleton
 class TokensDao @javax.inject.Inject() (
@@ -101,7 +102,7 @@ class TokensDao @javax.inject.Inject() (
     form: InternalTokenForm
   ): Seq[String] = {
     form match {
-      case InternalTokenForm.GithubOauth(userId, token) => Nil
+      case _: InternalTokenForm.GithubOauth => Nil
       case InternalTokenForm.UserCreated(f) => {
         usersDao.findById(f.userId) match {
           case None => Seq("User not found")
@@ -175,7 +176,7 @@ class TokensDao @javax.inject.Inject() (
     db.withConnection { implicit c =>
       SelectCleartextTokenQuery.
         equals("tokens.user_id", Some(userId)).
-        optionalText("tokens.tag", Some(InternalTokenForm.GithubOauthTag)).
+        text("tokens.tag", InternalTokenForm.GithubOauthTag).
         limit(1).
         orderBy("tokens.created_at desc").
         as(
@@ -184,9 +185,7 @@ class TokensDao @javax.inject.Inject() (
     }
   }
 
-  private[this] case class CleartextToken(token: String, numberViews: Long)
-
-  private[this] def cleartextTokenParser() = {
+  private[this] def cleartextTokenParser(): RowParser[CleartextToken] = {
     SqlParser.str("token") ~ SqlParser.long("number_views") map { case token ~ numberViews => CleartextToken(token, numberViews) }
   }
 
