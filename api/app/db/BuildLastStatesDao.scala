@@ -19,7 +19,7 @@ class BuildLastStatesDao @Inject()(
   buildsDao: BuildsDao,
   delete: Delete,
   @javax.inject.Named("main-actor") mainActor: ActorRef,
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   def onChange(mainActor: ActorRef, buildId: String) {

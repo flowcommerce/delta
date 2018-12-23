@@ -9,7 +9,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class UsersDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[db] val SystemEmailAddress = "otto@flow.io"
@@ -97,7 +97,7 @@ class UsersDao @javax.inject.Inject() (
 
 case class UsersWriteDao @javax.inject.Inject() (
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
+  db: Database,
   usersDao: UsersDao,
   delete: Delete
 ) {

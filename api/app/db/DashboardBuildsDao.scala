@@ -9,7 +9,7 @@ import play.api.db._
 
 @Singleton
 class DashboardBuildsDao @Inject()(
-  @NamedDatabase("default") db: Database
+  db: Database
 ){
 
   private[this] val BaseQuery = Query(s"""

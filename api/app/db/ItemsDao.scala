@@ -19,7 +19,7 @@ case class ItemForm(
 
 @javax.inject.Singleton
 class ItemsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   projectsDao: ProjectsDao,
   delete: Delete
 ) {

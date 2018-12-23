@@ -42,7 +42,7 @@ private[db] case class CleartextToken(token: String, numberViews: Long)
 
 @javax.inject.Singleton
 class TokensDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   usersDao: UsersDao,
   delete: Delete
 ) {

@@ -8,7 +8,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class GithubUsersDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   usersDao: UsersDao
 ) {
 

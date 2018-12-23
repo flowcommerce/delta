@@ -9,7 +9,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class VariablesDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val idGenerator = IdGenerator("var")

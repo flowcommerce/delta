@@ -16,7 +16,7 @@ case class TagForm(
 
 @javax.inject.Singleton
 class TagsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val BaseQuery = Query(s"""
@@ -81,7 +81,7 @@ class TagsDao @javax.inject.Inject() (
 
 case class TagsWriteDao @javax.inject.Inject() (
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
+  db: Database,
   projectsDao: ProjectsDao,
   tagsDao: TagsDao,
   delete: Delete

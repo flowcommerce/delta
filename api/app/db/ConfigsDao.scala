@@ -19,7 +19,7 @@ case class InternalConfig(
 
 @javax.inject.Singleton
 class ConfigsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   delete: Delete
 ) {
 

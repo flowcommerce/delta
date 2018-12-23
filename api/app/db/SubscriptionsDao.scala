@@ -10,7 +10,7 @@ import scala.util.{Failure, Success, Try}
 
 @javax.inject.Singleton
 class SubscriptionsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   usersDao: UsersDao,
   delete: Delete
 ) {

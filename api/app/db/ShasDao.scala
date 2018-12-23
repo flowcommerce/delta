@@ -15,7 +15,7 @@ case class ShaForm(
 
 @javax.inject.Singleton
 class ShasDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val BaseQuery = Query(s"""
@@ -84,7 +84,7 @@ class ShasDao @javax.inject.Inject() (
 
 case class ShasWriteDao @javax.inject.Inject() (
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
+  db: Database,
   projectsDao: ProjectsDao,
   shasDao: ShasDao,
   delete: Delete
