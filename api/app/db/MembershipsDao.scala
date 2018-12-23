@@ -9,7 +9,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class MembershipsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   delete: Delete,
   membershipsDao: Provider[MembershipsDao],
   organizationsDao: Provider[OrganizationsDao]

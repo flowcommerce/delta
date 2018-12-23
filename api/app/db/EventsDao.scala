@@ -10,7 +10,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class EventsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   delete: Delete
 ) {
 

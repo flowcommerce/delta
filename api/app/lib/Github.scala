@@ -41,7 +41,7 @@ class GitHubHelper @javax.inject.Inject() (
       tokensDao.getCleartextGithubOauthTokenByUserId(u.id)
     } match {
       case None => {
-        logger.withKeyValue("user", userId).warn(s"No Github oauth token for user")
+        logger.withKeyValue("user_id", userId).warn("No Github oauth token for user")
         None
       }
       case Some(token) => {
@@ -55,7 +55,7 @@ class GitHubHelper @javax.inject.Inject() (
       ws = wsClient,
       baseUrl = "https://api.github.com",
       defaultHeaders = Seq(
-        ("Authorization" -> s"token $oauthToken")
+        "Authorization" -> s"token $oauthToken"
       )
     )
   }
@@ -114,7 +114,7 @@ trait Github {
     user: UserReference, owner: String, repo: String
   ) (
     implicit ec: ExecutionContext
-  ) = file(user, owner, repo, DotDeltaPath)
+  ): Future[Option[String]] = file(user, owner, repo, DotDeltaPath)
 
   /**
     * Recursively calls the github API until we either:
@@ -159,6 +159,7 @@ trait Github {
 
 @javax.inject.Singleton
 class DefaultGithub @javax.inject.Inject() (
+  logger: RollbarLogger,
   config: Config,
   gitHubHelper: GitHubHelper,
   githubUsersDao: GithubUsersDao,
@@ -175,7 +176,7 @@ class DefaultGithub @javax.inject.Inject() (
     wSClient,
     baseUrl = "https://github.com",
     defaultHeaders = Seq(
-      ("Accept" -> "application/json")
+      "Accept" -> "application/json"
     )
   )
 
@@ -199,7 +200,7 @@ class DefaultGithub @javax.inject.Inject() (
                   createdBy = None,
                   form = UserForm(
                     email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(gitHubHelper.parseName(_))
+                    name = githubUserWithToken.name.map(gitHubHelper.parseName)
                   )
                 )
               }
@@ -264,7 +265,10 @@ class DefaultGithub @javax.inject.Inject() (
         )
       }
     }.recover {
-      case ex: Throwable => sys.error(s"Failed to post access token to Github OAuth client")
+      case ex: Throwable => {
+        logger.warn("Failed to post access token to Github OAuth client", ex)
+        throw new RuntimeException(ex)
+      }
     }
   }
 
@@ -351,7 +355,7 @@ class MockGithub @Inject()(
                   createdBy = None,
                   form = UserForm(
                     email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(gitHubHelper.parseName(_))
+                    name = githubUserWithToken.name.map(gitHubHelper.parseName)
                   )
                 )
               }
@@ -437,7 +441,7 @@ object MockGithubData {
   }
 
   def getUserByCode(code: String): Option[GithubUserData] = {
-    githubUserByCodes.lift(code)
+    githubUserByCodes.get(code)
   }
 
   def addUserOauthToken(token: String, user: UserReference) {
@@ -445,25 +449,22 @@ object MockGithubData {
   }
 
   def getToken(user: UserReference): Option[String] = {
-    userTokens.lift(user.id)
+    userTokens.get(user.id)
   }
 
-  def addRepository(user: UserReference, repository: GithubRepository) = {
+  def addRepository(user: UserReference, repository: GithubRepository): Unit = {
     repositories +== (user.id -> repository)
   }
 
   def repositories(user: UserReference): Seq[GithubRepository] = {
-    repositories.lift(user.id) match {
-      case None => Nil
-      case Some(repo) => Seq(repo)
-    }
+    repositories.get(user.id).toSeq
   }
 
-  def addFile(repo: String, path: String, contents: String) = {
+  def addFile(repo: String, path: String, contents: String): Unit = {
     files += (s"repo:$path" -> contents)
   }
 
-  def getFile(repo: String, path: String) = {
+  def getFile(repo: String, path: String): Option[String] = {
     files.get(s"repo:$path")
   }
 }

@@ -8,7 +8,7 @@ import scala.util.{Failure, Success, Try}
 
 @javax.inject.Singleton
 class HealthchecksDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database,
+  db: Database,
   logger: RollbarLogger
 ) {
 

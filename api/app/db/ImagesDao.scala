@@ -10,7 +10,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class ImagesDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val BaseQuery = Query(s"""
@@ -70,7 +70,7 @@ class ImagesDao @javax.inject.Inject() (
 
 case class ImagesWriteDao @javax.inject.Inject() (
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
+  db: Database,
   buildsDao: BuildsDao,
   delete: Delete,
   imagesDao: ImagesDao

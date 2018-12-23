@@ -12,7 +12,7 @@ import play.api.db._
 
 @Singleton
 class BuildsDao @Inject()(
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[db] val Master = "master"
@@ -86,7 +86,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
   delete: Delete,
   imagesDao: ImagesDao,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val UpsertQuery = """

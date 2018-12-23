@@ -16,7 +16,7 @@ import play.api.libs.json._
 
 @javax.inject.Singleton
 class ProjectsDao @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val BaseQuery = Query(s"""
@@ -128,7 +128,7 @@ class ProjectsDao @javax.inject.Inject() (
 
 case class ProjectsWriteDao @javax.inject.Inject() (
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  @NamedDatabase("default") db: Database,
+  db: Database,
   buildsDao: BuildsDao,
   buildsWriteDao: BuildsWriteDao,
   configsDao: ConfigsDao,

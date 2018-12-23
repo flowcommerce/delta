@@ -6,7 +6,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class BuildLockUtil @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
   private[this] val tableName: String = "builds"
 

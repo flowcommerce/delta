@@ -8,7 +8,7 @@ import io.flow.postgresql.play.db.DbHelpers
 import java.sql.Connection
 import javax.inject.{Inject, Singleton}
 import org.joda.time.DateTime
-import play.api.db.{Database, NamedDatabase}
+import play.api.db.Database
 
 case class AmiUpdate(
   id: String,
@@ -30,7 +30,7 @@ case class AmiUpdateForm(
 
 @Singleton
 class AmiUpdatesDao @Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val dbHelpers = DbHelpers(db, "ami_updates")

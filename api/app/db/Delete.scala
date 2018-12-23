@@ -5,7 +5,7 @@ import play.api.db._
 
 @javax.inject.Singleton
 class Delete @javax.inject.Inject() (
-  @NamedDatabase("default") db: Database
+  db: Database
 ) {
 
   private[this] val Query = """
