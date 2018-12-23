@@ -46,6 +46,7 @@ lazy val api = project
     routesImport += "io.flow.delta.v0.Bindables.Core._",
     routesImport += "io.flow.delta.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
+    testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       jdbc,
       "io.flow" %% "lib-postgresql-play-play26" % "0.2.73",
@@ -75,6 +76,7 @@ lazy val www = project
     routesImport += "io.flow.delta.v0.Bindables.Core._",
     routesImport += "io.flow.delta.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
+    testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       "org.webjars" %% "webjars-play" % "2.6.3",
       "org.webjars" % "bootstrap" % "3.3.7",
