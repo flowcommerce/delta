@@ -44,7 +44,7 @@ class BuildSupervisorActor @Inject()(
   eventLogProcessor: EventLogProcessor,
   system: ActorSystem,
   implicit val app: Application,
-) extends Actor with DataBuild with DataProject with BuildEventLog {
+) extends Actor with DataBuild with DataProject {
 
   private[this] implicit val ec = system.dispatchers.lookup("supervisor-actor-context")
   private[this] implicit val configuredRollbar = logger.fingerprint("BuildSupervisorActor")
@@ -59,10 +59,9 @@ class BuildSupervisorActor @Inject()(
         withBuildConfig { buildConfig =>
           eventLogProcessor.runSync("PursueDesiredState", log = log(build.project.id)) {
             run(build, buildConfig.stages, BuildSupervisorActor.Functions)
-          }
+          } // Should Await the Future?
         }
       }
-      () // Should Await the Future?
 
     /**
       * Indicates that something has happened for the tag with
@@ -90,7 +89,6 @@ class BuildSupervisorActor @Inject()(
           }
         }
       }
-      ()
   }
 
   /**

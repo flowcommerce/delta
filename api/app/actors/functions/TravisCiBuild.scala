@@ -4,7 +4,7 @@ import java.util.concurrent.TimeoutException
 
 import javax.inject.Inject
 import db._
-import io.flow.delta.actors.{BuildEventLog, DataBuild, DataProject}
+import io.flow.delta.actors.DataBuild
 import io.flow.delta.api.lib.{BuildLockUtil, EventLogProcessor}
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
@@ -47,7 +47,7 @@ class TravisCiDockerImageBuilder @Inject()(
   wsClient: WSClient,
   override val logger: RollbarLogger,
   implicit val ec: ExecutionContext
-) extends DataBuild with DataProject with BuildEventLog {
+) extends DataBuild {
 
   def buildDockerImage(travisCiBuild: TravisCiBuild): Unit = {
     val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)

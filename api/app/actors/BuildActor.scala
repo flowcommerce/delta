@@ -64,7 +64,7 @@ class BuildActor @javax.inject.Inject() (
   system: ActorSystem,
   override val logger: RollbarLogger,
   @com.google.inject.assistedinject.Assisted buildId: String
-) extends Actor with DataBuild with DataProject with BuildEventLog {
+) extends Actor with DataBuild {
 
   private[this] implicit val ec = system.dispatchers.lookup("build-actor-context")
   private[this] implicit val configuredRollbar = logger.fingerprint("BuildActor")
@@ -92,38 +92,32 @@ class BuildActor @javax.inject.Inject() (
         //removeAwsResources(build)
         logger.withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Called BuildActor.Messages.Delete for build")
       }
-      ()
 
     case BuildActor.Messages.CheckLastState =>
       withEnabledBuild { build =>
-        captureLastState(build)
+        captureLastState(build) // Should Await the Future?
       }
-      () // Should Await the Future?
 
     case BuildActor.Messages.EnsureContainerAgentHealth =>
       withEnabledBuild { build =>
-        ensureContainerAgentHealth(build)
+        ensureContainerAgentHealth(build) // Should Await the Future?
       }
-      () // Should Await the Future?
 
     case BuildActor.Messages.UpdateContainerAgent =>
       withEnabledBuild { build =>
-        updateContainerAgent(build)
+        updateContainerAgent(build) // Should Await the Future?
       }
-      () // Should Await the Future?
 
     case BuildActor.Messages.RemoveOldServices =>
       withEnabledBuild { build =>
-        removeOldServices(build)
+        removeOldServices(build) // Should Await the Future?
       }
-      () // Should Await the Future?
 
     // Configure EC2 LC, ELB, ASG for a build (id: user, fulfillment, splashpage, etc)
     case BuildActor.Messages.ConfigureAWS =>
       withEnabledBuild { build =>
-        configureAWS(build)
+        configureAWS(build) // Should Await the Future?
       }
-      () // Should Await the Future?
 
     case BuildActor.Messages.Scale(diffs) =>
       withOrganization { org =>
@@ -133,7 +127,6 @@ class BuildActor @javax.inject.Inject() (
           }
         }
       }
-      ()
   }
 
   private[this] def isScaleEnabled(): Boolean = {
@@ -163,7 +156,7 @@ class BuildActor @javax.inject.Inject() (
 
   def deleteAutoScalingGroup(build: Build): Future[String] = {
     eventLogProcessor.runSync("Deleting ASG", log = log(build.project.id)) {
-      asg.deleteAutoScalingGroup(BuildNames.projectName(build))
+      asg.delete(BuildNames.projectName(build))
     }
   }
 
@@ -251,7 +244,7 @@ class BuildActor @javax.inject.Inject() (
 
   def upsertAutoScalingGroup(build: Build, launchConfigName: String, loadBalancerName: String): Future[String] = {
     eventLogProcessor.runSync("EC2 auto scaling group", log = log(build.project.id)) {
-      asg.upsertAutoScalingGroup(awsSettings, BuildNames.projectName(build), launchConfigName, loadBalancerName)
+      asg.upsert(awsSettings, BuildNames.projectName(build), launchConfigName, loadBalancerName)
     }
   }
 

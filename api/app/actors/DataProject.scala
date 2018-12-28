@@ -42,9 +42,9 @@ trait DataProject {
     * Invokes the specified function w/ the current organization, but only
     * if we have one
     */
-  def withOrganization[T](f: Organization => T): Option[T] = {
-    dataProject.flatMap { project =>
-      organizationsDao.findById(Authorization.All, project.organization.id).map { org =>
+  def withOrganization[T](f: Organization => T): Unit = {
+    dataProject.foreach { project =>
+      organizationsDao.findById(Authorization.All, project.organization.id).foreach { org =>
         f(org)
       }
     }

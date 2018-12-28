@@ -11,6 +11,7 @@ import io.flow.util.Config
 import sun.misc.BASE64Encoder
 
 import collection.JavaConverters._
+import scala.util.control.NonFatal
 
 @javax.inject.Singleton
 class AutoScalingGroup @javax.inject.Inject() (
@@ -94,7 +95,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     name
   }
 
-  def deleteAutoScalingGroup(id: String): String = {
+  def delete(id: String): String = {
     val name = getAutoScalingGroupName(id)
     logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).info(s"AWS delete ASG")
 
@@ -124,7 +125,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     name
   }
 
-  def upsertAutoScalingGroup(settings: Settings, id: String, launchConfigName: String, loadBalancerName: String): String = {
+  def upsert(settings: Settings, id: String, launchConfigName: String, loadBalancerName: String): String = {
     val name = getAutoScalingGroupName(id)
 
     client.describeAutoScalingGroups(
@@ -132,12 +133,12 @@ class AutoScalingGroup @javax.inject.Inject() (
         .withAutoScalingGroupNames(Seq(name).asJava)
     ).getAutoScalingGroups.asScala.headOption match {
       case None => {
-        createAutoScalingGroup(settings, name, launchConfigName, loadBalancerName)
+        create(settings, name, launchConfigName, loadBalancerName)
       }
       case Some(asg) => {
         if (asg.getLaunchConfigurationName != launchConfigName) {
           val oldLaunchConfigurationName = asg.getLaunchConfigurationName
-          updateAutoScalingGroup(name, launchConfigName, oldLaunchConfigurationName)
+          update(name, launchConfigName, oldLaunchConfigurationName)
         }
       }
     }
@@ -145,7 +146,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     name
   }
 
-  def createAutoScalingGroup(settings: Settings, name: String, launchConfigName: String, loadBalancerName: String): Unit = {
+  def create(settings: Settings, name: String, launchConfigName: String, loadBalancerName: String): Unit = {
     try {
       logger.fingerprint("AutoScalingGroup").withKeyValue("launchConfigName", launchConfigName).withKeyValue("name", name).info(s"AWS AutoScalingGroup createAutoScalingGroup")
       client.createAutoScalingGroup(
@@ -192,11 +193,11 @@ class AutoScalingGroup @javax.inject.Inject() (
     * will need to be manually rotated for the LC to take affect. There is
     * a helper script for rotations in the infra-tools/aws repo.
     */
-  def updateAutoScalingGroup(name: String, newlaunchConfigName: String, oldLaunchConfigurationName: String): Unit = {
+  def update(name: String, newlaunchConfigName: String, oldLaunchConfigurationName: String): Unit = {
     try {
       updateGroupLaunchConfiguration(name, newlaunchConfigName)
     } catch {
-      case _: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("newlaunchConfigName", newlaunchConfigName).withKeyValue("oldLaunchConfigurationName", oldLaunchConfigurationName).withKeyValue("name", name).error(s"FlowError Error updating autoscaling group")
+      case NonFatal(e) => logger.fingerprint("AutoScalingGroup").withKeyValue("newlaunchConfigName", newlaunchConfigName).withKeyValue("oldLaunchConfigurationName", oldLaunchConfigurationName).withKeyValue("name", name).error("FlowError Error updating autoscaling group", e)
     }
   }
 

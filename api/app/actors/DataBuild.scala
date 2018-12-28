@@ -2,11 +2,12 @@ package io.flow.delta.actors
 
 import db.BuildsDao
 import io.flow.delta.config.v0.{models => config}
+import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
 
 
-trait DataBuild extends DataProject {
+trait DataBuild extends DataProject with EventLog {
 
   def buildsDao: BuildsDao
 
@@ -29,23 +30,34 @@ trait DataBuild extends DataProject {
     }
   }
 
+  override def logPrefix: String = {
+    val base = format(this)
+    dataBuild.map { build =>
+      s"$base[${BuildNames.projectName(build)}]"
+    }.getOrElse {
+      s"$base[unknown build]"
+    }
+  }
+
   /**
     * Invokes the specified function w/ the current build
     */
-  def withBuild[T](f: Build => T): Option[T] = {
-    dataBuild.map { f(_) }
+  def withBuild[T](f: Build => T): Unit = {
+    dataBuild.foreach(f)
   }
 
   /**
     * Invokes the specified function w/ the current build, but only
     * if we have a build set.
     */
-  def withEnabledBuild[T](f: Build => T): Option[T] = {
-    dataBuild.flatMap { build =>
+  def withEnabledBuild[T](f: Build => T): Unit = {
+    dataBuild.foreach { build =>
       build.status match {
-        case Status.Enabled => Some(f(build))
-        case Status.Paused | Status.UNDEFINED(_) => None
+        case Status.Enabled =>
+          f(build)
+        case Status.Paused | Status.UNDEFINED(_) =>
       }
+      ()
     }
   }
 

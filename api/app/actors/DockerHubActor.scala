@@ -56,7 +56,7 @@ class DockerHubActor @javax.inject.Inject() (
   travisCiDockerImageBuilder: TravisCiDockerImageBuilder,
   wSClient: WSClient,
   override val logger: RollbarLogger
-) extends Actor with DataBuild with DataProject with BuildEventLog {
+) extends Actor with DataBuild {
 
   private[this] implicit val ec = system.dispatchers.lookup("dockerhub-actor-context")
   private[this] implicit val configuredRollbar = logger.fingerprint("DockerHubActor")
@@ -81,7 +81,6 @@ class DockerHubActor @javax.inject.Inject() (
           }
         }
       }
-      ()
 
     case DockerHubActor.Messages.Monitor(version, start) =>
       withEnabledBuild { build =>
@@ -116,7 +115,6 @@ class DockerHubActor @javax.inject.Inject() (
           }
         }
       }
-      ()
   }
 
   def postDockerHubImageBuild(org: Organization, project: Project, build: Build, buildConfig: BuildConfig): Future[Unit] = {
