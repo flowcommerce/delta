@@ -60,7 +60,7 @@ lazy val api = project
       "org.postgresql" % "postgresql" % "42.2.5",
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
       "io.flow" %% "lib-play-graphite-play26" % "0.0.63",
-      "io.flow" %% "lib-log" % "0.0.51"
+      "io.flow" %% "lib-log" % "0.0.52"
     )
   )
 
@@ -98,7 +98,7 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
     ws,
     guice,
     "io.flow" %% "lib-play-play26" % "0.5.25",
-    "io.flow" %% "lib-test-utils" % "0.0.25" % Test
+    "io.flow" %% "lib-test-utils" % "0.0.26" % Test
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
