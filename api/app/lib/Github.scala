@@ -10,7 +10,7 @@ import io.flow.github.v0.errors.UnitResponse
 import io.flow.github.v0.models.{Contents, Encoding, Repository => GithubRepository, User => GithubUser}
 import io.flow.github.v0.{Client => GithubClient}
 import io.flow.log.RollbarLogger
-import io.flow.play.util.{Config, IdGenerator}
+import io.flow.util.{Config, IdGenerator}
 import org.apache.commons.codec.binary.Base64
 import play.api.libs.ws.WSClient
 
@@ -412,7 +412,7 @@ class MockGithub @Inject()(
   ) (
     implicit ec: ExecutionContext
   ) = Future {
-    MockGithubData.getFile(repo, path)
+    MockGithubData.getFile(path)
   }
   
   override def oauthToken(user: UserReference): Option[String] = {
@@ -422,13 +422,13 @@ class MockGithub @Inject()(
 }
 
 object MockGithubData {
-  private[this] var githubUserByCodes = scala.collection.mutable.Map[String, GithubUserData]()
-  private[this] var userTokens = scala.collection.mutable.Map[String, String]()
-  private[this] var repositories = scala.collection.mutable.Map[String, GithubRepository]()
-  private[this] var files = scala.collection.mutable.Map[String, String]()
+  private[this] val githubUserByCodes = scala.collection.mutable.Map[String, GithubUserData]()
+  private[this] val userTokens = scala.collection.mutable.Map[String, String]()
+  private[this] val repositories = scala.collection.mutable.Map[String, GithubRepository]()
+  private[this] val files = scala.collection.mutable.Map[String, String]()
 
-  def addUser(githubUser: GithubUser, code: String, token: Option[String] = None) {
-    githubUserByCodes +== (
+  def addUser(githubUser: GithubUser, code: String, token: Option[String] = None): Unit = {
+    githubUserByCodes += (
       code -> GithubUserData(
         githubId = githubUser.id,
         login = githubUser.login,
@@ -438,14 +438,16 @@ object MockGithubData {
         avatarUrl = githubUser.avatarUrl
       )
     )
+    ()
   }
 
   def getUserByCode(code: String): Option[GithubUserData] = {
     githubUserByCodes.get(code)
   }
 
-  def addUserOauthToken(token: String, user: UserReference) {
-    userTokens +== (user.id -> token)
+  def addUserOauthToken(token: String, user: UserReference): Unit = {
+    userTokens += (user.id -> token)
+    ()
   }
 
   def getToken(user: UserReference): Option[String] = {
@@ -453,18 +455,20 @@ object MockGithubData {
   }
 
   def addRepository(user: UserReference, repository: GithubRepository): Unit = {
-    repositories +== (user.id -> repository)
+    repositories += (user.id -> repository)
+    ()
   }
 
   def repositories(user: UserReference): Seq[GithubRepository] = {
     repositories.get(user.id).toSeq
   }
 
-  def addFile(repo: String, path: String, contents: String): Unit = {
+  def addFile(path: String, contents: String): Unit = {
     files += (s"repo:$path" -> contents)
+    ()
   }
 
-  def getFile(repo: String, path: String): Option[String] = {
+  def getFile(path: String): Option[String] = {
     files.get(s"repo:$path")
   }
 }

@@ -7,14 +7,12 @@ import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
 
 import scala.concurrent.{ExecutionContext, Future}
-import play.api.i18n.MessagesApi
 import play.api.data._
 import play.api.data.Forms._
 import play.api.mvc.ControllerComponents
 
 class OrganizationsController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -23,15 +21,15 @@ class OrganizationsController @javax.inject.Inject() (
 
   override def section = None
 
-  def redirectToDashboard(org: String) = User { implicit request =>
+  def redirectToDashboard(org: String) = User {
     Redirect(routes.ApplicationController.index(organization = Some(org)))
   }
 
   def index(page: Int = 0) = User.async { implicit request =>
     for {
       organizations <- deltaClient(request).organizations.get(
-        limit = Pagination.DefaultLimit+1,
-        offset = page * Pagination.DefaultLimit
+        limit = Pagination.DefaultLimit.toLong + 1L,
+        offset = page * Pagination.DefaultLimit.toLong
       )
     } yield {
       Ok(
@@ -48,8 +46,8 @@ class OrganizationsController @javax.inject.Inject() (
       for {
         projects <- deltaClient(request).projects.get(
           organization = Some(id),
-          limit = Pagination.DefaultLimit+1,
-          offset = projectsPage * Pagination.DefaultLimit
+          limit = Pagination.DefaultLimit.toLong + 1L,
+          offset = projectsPage * Pagination.DefaultLimit.toLong
         )
       } yield {
         Ok(
@@ -153,7 +151,7 @@ class OrganizationsController @javax.inject.Inject() (
 
   def postDelete(id: String) = User.async { implicit request =>
     withOrganization(request, id) { org =>
-      deltaClient(request).organizations.deleteById(org.id).map { response =>
+      deltaClient(request).organizations.deleteById(org.id).map { _ =>
         Redirect(routes.OrganizationsController.index()).flashing("success" -> s"Organization deleted")
       }.recover {
         case UnitResponse(404) => {

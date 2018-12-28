@@ -6,6 +6,7 @@ import io.flow.delta.actors.MainActor
 import io.flow.delta.lib.Semver
 import io.flow.delta.v0.models._
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 @javax.inject.Singleton
@@ -99,9 +100,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
   """
 
   private[db] def validate(
-    user: UserReference,
     form: ImageForm,
-    existing: Option[Image] = None
     ): Seq[String] = {
     val nameErrors = if (form.name.trim == "") {
       Seq("Name cannot be empty")
@@ -120,7 +119,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
 
     val buildErrors = buildsDao.findById(Authorization.All, form.buildId) match {
       case None => Seq("Build not found")
-      case Some(build) => Nil
+      case Some(_) => Nil
     }
 
     nameErrors ++ versionErrors ++ buildErrors
@@ -156,12 +155,12 @@ case class ImagesWriteDao @javax.inject.Inject() (
   }
 
   def create(createdBy: UserReference, form: ImageForm): Either[Seq[String], Image] = {
-    validate(createdBy, form) match {
+    validate(form) match {
       case Nil => {
 
         db.withConnection { implicit c =>
           SQL(UpsertQuery).on(
-            'id -> io.flow.play.util.IdGenerator("img").randomId(),
+            'id -> IdGenerator("img").randomId(),
             'build_id -> form.buildId,
             'name -> form.name.trim,
             'version -> form.version.trim,
@@ -183,7 +182,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
   }
 
   private[this] def update(createdBy: UserReference, image: Image, form: ImageForm): Either[Seq[String], Image] = {
-    validate(createdBy, form, Some(image)) match {
+    validate(form) match {
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
@@ -210,7 +209,7 @@ case class ImagesWriteDao @javax.inject.Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, image: Image) {
+  def delete(deletedBy: UserReference, image: Image): Unit = {
     delete.delete("images", deletedBy.id, image.id)
   }
 

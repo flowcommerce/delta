@@ -5,6 +5,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.v0.models.Sha
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 case class ShaForm(
@@ -102,7 +103,6 @@ case class ShasWriteDao @javax.inject.Inject() (
   """
 
   private[db] def validate(
-    user: UserReference,
     form: ShaForm,
     existing: Option[Sha] = None
   ): Seq[String] = {
@@ -120,7 +120,7 @@ case class ShasWriteDao @javax.inject.Inject() (
 
     val projectErrors = projectsDao.findById(Authorization.All, form.projectId) match {
       case None => Seq("Project not found")
-      case Some(project) => Nil
+      case Some(_) => Nil
     }
 
     val existingErrors = shasDao.findByProjectIdAndBranch(Authorization.All, form.projectId, form.branch) match {
@@ -137,7 +137,7 @@ case class ShasWriteDao @javax.inject.Inject() (
   }
 
   def create(createdBy: UserReference, form: ShaForm): Either[Seq[String], Sha] = {
-    validate(createdBy, form) match {
+    validate(form) match {
       case Nil => Right(upsert(createdBy, form))
       case errors => Left(errors)
     }
@@ -158,7 +158,7 @@ case class ShasWriteDao @javax.inject.Inject() (
   }
 
   private[this] def upsert(createdBy: UserReference, form: ShaForm): Sha = {
-    val newId = io.flow.play.util.IdGenerator("sha").randomId()
+    val newId = IdGenerator("sha").randomId()
 
     db.withConnection { implicit c =>
       SQL(UpsertQuery).on(
@@ -179,7 +179,7 @@ case class ShasWriteDao @javax.inject.Inject() (
     sha
   }
 
-  def delete(deletedBy: UserReference, sha: Sha) {
+  def delete(deletedBy: UserReference, sha: Sha): Unit = {
     delete.delete("shas", deletedBy.id, sha.id)
   }
 

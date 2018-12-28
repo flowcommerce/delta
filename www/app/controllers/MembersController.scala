@@ -7,14 +7,12 @@ import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
 import play.api.data.Forms._
 import play.api.data._
-import play.api.i18n.MessagesApi
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class MembersController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -28,8 +26,8 @@ class MembersController @javax.inject.Inject() (
       for {
         memberships <- deltaClient(request).memberships.get(
           organization = Some(org.id),
-          limit = Pagination.DefaultLimit+1,
-          offset = page * Pagination.DefaultLimit
+          limit = Pagination.DefaultLimit.toLong + 1L,
+          offset = page * Pagination.DefaultLimit.toLong
         )
       } yield {
         Ok(
@@ -61,7 +59,7 @@ class MembersController @javax.inject.Inject() (
     withOrganization(request, orgId) { org =>
       val boundForm = MembersController.uiForm.bindFromRequest
 
-      organizations(request).flatMap { orgs =>
+      organizations(request).flatMap { _ =>
         boundForm.fold (
 
           formWithErrors => Future {
@@ -103,7 +101,7 @@ class MembersController @javax.inject.Inject() (
 
   def postDelete(orgId: String, id: String) = User.async { implicit request =>
     withOrganization(request, orgId) { org =>
-      deltaClient(request).memberships.deleteById(id).map { response =>
+      deltaClient(request).memberships.deleteById(id).map { _ =>
         Redirect(routes.MembersController.index(org.id)).flashing("success" -> s"Membership deleted")
       }.recover {
         case UnitResponse(404) => {

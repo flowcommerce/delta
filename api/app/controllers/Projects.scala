@@ -1,5 +1,6 @@
 package controllers
 
+import com.github.ghik.silencer.silent
 import db._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
@@ -123,11 +124,11 @@ class Projects @javax.inject.Inject() (
     }
   }
 
-  def getBuildsAndStatesAndDesiredByIdAndBuildName(id: String, buildName: String) = TODO
+  @silent def getBuildsAndStatesAndDesiredByIdAndBuildName(id: String, buildName: String) = TODO
 
-  def postBuildsAndStatesAndDesiredByIdAndBuildName(id: String, buildName: String) = TODO
+  @silent def postBuildsAndStatesAndDesiredByIdAndBuildName(id: String, buildName: String) = TODO
 
-  def getBuildsAndStatesAndLastByIdAndBuildName(id: String, buildName: String) = TODO
+  @silent def getBuildsAndStatesAndLastByIdAndBuildName(id: String, buildName: String) = TODO
 
   def withBuild(user: UserReference, projectId: String, name: String)(
     f: Build => Result

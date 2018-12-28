@@ -88,7 +88,7 @@ class ParserSpec extends PlaySpec {
   "Sample configuration files can all parse" in {
     for ( file <- ConfigSampleDir.listFiles if file.getName.endsWith(".txt") ) {
       parser.parse(read(file)) match {
-        case c: ConfigProject => {}
+        case _: ConfigProject => {}
         case c: ConfigError => sys.error(s"Failed to parse file[$file]: ${c.errors}")
         case ConfigUndefinedType(other) => sys.error(s"Invalid project config[$other]")
       }

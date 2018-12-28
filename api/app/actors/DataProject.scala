@@ -11,7 +11,7 @@ import play.api.libs.json.Json
 
 trait DataProject {
 
-  val logger: RollbarLogger
+  val   logger: RollbarLogger
 
   def configsDao: ConfigsDao
   def organizationsDao: OrganizationsDao
@@ -23,7 +23,7 @@ trait DataProject {
     * Looks up the project with the specified ID, setting the local
     * dataProject var to that project
     */
-  def setProjectId(id: String) {
+  def setProjectId(id: String): Unit = {
     dataProject = projectsDao.findById(Authorization.All, id)
     if (dataProject.isEmpty) {
       logger.withKeyValue("project_id", id).warn(s"Could not find project")

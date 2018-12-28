@@ -2,8 +2,9 @@ package controllers
 
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.Client
-import io.flow.play.util.{AuthHeaders, Constants, FlowSession}
+import io.flow.play.util.{AuthHeaders, FlowSession}
 import io.flow.test.utils.{FlowMockClient, FlowPlaySpec}
+import io.flow.util.Constants
 
 trait MockClient extends FlowPlaySpec with db.Helpers with FlowMockClient[
     io.flow.delta.v0.Client,

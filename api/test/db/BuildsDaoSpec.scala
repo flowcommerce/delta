@@ -9,7 +9,7 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
   "create" in {
     val project = createProject()
     val dockerfile = "./Dockerfile"
-    val config = createBuildConfig(project).copy(name = "root", dockerfile = dockerfile)
+    val config = createBuildConfig().copy(name = "root", dockerfile = dockerfile)
     val build = buildsWriteDao.upsert(systemUser, project.id, Status.Enabled, config)
     build.project.id must be(project.id)
     build.name must be("root")
@@ -33,10 +33,10 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
   "findByProjectIdAndName" in {
     val project = createProject()
 
-    val apiConfig = createBuildConfig(project).copy(name = "api")
+    val apiConfig = createBuildConfig().copy(name = "api")
     val api = buildsWriteDao.upsert(systemUser, project.id, Status.Enabled, apiConfig)
 
-    val wwwConfig = createBuildConfig(project).copy(name = "www")
+    val wwwConfig = createBuildConfig().copy(name = "www")
     val www = buildsWriteDao.upsert(systemUser, project.id, Status.Enabled, wwwConfig)
 
     buildsDao.findByProjectIdAndName(Authorization.All, project.id, "api").map(_.id) must be(Some(api.id))
@@ -61,8 +61,10 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
     val project1 = createProject()
     val project2 = createProject()
 
-    val build1 = upsertBuild(project1)
-    val build2 = upsertBuild(project2)
+    // build1
+    upsertBuild(project1)
+    // build2
+    upsertBuild(project2)
 
     buildsDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.project.id).distinct must be(
       Seq(project1.id)
@@ -77,8 +79,10 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
 
   "findAllByProjectId" in {
     val project = createProject()
-    val build1 = upsertBuild(project)
-    val build2 = upsertBuild(project)
+    // build1
+    upsertBuild(project)
+    // build2
+    upsertBuild(project)
 
     buildsDao.findAllByProjectId(Authorization.All, project.id).toSeq.map(_.project.id).distinct must be(
       Seq(project.id)
@@ -91,7 +95,7 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
     val user = createUserReference()
     createMembership(createMembershipForm(org = org, user = user))
 
-    val build = upsertBuild(project)(createBuildConfig(project), user = user)
+    val build = upsertBuild(project)(createBuildConfig(), user = user)
 
     buildsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(build.id))) must be(Nil)
     buildsDao.findAll(Authorization.All, ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))

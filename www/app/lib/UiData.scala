@@ -1,8 +1,6 @@
 package io.flow.delta.www.lib
 
 import io.flow.common.v0.models.User
-import io.flow.delta.lib.Urls
-import io.flow.play.util.DefaultConfig
 
 sealed trait Section
 
@@ -21,11 +19,4 @@ case class UiData(
   headTitle: Option[String] = None,
   user: Option[User] = None,
   query: Option[String] = None
-) {
-
-  lazy val urls = {
-    Urls(play.api.Play.current.injector.instanceOf[DefaultConfig])
-  }
-    
-
-}
+)

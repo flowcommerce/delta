@@ -5,6 +5,7 @@ import io.flow.common.v0.models.{User, UserReference}
 import io.flow.delta.actors.MainActor
 import io.flow.delta.v0.models.UserForm
 import io.flow.postgresql.{OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 @javax.inject.Singleton
@@ -74,17 +75,17 @@ class UsersDao @javax.inject.Inject() (
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         and(
-          identifier.map { id =>
+          identifier.map { _ =>
             "users.id in (select user_id from user_identifiers where value = trim({identifier}))"
           }
         ).bind("identifier", identifier).
         and(
-          token.map { t =>
+          token.map { _ =>
             "users.id in (select user_id from tokens where token = trim({token}))"
           }
         ).bind("token", token).
         and(
-          githubUserId.map { id =>
+          githubUserId.map { _ =>
             "users.id in (select user_id from github_users where github_user_id = {github_user_id}::numeric)"
           }
         ).bind("github_user_id", githubUserId).
@@ -138,7 +139,7 @@ case class UsersWriteDao @javax.inject.Inject() (
   def create(createdBy: Option[UserReference], form: UserForm): Either[Seq[String], User] = {
     validate(form) match {
       case Nil => {
-        val id = io.flow.play.util.IdGenerator("usr").randomId()
+        val id = IdGenerator("usr").randomId()
 
         db.withConnection { implicit c =>
           SQL(InsertQuery).on(

@@ -14,10 +14,12 @@ class SetDesiredStateSpec extends FlowPlaySpec with db.Helpers {
     val project = createProject()
     val build = upsertBuild(project)
 
-    val tag1 = createTag(createTagForm(project).copy(name = "0.0.1"))
+    // tag1
+    createTag(createTagForm(project).copy(name = "0.0.1"))
     SetDesiredState.run(build).map(_ must be(SupervisorResult.Change("Desired state changed to: 0.0.1: 2 instances")))
 
-    val tag2 = createTag(createTagForm(project).copy(name = "0.0.2"))
+    // tag2
+    createTag(createTagForm(project).copy(name = "0.0.2"))
     SetDesiredState.run(build).map(_ must be(SupervisorResult.Change("Desired state changed to: 0.0.2: 2 instances")))
 
     // No-op if no change
@@ -29,7 +31,8 @@ class SetDesiredStateSpec extends FlowPlaySpec with db.Helpers {
     val project = createProject()
     val build = upsertBuild(project)
 
-    val tag1 = createTag(createTagForm(project).copy(name = "0.0.1"))
+    // tag1
+    createTag(createTagForm(project).copy(name = "0.0.1"))
     SetDesiredState.run(build).map(_ must be(SupervisorResult.Change("Desired state changed to: 0.0.1: 2 instances")))
 
     setLastState(build, "0.0.1", 10)

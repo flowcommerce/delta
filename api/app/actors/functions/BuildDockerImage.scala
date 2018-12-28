@@ -39,9 +39,7 @@ class BuildDockerImage @Inject()(
   imagesDao: ImagesDao,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
-  def run(build: Build)(
-    implicit ec: scala.concurrent.ExecutionContext
-  ): SupervisorResult = {
+  def run(build: Build): SupervisorResult = {
     buildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
       case None => {
         SupervisorResult.Error("Build does not have a desired state")
@@ -65,7 +63,7 @@ class BuildDockerImage @Inject()(
             SupervisorResult.Ready(s"All images exist for versions in desired state[%s]".format(state.versions.map(_.name).mkString(", ")))
           }
           case _ => {
-            val label = Text.pluralize(versions.size, "docker image", "docker images") + ": " + versions.mkString(", ")
+            val label = Text.pluralize(versions.size.toLong, "docker image", "docker images") + ": " + versions.mkString(", ")
             val msg = s"Started build of $label"
 
             eventsDao.findAll(

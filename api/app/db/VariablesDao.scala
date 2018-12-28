@@ -3,8 +3,8 @@ package db
 import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.{Variable, VariableForm}
-import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 @javax.inject.Singleton
@@ -65,8 +65,8 @@ class VariablesDao @javax.inject.Inject() (
         }
 
         Right(
-          findByOrganizationAndKey(auth, form.organization, form.key).getOrElse {
-            sys.error("Could not upsert variable org: ${form.organization}, key: ${form.key}")
+          findByOrganizationAndKey(auth, form.key).getOrElse {
+            sys.error(s"Could not upsert variable org: ${form.organization}, key: ${form.key}")
           }
         )
       }
@@ -79,13 +79,12 @@ class VariablesDao @javax.inject.Inject() (
     findAll(auth = auth, ids = Some(Seq(id)), limit = 1).headOption
   }
 
-  def findByOrganizationAndKey(auth: Authorization, organization: String, key: String): Option[Variable] = {
-    findAll(auth = auth, organization = Some(organization), key = Some(key), limit = 1).headOption
+  def findByOrganizationAndKey(auth: Authorization, key: String): Option[Variable] = {
+    findAll(auth = auth, key = Some(key), limit = 1).headOption
   }
 
   def findAll(
     auth: Authorization,
-    organization: Option[String] = None,
     key: Option[String] = None,
     ids: Option[Seq[String]] = None,
     limit: Long = 25,

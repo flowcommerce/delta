@@ -54,7 +54,7 @@ class ItemsDaoSpec extends FlowPlaySpec with Helpers {
   "supports projects" in {
     val project = createProject(org)
 
-    val itemProject = itemsDao.replaceProject(systemUser, project)
+    itemsDao.replaceProject(systemUser, project)
     val actual = itemsDao.findByObjectId(Authorization.All, project.id).getOrElse {
       sys.error("Failed to create project")
     }

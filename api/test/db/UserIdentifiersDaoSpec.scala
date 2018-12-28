@@ -4,7 +4,6 @@ import java.util.UUID
 
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.UserIdentifier
-import io.flow.postgresql.Authorization
 import io.flow.test.utils.FlowPlaySpec
 
 class UserIdentifiersDaoSpec extends FlowPlaySpec with Helpers {
@@ -27,36 +26,36 @@ class UserIdentifiersDaoSpec extends FlowPlaySpec with Helpers {
   }
 
   "findById" in {
-    val (user, identifier) = createUserIdentifier()
+    val (_, identifier) = createUserIdentifier()
 
-    userIdentifiersDao.findById(Authorization.All, identifier.id).map(_.id) must be(
+    userIdentifiersDao.findById(identifier.id).map(_.id) must be(
       Some(identifier.id)
     )
 
-    userIdentifiersDao.findById(Authorization.All, UUID.randomUUID.toString) must be(None)
+    userIdentifiersDao.findById(UUID.randomUUID.toString) must be(None)
   }
 
   "findAll" must {
     "filter by ids" in {
-      val (user1, identifier1) = createUserIdentifier()
-      val (user2, identifier2) = createUserIdentifier()
+      val (_, identifier1) = createUserIdentifier()
+      val (_, identifier2) = createUserIdentifier()
 
-      userIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(identifier1.id, identifier2.id))).map(_.id).sorted must be(
+      userIdentifiersDao.findAll(ids = Some(Seq(identifier1.id, identifier2.id))).map(_.id).sorted must be(
         Seq(identifier1.id, identifier2.id).sorted
       )
 
-      userIdentifiersDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-      userIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-      userIdentifiersDao.findAll(Authorization.All, ids = Some(Seq(identifier1.id, UUID.randomUUID.toString))).map(_.id) must be(
+      userIdentifiersDao.findAll(ids = Some(Nil)) must be(Nil)
+      userIdentifiersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
+      userIdentifiersDao.findAll(ids = Some(Seq(identifier1.id, UUID.randomUUID.toString))).map(_.id) must be(
         Seq(identifier1.id)
       )
     }
 
     "filter by identifier" in {
-      val (user, identifier) = createUserIdentifier()
+      val (_, identifier) = createUserIdentifier()
 
-      userIdentifiersDao.findAll(Authorization.All, value = Some(identifier.value)).map(_.id) must be(Seq(identifier.id))
-      userIdentifiersDao.findAll(Authorization.All, value = Some(createTestKey())) must be(Nil)
+      userIdentifiersDao.findAll(value = Some(identifier.value)).map(_.id) must be(Seq(identifier.id))
+      userIdentifiersDao.findAll(value = Some(createTestKey())) must be(Nil)
     }
   }
 }

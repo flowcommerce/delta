@@ -12,7 +12,7 @@ class Delete @javax.inject.Inject() (
     select util.delete_by_id({user_id}, {table}, {id})
   """
 
-  def delete(table: String, deletedById: String, id: String) {
+  def delete(table: String, deletedById: String, id: String): Unit = {
     db.withConnection { implicit c =>
       delete(c, table, deletedById, id)
     }
@@ -21,12 +21,13 @@ class Delete @javax.inject.Inject() (
   def delete(
     implicit c: java.sql.Connection,
     table: String, deletedById: String, id: String
-  ) {
+  ): Unit = {
     SQL(Query).on(
       'id -> id,
       'table -> table,
       'user_id -> deletedById
     ).execute()
+    ()
   }
 
 }

@@ -1,13 +1,13 @@
 package db
 
 import javax.inject.{Inject, Singleton}
-
 import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 @Singleton
@@ -107,7 +107,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
      where id = {id}
   """
 
-  private[this] val idGenerator = io.flow.play.util.IdGenerator("bld")
+  private[this] val idGenerator = IdGenerator("bld")
 
   def upsert(createdBy: UserReference, projectId: String, status: Status, config: BuildConfig): Build = {
     db.withConnection { implicit c =>
@@ -123,7 +123,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
     build
   }
 
-  private[db] def upsert(implicit c: java.sql.Connection, createdBy: UserReference, projectId: String, status: Status, config: BuildConfig) {
+  private[db] def upsert(implicit c: java.sql.Connection, createdBy: UserReference, projectId: String, status: Status, config: BuildConfig): Unit = {
     SQL(UpsertQuery).on(
       'id -> idGenerator.randomId(),
       'project_id -> projectId,
@@ -131,6 +131,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
       'status -> status.toString,
       'updated_by_user_id -> createdBy.id
     ).execute()
+    ()
   }
 
   def updateStatus(createdBy: UserReference, build: Build, status: Status): Build = {
@@ -149,7 +150,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, build: Build) {
+  def delete(deletedBy: UserReference, build: Build): Unit = {
     Pager.create { offset =>
       imagesDao.findAll(buildId = Some(build.id), offset = offset)
     }.foreach { image =>

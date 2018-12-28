@@ -1,22 +1,20 @@
 package controllers
 
+import com.github.ghik.silencer.silent
 import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.v0.models._
 import io.flow.delta.www.lib.DeltaClientProvider
 import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
-
 import play.api.data.Forms._
 import play.api.data._
-import play.api.i18n.MessagesApi
 import play.api.mvc._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class ProjectsController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -28,8 +26,8 @@ class ProjectsController @javax.inject.Inject() (
   def index(page: Int = 0) = User.async { implicit request =>
     for {
       projects <- deltaClient(request).projects.get(
-        limit = Pagination.DefaultLimit+1,
-        offset = page * Pagination.DefaultLimit
+        limit = Pagination.DefaultLimit.toLong + 1L,
+        offset = page * Pagination.DefaultLimit.toLong
       )
     } yield {
       Ok(
@@ -118,8 +116,8 @@ class ProjectsController @javax.inject.Inject() (
         repositories <- deltaClient(request).repositories.get(
           organizationId = Some(org.id),
           existingProject = Some(false),
-          limit = limit+1,
-          offset = repositoriesPage * limit
+          limit = limit.toLong + 1L,
+          offset = repositoriesPage * limit.toLong
         )
       } yield {
         Ok(
@@ -131,6 +129,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
+  @silent
   def postGithubOrg(
     orgId: String,
     owner: String, // github owner, ex. flowcommerce
@@ -282,7 +281,7 @@ class ProjectsController @javax.inject.Inject() (
   }
 
   def postDelete(id: String) = User.async { implicit request =>
-    deltaClient(request).projects.deleteById(id).map { response =>
+    deltaClient(request).projects.deleteById(id).map { _ =>
       Redirect(routes.ProjectsController.index()).flashing("success" -> s"Project deleted")
     }.recover {
       case UnitResponse(404) => {

@@ -7,14 +7,12 @@ import io.flow.play.controllers.{FlowControllerComponents, IdentifiedRequest}
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
 
 import scala.concurrent.{ExecutionContext, Future}
-import play.api.i18n.MessagesApi
 import play.api.mvc._
 import play.api.data._
 import play.api.data.Forms._
 
 class TokensController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -26,8 +24,8 @@ class TokensController @javax.inject.Inject() (
   def index(page: Int = 0) = User.async { implicit request =>
     for {
       tokens <- deltaClient(request).tokens.get(
-        limit = Pagination.DefaultLimit+1,
-        offset = page * Pagination.DefaultLimit
+        limit = Pagination.DefaultLimit.toLong + 1L,
+        offset = page * Pagination.DefaultLimit.toLong
       )
     } yield {
       Ok(views.html.tokens.index(uiData(request), PaginatedCollection(page, tokens)))
@@ -73,7 +71,7 @@ class TokensController @javax.inject.Inject() (
   }
 
   def postDelete(id: String) = User.async { implicit request =>
-    deltaClient(request).tokens.deleteById(id).map { response =>
+    deltaClient(request).tokens.deleteById(id).map { _ =>
       Redirect(routes.TokensController.index()).flashing("success" -> s"Token deleted")
     }.recover {
       case UnitResponse(404) => {

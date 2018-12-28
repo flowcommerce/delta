@@ -44,7 +44,7 @@ class Users @javax.inject.Inject() (
     }
   }
 
-  def getById(id: String) = Identified { request =>
+  def getById(id: String) = Identified {
     withUser(id) { user =>
       Ok(Json.toJson(user))
     }

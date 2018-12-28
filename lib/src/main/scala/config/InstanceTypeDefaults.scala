@@ -43,7 +43,7 @@ object InstanceTypeDefaults {
       case InstanceType.T3Xlarge => MemoryDefault(16000, 14000, 12000)
 
       // default to similar to t2.micro
-      case InstanceType.UNDEFINED(other) => MemoryDefault(1000, 750, 675)
+      case InstanceType.UNDEFINED(_) => MemoryDefault(1000, 750, 675)
     }
   }
 

@@ -3,6 +3,7 @@ package io.flow.delta.actors
 import akka.actor.{Actor, ActorSystem}
 import db._
 import db.generated.AmiUpdatesDao
+import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.aws.{AutoScalingGroup, DefaultSettings, EC2ContainerService, ElasticLoadBalancer}
 import io.flow.delta.config.v0.models.BuildStage
@@ -10,8 +11,7 @@ import io.flow.delta.lib.config.InstanceTypeDefaults
 import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
 import io.flow.delta.v0.models.{Build, Docker, StateForm}
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.ErrorHandler
-import io.flow.play.util.Config
+import io.flow.util.Config
 import io.flow.postgresql.OrderBy
 
 import scala.concurrent.Future
@@ -19,7 +19,7 @@ import scala.concurrent.duration._
 
 object BuildActor {
 
-  val CheckLastStateIntervalSeconds = 45
+  val CheckLastStateIntervalSeconds = 45L
   val ScaleIntervalSeconds = 5
 
   trait Message
@@ -64,77 +64,76 @@ class BuildActor @javax.inject.Inject() (
   system: ActorSystem,
   override val logger: RollbarLogger,
   @com.google.inject.assistedinject.Assisted buildId: String
-) extends Actor with ErrorHandler with DataBuild with DataProject with BuildEventLog {
+) extends Actor with DataBuild with DataProject with BuildEventLog {
 
-  implicit private[this] val ec = system.dispatchers.lookup("build-actor-context")
+  private[this] implicit val ec = system.dispatchers.lookup("build-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("BuildActor")
 
-  def receive = {
+  def receive = SafeReceive.withLogUnhandled {
 
-    case msg @ BuildActor.Messages.Setup => withErrorHandler(msg) {
+    case BuildActor.Messages.Setup =>
       setBuildId(buildId)
 
       if (isScaleEnabled) {
         self ! BuildActor.Messages.ConfigureAWS
 
         system.scheduler.schedule(
-          Duration(1, "second"),
+          Duration(1L, "second"),
           Duration(BuildActor.CheckLastStateIntervalSeconds, "seconds")
         ) {
           self ! BuildActor.Messages.CheckLastState
         }
-      }
-    }
 
-    case msg @ BuildActor.Messages.Delete => withErrorHandler(msg) {
+        ()
+      }
+
+    case BuildActor.Messages.Delete =>
       withBuild { build =>
         //removeAwsResources(build)
         logger.withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Called BuildActor.Messages.Delete for build")
       }
-    }
+      ()
 
-    case msg @ BuildActor.Messages.CheckLastState => withErrorHandler(msg) {
+    case BuildActor.Messages.CheckLastState =>
       withEnabledBuild { build =>
         captureLastState(build)
       }
-    }
+      () // Should Await the Future?
 
-    case msg @ BuildActor.Messages.EnsureContainerAgentHealth => withErrorHandler(msg) {
+    case BuildActor.Messages.EnsureContainerAgentHealth =>
       withEnabledBuild { build =>
         ensureContainerAgentHealth(build)
       }
-    }
+      () // Should Await the Future?
 
-    case msg @ BuildActor.Messages.UpdateContainerAgent => withErrorHandler(msg) {
+    case BuildActor.Messages.UpdateContainerAgent =>
       withEnabledBuild { build =>
         updateContainerAgent(build)
       }
-    }
+      () // Should Await the Future?
 
-    case msg @ BuildActor.Messages.RemoveOldServices => withErrorHandler(msg) {
+    case BuildActor.Messages.RemoveOldServices =>
       withEnabledBuild { build =>
         removeOldServices(build)
       }
-    }
+      () // Should Await the Future?
 
     // Configure EC2 LC, ELB, ASG for a build (id: user, fulfillment, splashpage, etc)
-    case msg @ BuildActor.Messages.ConfigureAWS => withErrorHandler(msg) {
+    case BuildActor.Messages.ConfigureAWS =>
       withEnabledBuild { build =>
         configureAWS(build)
       }
-    }
+      () // Should Await the Future?
 
-    case msg @ BuildActor.Messages.Scale(diffs) => withErrorHandler(msg) {
+    case BuildActor.Messages.Scale(diffs) =>
       withOrganization { org =>
         withEnabledBuild { build =>
           diffs.foreach { diff =>
-            scale(org.docker, build, diff)
+            scale(org.docker, build, diff) // Should Await the Future?
           }
         }
       }
-    }
-
-    case msg: Any => logUnhandledMessage(msg)
-
+      ()
   }
 
   private[this] def isScaleEnabled(): Boolean = {
@@ -183,35 +182,35 @@ class BuildActor @javax.inject.Inject() (
   def configureAWS(build: Build): Future[Unit] = {
     eventLogProcessor.runAsync("configureAWS", log = log(build.project.id)) {
       for {
-        cluster <- createCluster(build)
+        _ <- createCluster(build)
         lc <- createLaunchConfiguration(build)
         elb <- createLoadBalancer(build)
-        asg <- upsertAutoScalingGroup(build, lc, elb)
+        _ <- upsertAutoScalingGroup(build, lc, elb)
       } yield {
         // All steps have completed
       }
     }
   }
 
-  def ensureContainerAgentHealth(build: Build): Unit = {
+  def ensureContainerAgentHealth(build: Build): Future[Unit] = {
     eventLogProcessor.runAsync("ECS ensure container agent health", log = log(build.project.id)) {
       ecs.ensureContainerAgentHealth(BuildNames.projectName(build))
     }
   }
 
-  def updateContainerAgent(build: Build) {
+  def updateContainerAgent(build: Build): Future[Seq[String]] = {
     eventLogProcessor.runAsync("ECS updating container agent", log = log(build.project.id)) {
       ecs.updateContainerAgent(BuildNames.projectName(build))
     }
   }
 
-  def removeOldServices(build: Build): Unit = {
+  def removeOldServices(build: Build): Future[Unit] = {
     eventLogProcessor.runAsync("ECS cleanup old services", log = log(build.project.id)) {
       ecs.removeOldServices(BuildNames.projectName(build))
     }
   }
 
-  def scale(docker: Docker, build: Build, diff: StateDiff) {
+  def scale(docker: Docker, build: Build, diff: StateDiff): Future[Unit] = {
     val projectName = BuildNames.projectName(build)
     val imageName = BuildNames.dockerImageName(docker, build)
     val imageVersion = diff.versionName
@@ -219,10 +218,11 @@ class BuildActor @javax.inject.Inject() (
     // only need to run scale once with delta 1.1
     if (diff.lastInstances == 0) {
       self ! BuildActor.Messages.ConfigureAWS
-      val instances = diff.desiredInstances - diff.lastInstances
       eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log(build.project.id)) {
         ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
       }
+    } else {
+      Future.successful(())
     }
   }
 

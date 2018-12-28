@@ -3,13 +3,10 @@ package io.flow.delta.actors
 import db.BuildsDao
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.v0.models.{Build, Status}
-import io.flow.log.RollbarLogger
 import io.flow.postgresql.Authorization
 
 
 trait DataBuild extends DataProject {
-
-  val logger: RollbarLogger
 
   def buildsDao: BuildsDao
 
@@ -19,7 +16,7 @@ trait DataBuild extends DataProject {
     * Looks up the build with the specified ID, setting the local
     * dataBuild var to that build
     */
-  def setBuildId(id: String) {
+  def setBuildId(id: String): Unit = {
     buildsDao.findById(Authorization.All, id) match {
       case None => {
         dataBuild = None

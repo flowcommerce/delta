@@ -6,6 +6,7 @@ import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.{Event, EventType}
 import io.flow.postgresql.{OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 @javax.inject.Singleton
@@ -50,7 +51,7 @@ class EventsDao @javax.inject.Inject() (
       sw.toString.trim
     }
 
-    val id = io.flow.play.util.IdGenerator("evt").randomId()
+    val id = IdGenerator("evt").randomId()
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
@@ -66,7 +67,7 @@ class EventsDao @javax.inject.Inject() (
     id
   }
 
-  def delete(deletedBy: UserReference, event: Event) {
+  def delete(deletedBy: UserReference, event: Event): Unit = {
     delete.delete("events", deletedBy.id, event.id)
   }
 
@@ -94,7 +95,7 @@ class EventsDao @javax.inject.Inject() (
         optionalIn(s"events.id", ids).
         equals(s"events.project_id", projectId).
         equals(s"events.type", `type`.map(_.toString)).
-        and(summaryKeywords.map { keywords =>
+        and(summaryKeywords.map { _ =>
           "lower(events.summary) like '%' || lower({summary_keywords}) || '%'"
         }).bind("summary_keywords", summaryKeywords).
         and(numberMinutesSinceCreation.map { minutes =>

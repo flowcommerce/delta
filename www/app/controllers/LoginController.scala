@@ -1,11 +1,11 @@
 package controllers
 
+import com.github.ghik.silencer.silent
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.GithubAuthenticationForm
-import io.flow.delta.www.lib.{DeltaClientProvider, UiData}
+import io.flow.delta.www.lib.{Config, DeltaClientProvider, UiData}
 import io.flow.play.controllers.IdentifiedCookie._
 import io.flow.play.controllers.{FlowController, FlowControllerComponents}
-
 import play.api.i18n._
 import play.api.mvc.ControllerComponents
 
@@ -15,13 +15,15 @@ class LoginController @javax.inject.Inject() (
   override val messagesApi: MessagesApi,
   val provider: DeltaClientProvider,
   val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+  val flowControllerComponents: FlowControllerComponents,
+  config: Config,
 )(implicit ec: ExecutionContext) extends FlowController with I18nSupport {
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
-    Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl))
+    Ok(views.html.login.index(config, UiData(requestPath = request.path), returnUrl))
   }
 
+  @silent
   def githubCallback(
     code: String,
     state: Option[String],
@@ -44,10 +46,10 @@ class LoginController @javax.inject.Inject() (
       Redirect(url).withIdentifiedCookieUser(UserReference(user.id.toString))
     }.recover {
       case response: io.flow.delta.v0.errors.GenericErrorResponse => {
-        Ok(views.html.login.index(UiData(requestPath = request.path), returnUrl, response.genericError.messages))
+        Ok(views.html.login.index(config, UiData(requestPath = request.path), returnUrl, response.genericError.messages))
       }
 
-      case ex: Throwable => sys.error(s"Github callback failed to authenticate user.")
+      case _: Throwable => sys.error(s"Github callback failed to authenticate user.")
     }
   }
 

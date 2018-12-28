@@ -5,8 +5,8 @@ import io.flow.common.v0.models.UserReference
 import io.flow.delta.config.v0.models.Config
 import io.flow.delta.config.v0.models.json._
 import io.flow.delta.v0.models.Reference
-import io.flow.play.util.IdGenerator
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.IdGenerator
 
 import play.api.db._
 import play.api.libs.json._
@@ -92,18 +92,20 @@ class ConfigsDao @javax.inject.Inject() (
     }
   }
 
-  def updateIfChanged(createdBy: UserReference, projectId: String, newConfig: Config) {
+  def updateIfChanged(createdBy: UserReference, projectId: String, newConfig: Config): Unit = {
     val existing: Option[Config] = findByProjectId(Authorization.All, projectId).map(_.config)
 
     existing match {
       case None => {
         upsert(createdBy, projectId, newConfig)
+        ()
       }
 
       case Some(ex) => {
         ex == newConfig match {
           case false => {
             upsert(createdBy, projectId, newConfig)
+            ()
           }
           case true => {
             // noop - no change
@@ -123,22 +125,23 @@ class ConfigsDao @javax.inject.Inject() (
     }
   }
 
-  private[db] def upsertWithConnection(implicit c: java.sql.Connection, createdBy: UserReference, projectId: String, config: Config) {
+  private[db] def upsertWithConnection(implicit c: java.sql.Connection, createdBy: UserReference, projectId: String, config: Config): Unit = {
     SQL(UpsertQuery).on(
       'id -> idGenerator.randomId(),
       'project_id -> projectId,
       'data -> Json.toJson(config).toString,
       'updated_by_user_id -> createdBy.id
     ).execute()
+    ()
   }
 
-  def deleteByProjectId(deletedBy: UserReference, projectId: String) {
-    findByProjectId(Authorization.All, projectId).map { internal =>
+  def deleteByProjectId(deletedBy: UserReference, projectId: String): Unit = {
+    findByProjectId(Authorization.All, projectId).foreach { internal =>
       delete(deletedBy, internal)
     }
   }
 
-  def delete(deletedBy: UserReference, internal: InternalConfig) {
+  def delete(deletedBy: UserReference, internal: InternalConfig): Unit = {
     delete.delete("configs", deletedBy.id, internal.id)
   }
 

@@ -24,7 +24,7 @@ class Events @javax.inject.Inject() (
     limit: Long,
     offset: Long,
     sort: String
-  ) = Identified { request =>
+  ) = Identified {
     helpers.withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
@@ -43,7 +43,7 @@ class Events @javax.inject.Inject() (
     }
   }
 
-  def getById(id: String) = Identified { request =>
+  def getById(id: String) = Identified {
     withEvent(id) { event =>
       Ok(Json.toJson(event))
     }

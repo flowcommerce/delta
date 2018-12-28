@@ -51,7 +51,7 @@ class OrganizationsDao @javax.inject.Inject() (
         offset = offset
       ).
         and(
-          userId.map { id =>
+          userId.map { _ =>
             "organizations.id in (select organization_id from memberships where user_id = {user_id})"
           }
         ).bind("user_id", userId).
@@ -190,7 +190,7 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, organization: Organization) {
+  def delete(deletedBy: UserReference, organization: Organization): Unit = {
     Pager.create { offset =>
       projectsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
     }.foreach { project =>

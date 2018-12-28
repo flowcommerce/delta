@@ -2,7 +2,6 @@ package io.flow.delta.aws
 
 import akka.actor.ActorSystem
 import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.ec2.AmazonEC2ClientBuilder
 import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
 import io.flow.delta.v0.models.Version
@@ -34,12 +33,6 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
 
-  private[this] lazy val ec2Client = AmazonEC2ClientBuilder.
-    standard().
-    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
-    withClientConfiguration(configuration.aws).
-    build()
-
   private[this] lazy val client = AmazonECSClientBuilder.
     standard().
     withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
@@ -54,11 +47,11 @@ case class EC2ContainerService @javax.inject.Inject() (
     ).flatten.mkString("-")
   }
 
-  def getServiceName(imageName: String, imageVersion: String, settings: Settings): String = {
+  def getServiceName(imageName: String): String = {
     s"${getBaseName(imageName).replaceAll("_", "-")}-service"
   }
 
-  def getContainerName(imageName: String, imageVersion: String, settings: Settings): String = {
+  def getContainerName(imageName: String): String = {
     s"${getBaseName(imageName).replaceAll("_", "-")}-container"
   }
 
@@ -100,7 +93,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         serviceArns match {
           case Nil => // do nothing
           case arns => {
-            getServicesInfo(cluster, arns).map { service =>
+            getServicesInfo(cluster, arns).foreach { service =>
               service.getDeployments.asScala.headOption match {
                 case None => // do nothing
                 case Some(deployment) => {
@@ -140,7 +133,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         // call update for each container instance
         containerInstanceArns.map{ containerInstanceArn =>
           logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService updateContainerAgent")
-          val result = client.updateContainerAgent(
+          client.updateContainerAgent(
             new UpdateContainerAgentRequest()
             .withCluster(cluster)
             .withContainerInstance(containerInstanceArn)
@@ -149,8 +142,8 @@ case class EC2ContainerService @javax.inject.Inject() (
           containerInstanceArn
         }
       } catch {
-        case e: UpdateInProgressException => Nil
-        case e: NoUpdateAvailableException => Nil
+        case _: UpdateInProgressException => Nil
+        case _: NoUpdateAvailableException => Nil
         case e: Throwable => sys.error(s"Error upgrading container agent for $projectId: $e")
       }
     }
@@ -190,8 +183,8 @@ case class EC2ContainerService @javax.inject.Inject() (
     desiredCount: Long
   ): Future[Unit] = {
     for {
-      taskDef <- registerTaskDefinition(settings, imageName, imageVersion, projectId)
-      service <- createOrUpdateService(settings, imageName, imageVersion, projectId, taskDef, desiredCount)
+      taskDef <- registerTaskDefinition(settings, imageName, imageVersion)
+      _ <- createOrUpdateService(settings, imageName, imageVersion, projectId, taskDef, desiredCount)
     } yield {
       // Nothing
     }
@@ -259,7 +252,7 @@ case class EC2ContainerService @javax.inject.Inject() (
 
               // healthy instances = count of service instances actually in the elb which are healthy
               val healthyInstances = serviceInstances.filter(elbHealthyInstances.contains)
-              Version(version, healthyInstances.size)
+              Version(version, healthyInstances.size.toLong)
             }
           }
 
@@ -270,13 +263,13 @@ case class EC2ContainerService @javax.inject.Inject() (
   }
   
   private[this] def getServiceArns(cluster: String): Seq[String] = {
-    var serviceArns = scala.collection.mutable.ListBuffer.empty[List[String]]
+    val serviceArns = scala.collection.mutable.ListBuffer.empty[List[String]]
     var hasMore = true
     var nextToken: String = null // null nextToken gets the first page
 
     while (hasMore) {
       logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("next_token", nextToken).info(s"AWS EC2ContainerService listServices")
-      var result = client.listServices(
+      val result = client.listServices(
         new ListServicesRequest()
           .withCluster(cluster)
           .withNextToken(nextToken)
@@ -297,7 +290,7 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   private[this] def getServicesInfo(cluster: String, serviceNames: Seq[String]): Seq[Service] = {
     // describe services 10 at a time
-    var services = scala.collection.mutable.ListBuffer.empty[List[Service]]
+    val services = scala.collection.mutable.ListBuffer.empty[List[Service]]
     val batchSize = 10
     var dropped = 0
     var servicesToDescribe = serviceNames.take(batchSize)
@@ -319,10 +312,9 @@ case class EC2ContainerService @javax.inject.Inject() (
     settings: Settings,
     imageName: String,
     imageVersion: String,
-    projectId: String
   ): Future[String] = {
     val taskName = getTaskName(imageName, imageVersion)
-    val containerName = getContainerName(imageName, imageVersion, settings)
+    val containerName = getContainerName(imageName)
 
     logger.fingerprint(this.getClass.getName).withKeyValue("task",taskName).withKeyValue("container",containerName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService registerTaskDefinition")
 
@@ -374,9 +366,9 @@ case class EC2ContainerService @javax.inject.Inject() (
     }
   }
 
-  def getServiceInstances(imageName: String, imageVersion: String, projectId: String, settings: Settings): Future[Seq[String]] = {
+  def getServiceInstances(imageName: String, imageVersion: String, projectId: String): Future[Seq[String]] = {
     val clusterName = EC2ContainerService.getClusterName(projectId)
-    val serviceName = getServiceName(imageName, imageVersion, settings)
+    val serviceName = getServiceName(imageName)
 
     Future {
       logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeTasks")
@@ -407,8 +399,8 @@ case class EC2ContainerService @javax.inject.Inject() (
   ): Future[String] = {
     Future {
       val clusterName = EC2ContainerService.getClusterName(projectId)
-      val serviceName = getServiceName(imageName, imageVersion, settings)
-      val containerName = getContainerName(imageName, imageVersion, settings)
+      val serviceName = getServiceName(imageName)
+      val containerName = getContainerName(imageName)
       val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
 
       // allows ECS to deploy new task definitions

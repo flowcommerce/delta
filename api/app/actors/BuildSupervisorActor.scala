@@ -2,14 +2,12 @@ package io.flow.delta.actors
 
 import javax.inject.Inject
 import akka.actor.{Actor, ActorSystem}
-import com.google.inject.assistedinject.Assisted
 import db._
-import io.flow.delta.actors.functions.SyncDockerImages
+import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.v0.models.{Build, Version}
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
 import play.api.Application
 
@@ -44,21 +42,19 @@ class BuildSupervisorActor @Inject()(
   override val logger: RollbarLogger,
   buildDesiredStatesDao: BuildDesiredStatesDao,
   eventLogProcessor: EventLogProcessor,
-  syncDockerImages: SyncDockerImages,
   system: ActorSystem,
   implicit val app: Application,
-  @Assisted id: String
-) extends Actor with ErrorHandler with DataBuild with DataProject with BuildEventLog {
+) extends Actor with DataBuild with DataProject with BuildEventLog {
 
   private[this] implicit val ec = system.dispatchers.lookup("supervisor-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("BuildSupervisorActor")
 
-  def receive = {
+  def receive = SafeReceive.withLogUnhandled {
 
-    case msg @ BuildSupervisorActor.Messages.Data(id) => withErrorHandler(msg) {
+    case BuildSupervisorActor.Messages.Data(id) =>
       setBuildId(id)
-    }
 
-    case msg @ BuildSupervisorActor.Messages.PursueDesiredState => withErrorHandler(msg) {
+    case BuildSupervisorActor.Messages.PursueDesiredState =>
       withEnabledBuild { build =>
         withBuildConfig { buildConfig =>
           eventLogProcessor.runSync("PursueDesiredState", log = log(build.project.id)) {
@@ -66,7 +62,7 @@ class BuildSupervisorActor @Inject()(
           }
         }
       }
-    }
+      () // Should Await the Future?
 
     /**
       * Indicates that something has happened for the tag with
@@ -74,7 +70,7 @@ class BuildSupervisorActor @Inject()(
       * desired state (or ahead of the desired state), triggers
       * PursueDesiredState. Otherwise a no-op.
       */
-    case msg @ BuildSupervisorActor.Messages.CheckTag(name) => withErrorHandler(msg) {
+    case BuildSupervisorActor.Messages.CheckTag(name) =>
       withEnabledBuild { build =>
         buildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
           case None => {
@@ -94,8 +90,7 @@ class BuildSupervisorActor @Inject()(
           }
         }
       }
-    }
-      
+      ()
   }
 
   /**
@@ -104,10 +99,11 @@ class BuildSupervisorActor @Inject()(
     * SupervisorResult.Error, returns that result. Otherwise will
     * return Ready at the end of all the functions.
     */
-  private[this] def run(build: Build, stages: Seq[config.BuildStage], functions: Seq[BuildSupervisorFunction]) {
+  private[this] def run(build: Build, stages: Seq[config.BuildStage], functions: Seq[BuildSupervisorFunction]): Unit = {
     functions.headOption match {
       case None => {
         SupervisorResult.Ready("All functions returned without modification")
+        ()
       }
       case Some(f) => {
         val projectId = build.project.id
@@ -142,6 +138,7 @@ class BuildSupervisorActor @Inject()(
             }.recover {
               case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log(projectId))
             }
+            ()
           }
         }
       }

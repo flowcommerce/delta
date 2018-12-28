@@ -10,7 +10,7 @@ import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Organization, Project, Visibility, EventType => DeltaEventType}
 import io.flow.log.RollbarLogger
-import io.flow.play.util.Config
+import io.flow.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
 import play.api.libs.ws.WSClient
@@ -49,7 +49,7 @@ class TravisCiDockerImageBuilder @Inject()(
   implicit val ec: ExecutionContext
 ) extends DataBuild with DataProject with BuildEventLog {
 
-  def buildDockerImage(travisCiBuild: TravisCiBuild) {
+  def buildDockerImage(travisCiBuild: TravisCiBuild): Unit = {
     val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
     val projectId = travisCiBuild.project.id
 
@@ -97,7 +97,7 @@ class TravisCiDockerImageBuilder @Inject()(
         }
 
       } catch {
-        case err: TimeoutException => {
+        case _: TimeoutException => {
           eventLogProcessor.error(s"Timeout expired fetching Travis CI requests [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
         }
         case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
@@ -111,7 +111,7 @@ class TravisCiDockerImageBuilder @Inject()(
     })
   }
 
-  private def postBuildRequest(travisCiBuild: TravisCiBuild, client: Client) {
+  private def postBuildRequest(travisCiBuild: TravisCiBuild, client: Client): Unit = {
     val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
     val projectId = travisCiBuild.project.id
 
@@ -125,7 +125,7 @@ class TravisCiDockerImageBuilder @Inject()(
       eventLogProcessor.changed(travisChangedMessage(dockerImageName, travisCiBuild.version), log = log(projectId))
 
     } catch {
-      case err: TimeoutException => {
+      case _: TimeoutException => {
         eventLogProcessor.error(s"Timeout expired triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
       }
       case io.flow.docker.registry.v0.errors.UnitResponse(code) => {

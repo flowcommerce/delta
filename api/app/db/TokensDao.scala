@@ -3,8 +3,8 @@ package db
 import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.{Token, TokenForm}
-import io.flow.play.util.Random
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.{IdGenerator, Random}
 import play.api.db._
 
 sealed trait InternalTokenForm {
@@ -115,7 +115,7 @@ class TokensDao @javax.inject.Inject() (
   private[this] def createWithConnection(createdBy: UserReference, form: InternalTokenForm)(implicit c: java.sql.Connection): Either[Seq[String], Token] = {
     validate(form) match {
       case Nil => {
-        val id = io.flow.play.util.IdGenerator("tok").randomId()
+        val id = IdGenerator("tok").randomId()
 
         SQL(InsertQuery).on(
           'id -> id,
@@ -159,14 +159,15 @@ class TokensDao @javax.inject.Inject() (
 
   private[this] def incrementNumberViews(createdBy: UserReference, tokenId: String)(
     implicit c: java.sql.Connection
-  ) {
+  ): Unit = {
     SQL(IncrementNumberViewsQuery).on(
       'id -> tokenId,
       'updated_by_user_id -> createdBy.id
     ).execute()
+    ()
   }
 
-  def delete(deletedBy: UserReference, token: Token) {
+  def delete(deletedBy: UserReference, token: Token): Unit = {
     delete.delete("tokens", deletedBy.id, token.id)
   }
 
@@ -223,12 +224,12 @@ class TokensDao @javax.inject.Inject() (
 
   private[this] def findAllWithConnection(
     auth: Authorization,
-    id: Option[String] = None,
+    id: Option[String],
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     tag: Option[String] = None,
     orderBy: OrderBy = OrderBy("tokens.created_at"),
-    limit: Long = 25,
+    limit: Long,
     offset: Long = 0
   )(implicit c: java.sql.Connection): Seq[Token] = {
     Standards.query(

@@ -112,38 +112,38 @@ class TagsDaoSpec extends FlowPlaySpec with Helpers {
   "validate" must {
 
     "require hash" in {
-      tagsWriteDao.validate(systemUser, createTagForm().copy(hash = "   ")) must be(
+      tagsWriteDao.validate(createTagForm().copy(hash = "   ")) must be(
         Seq("Hash cannot be empty")
       )
     }
 
     "require name" in {
-      tagsWriteDao.validate(systemUser, createTagForm().copy(name = "   ")) must be(
+      tagsWriteDao.validate(createTagForm().copy(name = "   ")) must be(
         Seq("Name cannot be empty")
       )
     }
 
     "validate name is semver" in {
-      tagsWriteDao.validate(systemUser, createTagForm().copy(name = "release")) must be(
+      tagsWriteDao.validate(createTagForm().copy(name = "release")) must be(
         Seq("Name must match semver pattern (e.g. 0.1.2)")
       )
     }
 
     "validate project exists" in {
-      tagsWriteDao.validate(systemUser, createTagForm().copy(projectId = createTestKey())) must be(
+      tagsWriteDao.validate(createTagForm().copy(projectId = createTestKey())) must be(
         Seq("Project not found")
       )
     }
  
     "validate existing record" in {
       val form = createTagForm()
-      val tag = createTag(form)
+      createTag(form)
 
-      tagsWriteDao.validate(systemUser, form) must be(
+      tagsWriteDao.validate(form) must be(
         Seq("Project already has a tag with this name")
       )
 
-      tagsWriteDao.validate(systemUser, form.copy(name = "9.1.2")) must be(Nil)
+      tagsWriteDao.validate(form.copy(name = "9.1.2")) must be(Nil)
     }
 
   }

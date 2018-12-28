@@ -3,8 +3,8 @@ package db
 import java.util.UUID
 
 import io.flow.delta.v0.models.EventType
-import io.flow.play.util.Constants
 import io.flow.test.utils.FlowPlaySpec
+import io.flow.util.Constants
 
 class EventsDaoSpec extends FlowPlaySpec with Helpers {
 

@@ -39,8 +39,8 @@ case class Urls @javax.inject.Inject() (
 
   def itemSummary(summary: ItemSummary): String = {
     summary match {
-      case ProjectSummary(id, org, name, uri) => project(id)
-      case ItemSummaryUndefinedType(name) => "#"
+      case ProjectSummary(id, _, _, _) => project(id)
+      case ItemSummaryUndefinedType(_) => "#"
     }
   }
 

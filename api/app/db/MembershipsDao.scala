@@ -5,6 +5,7 @@ import com.google.inject.Provider
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.{Membership, MembershipForm, Role}
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 @javax.inject.Singleton
@@ -53,9 +54,7 @@ class MembershipsDao @javax.inject.Inject() (
       case _ => {
         membershipsDao.get().findByOrganizationIdAndUserId(Authorization.All, form.organization, form.userId) match {
           case None => Seq.empty
-          case Some(membership) => {
-            Seq("User is already a member")
-          }
+          case Some(_) => Seq("User is already a member")
         }
       }
     }
@@ -86,14 +85,14 @@ class MembershipsDao @javax.inject.Inject() (
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: UserReference, form: MembershipForm): String = {
     val org = organizationsDao.get().findById(Authorization.All, form.organization).getOrElse {
-      sys.error("Could not find organization with id[${form.organization}]")
+      sys.error(s"Could not find organization with id[${form.organization}]")
     }
 
     create(c, createdBy, org.id, form.userId, form.role)
   }
 
   private[db] def create(implicit c: java.sql.Connection, createdBy: UserReference, orgId: String, userId: String, role: Role): String = {
-    val id = io.flow.play.util.IdGenerator("mem").randomId()
+    val id = IdGenerator("mem").randomId()
 
     SQL(InsertQuery).on(
       'id -> id,
@@ -105,7 +104,7 @@ class MembershipsDao @javax.inject.Inject() (
     id
   }
 
-  def delete(deletedBy: UserReference, membership: Membership) {
+  def delete(deletedBy: UserReference, membership: Membership): Unit = {
     delete.delete("memberships", deletedBy.id, membership.id)
   }
 

@@ -36,7 +36,7 @@ object Semver {
 
   def isSemver(value: String): Boolean = {
     value match {
-      case Pattern(major, minor, micro) => true
+      case Pattern(_, _, _) => true
       case _ => false
     }
   }

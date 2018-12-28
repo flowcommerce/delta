@@ -1,7 +1,6 @@
 package db
 
 import anorm._
-import com.google.inject.Provider
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.api.lib.GithubUtil
@@ -81,12 +80,12 @@ class ProjectsDao @javax.inject.Inject() (
           valueFunctions = Seq(Query.Function.Lower, Query.Function.Trim)
         ).
         and(
-          buildId.map { bid =>
+          buildId.map { _ =>
             "id = (select project_id from builds where id = {build_id})"
           }
         ).bind("build_id", buildId).
         and(
-          minutesSinceLastEvent.map { min =>
+          minutesSinceLastEvent.map { _ =>
             "not exists (select 1 from events where events.project_id = projects.id and events.created_at > now() - interval '1 minute' * {minutes_since_last_event}::bigint)"
           }
         ).bind("minutes_since_last_event", minutesSinceLastEvent).
@@ -296,7 +295,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, project: Project) {
+  def delete(deletedBy: UserReference, project: Project): Unit = {
     Pager.create { offset =>
       shasDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
     }.foreach { sha =>

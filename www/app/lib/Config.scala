@@ -5,10 +5,9 @@ import java.net.URLEncoder
 import io.flow.delta.v0.models.Scms
 import io.flow.play.util.DefaultConfig
 
-object Config {
-
-  private[this] lazy val config = play.api.Play.current.injector.instanceOf[DefaultConfig]
-
+class Config @javax.inject.Inject() (
+  config: DefaultConfig
+){
   lazy val githubClientId = config.requiredString("github.delta.client.id")
   lazy val deltaWwwHost = config.requiredString("delta.www.host")
   lazy val githubBaseUrl = s"$deltaWwwHost/login/github"

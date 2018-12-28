@@ -4,6 +4,7 @@ import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.{Publication, Subscription, SubscriptionForm}
 import io.flow.postgresql.{OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 
 import scala.util.{Failure, Success, Try}
@@ -66,7 +67,7 @@ class SubscriptionsDao @javax.inject.Inject() (
   def create(createdBy: UserReference, form: SubscriptionForm): Either[Seq[String], Subscription] = {
     validate(form) match {
       case Nil => {
-        val id = io.flow.play.util.IdGenerator("sub").randomId()
+        val id = IdGenerator("sub").randomId()
 
         db.withConnection { implicit c =>
           SQL(InsertQuery).on(
@@ -87,7 +88,7 @@ class SubscriptionsDao @javax.inject.Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, subscription: Subscription) {
+  def delete(deletedBy: UserReference, subscription: Subscription): Unit = {
     delete.delete("subscriptions", deletedBy.id, subscription.id)
   }
 
@@ -130,7 +131,7 @@ class SubscriptionsDao @javax.inject.Inject() (
         equals("subscriptions.user_id", userId).
         optionalText("subscriptions.publication", publication).
         and(
-          identifier.map { id =>
+          identifier.map { _ =>
             "subscriptions.user_id in (select user_id from user_identifiers where value = trim({identifier}))"
           }
         ).bind("identifier", identifier).

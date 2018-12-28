@@ -7,7 +7,7 @@ import io.flow.delta.api.lib.GitHubHelper
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.lib.config.Defaults
 import io.flow.delta.v0.models._
-import io.flow.play.util.{Constants, Random}
+import io.flow.util.{Constants, IdGenerator, Random}
 import io.flow.postgresql.Authorization
 import io.flow.test.utils.FlowPlaySpec
 import play.api.Application
@@ -16,8 +16,6 @@ import scala.concurrent.ExecutionContext
 
 trait Helpers {
   self: FlowPlaySpec =>
-
-  import scala.language.implicitConversions
 
   def injector = app.injector
 
@@ -82,7 +80,7 @@ trait Helpers {
       if (ctr > maxAttempts) {
         sys.error("Did not create user organization")
       }
-      Thread.sleep(msBetweenAttempts)
+      Thread.sleep(msBetweenAttempts.toLong)
     }
     true
   }
@@ -135,7 +133,7 @@ trait Helpers {
     form: UserForm = makeUserForm()
   ): User = {
     User(
-      id = io.flow.play.util.IdGenerator("tst").randomId(),
+      id = IdGenerator("tst").randomId(),
       email = form.email,
       name = form.name.getOrElse(Name())
     )
@@ -244,7 +242,7 @@ trait Helpers {
     implicit summary: ItemSummary = createItemSummary(org)
   ): ItemForm = {
     val label = summary match {
-      case ProjectSummary(id, org, name, uri) => name
+      case ProjectSummary(_, _, name, _) => name
       case ItemSummaryUndefinedType(name) => name
     }
     ItemForm(
@@ -280,15 +278,13 @@ trait Helpers {
   def upsertBuild(
     project: Project = createProject()
   ) (
-    implicit cfg: config.Build = createBuildConfig(project),
+    implicit cfg: config.Build = createBuildConfig(),
              user: UserReference = Constants.SystemUser
   ): Build = {
     buildsWriteDao.upsert(UserReference(user.id), project.id, Status.Enabled, cfg)
   }
 
-  def createBuildConfig(
-    project: Project = createProject()
-  ) = {
+  def createBuildConfig() = {
     Defaults.Build.copy(
       name = createTestKey()
     )
@@ -357,7 +353,7 @@ trait Helpers {
     )
   }
 
-  def setLastState(build: Build, tag: String, instances: Long) {
+  def setLastState(build: Build, tag: String, instances: Long): Unit = {
     setLastStates(
       build,
       Seq(
@@ -369,10 +365,11 @@ trait Helpers {
     )
   }
 
-  def setLastStates(build: Build, versions: Seq[Version]) {
+  def setLastStates(build: Build, versions: Seq[Version]): Unit = {
     rightOrErrors(
       buildLastStatesDao.upsert(Constants.SystemUser, build, StateForm(versions = versions))
     )
+    ()
   }
 
 }
