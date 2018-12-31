@@ -34,8 +34,8 @@ trait DataProject {
     * Invokes the specified function w/ the current project, but only
     * if we have a project set.
     */
-  def withProject[T](f: Project => T): Option[T] = {
-    dataProject.map { f(_) }
+  def withProject[T](f: Project => T): Unit = {
+    dataProject.foreach { f }
   }
 
   /**

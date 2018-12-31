@@ -73,7 +73,6 @@ class ProjectSupervisorActor @Inject()(
           }
         }
       }
-      ()
 
     case ProjectSupervisorActor.Messages.CheckTag(name: String) =>
       withProject { project =>
@@ -81,7 +80,6 @@ class ProjectSupervisorActor @Inject()(
           sender ! MainActor.Messages.BuildCheckTag(build.id, name)
         }
       }
-      ()
 
   }
 

@@ -97,7 +97,6 @@ class ProjectActor @javax.inject.Inject() (
           }
         }
       }
-      ()
 
     case ProjectActor.Messages.SyncIfInactive =>
       withProject { project =>
@@ -110,7 +109,6 @@ class ProjectActor @javax.inject.Inject() (
           case None => mainActor ! MainActor.Messages.ProjectSync(project.id)
         }
       }
-      ()
   }
 
   private[this] val HookBaseUrl = config.requiredString("delta.api.host") + "/webhooks/github/"
