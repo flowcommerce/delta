@@ -72,20 +72,7 @@ class BuildActor @javax.inject.Inject() (
   def receive = SafeReceive.withLogUnhandled {
 
     case BuildActor.Messages.Setup =>
-      setBuildId(buildId)
-
-      if (isScaleEnabled) {
-        self ! BuildActor.Messages.ConfigureAWS
-
-        system.scheduler.schedule(
-          Duration(1L, "second"),
-          Duration(BuildActor.CheckLastStateIntervalSeconds, "seconds")
-        ) {
-          self ! BuildActor.Messages.CheckLastState
-        }
-
-        ()
-      }
+      handleReceiveSetupEvent()
 
     case BuildActor.Messages.Delete =>
       withBuild { build =>
@@ -127,6 +114,23 @@ class BuildActor @javax.inject.Inject() (
           }
         }
       }
+  }
+
+  private[this] def handleReceiveSetupEvent() = {
+    setBuildId(buildId)
+
+    if (isScaleEnabled) {
+      self ! BuildActor.Messages.ConfigureAWS
+
+      system.scheduler.schedule(
+        Duration(1L, "second"),
+        Duration(BuildActor.CheckLastStateIntervalSeconds, "seconds")
+      ) {
+        self ! BuildActor.Messages.CheckLastState
+      }
+
+      ()
+    }
   }
 
   private[this] def isScaleEnabled(): Boolean = {
