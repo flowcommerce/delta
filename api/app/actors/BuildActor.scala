@@ -254,7 +254,7 @@ class BuildActor @javax.inject.Inject() (
     }
   }
 
-  private[this] def awsSettings() = withBuildConfig { bc =>
+  private[this] def awsSettings(): DefaultSettings = withBuildConfig { bc =>
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
     val latestAmi = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id

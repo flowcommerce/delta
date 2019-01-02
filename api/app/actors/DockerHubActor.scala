@@ -63,58 +63,66 @@ class DockerHubActor @javax.inject.Inject() (
 
   private[this] val client = new Client(ws = wSClient)
 
-  private[this] val IntervalSeconds = 30L
-  private[this] val TimeoutSeconds = 1500
+  private[this] val intervalSeconds = 30L
+  private[this] val timeoutSeconds = 1500
 
   def receive = SafeReceive.withLogUnhandled {
     case DockerHubActor.Messages.Setup =>
       setBuildId(buildId)
 
     case DockerHubActor.Messages.Build(version) =>
-      withOrganization { org =>
-        withProject { project =>
-          withEnabledBuild { build =>
-            withBuildConfig { buildConfig =>
-              travisCiDockerImageBuilder.buildDockerImage(TravisCiBuild(version, org, project, build, buildConfig, wSClient))
-              self ! DockerHubActor.Messages.Monitor(version, new DateTime())
-            }
+      handleBuildEvent(version)
+
+    case DockerHubActor.Messages.Monitor(version, start) =>
+      handleMonitorEvent(version, start)
+  }
+
+  private def handleBuildEvent(version: String) = {
+    withOrganization { org =>
+      withProject { project =>
+        withEnabledBuild { build =>
+          withBuildConfig { buildConfig =>
+            travisCiDockerImageBuilder.buildDockerImage(TravisCiBuild(version, org, project, build, buildConfig, wSClient))
+            self ! DockerHubActor.Messages.Monitor(version, new DateTime())
           }
         }
       }
+    }
+  }
 
-    case DockerHubActor.Messages.Monitor(version, start) =>
-      withEnabledBuild { build =>
-        withOrganization { org =>
-          val imageFullName = BuildNames.dockerImageName(org.docker, build, version)
+  private def handleMonitorEvent(version: String, start: DateTime) = {
+    withEnabledBuild { build =>
+      withOrganization { org =>
+        val imageFullName = BuildNames.dockerImageName(org.docker, build, version)
 
-          Await.result(
-            syncDockerImages.run(build),
-            Duration.Inf
-          )
+        Await.result(
+          syncDockerImages.run(build),
+          Duration.Inf
+        )
 
-          val projectId = build.project.id
+        val projectId = build.project.id
 
-          imagesDao.findByBuildIdAndVersion(build.id, version) match {
-            case Some(image) => {
-              eventLogProcessor.completed(s"Docker hub image $imageFullName is ready - id[${image.id}]", log = log(projectId))
-              // Don't fire an event; the ImagesDao will already have
-              // raised ImageCreated
-            }
+        imagesDao.findByBuildIdAndVersion(build.id, version) match {
+          case Some(image) => {
+            eventLogProcessor.completed(s"Docker hub image $imageFullName is ready - id[${image.id}]", log = log(projectId))
+            // Don't fire an event; the ImagesDao will already have
+            // raised ImageCreated
+          }
 
-            case None => {
-              if (start.plusSeconds(TimeoutSeconds).isBefore(new DateTime)) {
-                eventLogProcessor.error(s"Timeout after $TimeoutSeconds seconds. Docker image $imageFullName was not built", log = log(projectId))
+          case None => {
+            if (start.plusSeconds(timeoutSeconds).isBefore(new DateTime)) {
+              eventLogProcessor.error(s"Timeout after $timeoutSeconds seconds. Docker image $imageFullName was not built", log = log(projectId))
 
-              } else {
-                eventLogProcessor.checkpoint(s"Docker hub image $imageFullName is not ready. Will check again in $IntervalSeconds seconds", log = log(projectId))
-                system.scheduler.scheduleOnce(Duration(IntervalSeconds, "seconds")) {
-                  self ! DockerHubActor.Messages.Monitor(version, start)
-                }
+            } else {
+              eventLogProcessor.checkpoint(s"Docker hub image $imageFullName is not ready. Will check again in $intervalSeconds seconds", log = log(projectId))
+              system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
+                self ! DockerHubActor.Messages.Monitor(version, start)
               }
             }
           }
         }
       }
+    }
   }
 
   def postDockerHubImageBuild(org: Organization, project: Project, build: Build, buildConfig: BuildConfig): Future[Unit] = {
