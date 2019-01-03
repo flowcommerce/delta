@@ -1,4 +1,5 @@
-@(data: io.flow.delta.www.lib.UiData,
+@(config: io.flow.delta.www.lib.Config,
+  data: io.flow.delta.www.lib.UiData,
   returnUrl: Option[String],
   errorMessages: Seq[String] = Nil
 )(implicit flash: Flash, messages: Messages)
@@ -7,7 +8,7 @@
 <section class="col-xs-12 px0">
   <div class="pull-left">
 
-    <a class="btn btn-block btn-social btn-github" href="@io.flow.delta.www.lib.Config.githubOauthUrl(returnUrl)">
+    <a class="btn btn-block btn-social btn-github" href="@config.githubOauthUrl(returnUrl)">
       <span class="fa fa-github"></span> Sign in with Github
     </a>
 

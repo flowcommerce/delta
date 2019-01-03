@@ -14,7 +14,6 @@ class SubscriptionsDaoSpec extends FlowPlaySpec with Helpers {
     val subscription2 = subscriptionsDao.upsert(systemUser, form)
     subscription1.id must be(subscription2.id)
 
-    val newSubscription = UUID.randomUUID.toString
     val subscription3 = createSubscription()
 
     subscription2.id must not be(subscription3.id)

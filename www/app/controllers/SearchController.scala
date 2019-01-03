@@ -1,19 +1,19 @@
 package controllers
 
+import io.flow.delta.lib.Urls
 import io.flow.delta.www.lib.DeltaClientProvider
 import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
-import play.api.i18n.MessagesApi
 import play.api.mvc.ControllerComponents
 
 import scala.concurrent.ExecutionContext
 
 class SearchController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
-  flowControllerComponents: FlowControllerComponents
+  flowControllerComponents: FlowControllerComponents,
+  urls: Urls,
 )(implicit ec: ExecutionContext)
   extends BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) {
 
@@ -26,8 +26,8 @@ class SearchController @javax.inject.Inject() (
     for {
       items <- deltaClient(request).items.get(
         q = q,
-        limit = Pagination.DefaultLimit+1,
-        offset = page * Pagination.DefaultLimit
+        limit = Pagination.DefaultLimit.toLong + 1L,
+        offset = page * Pagination.DefaultLimit.toLong
       )
     } yield {
       Ok(
@@ -36,6 +36,7 @@ class SearchController @javax.inject.Inject() (
             title = q.map { v => s"Search results for $v" },
             query = q
           ),
+          urls,
           q,
           PaginatedCollection(page, items)
         )

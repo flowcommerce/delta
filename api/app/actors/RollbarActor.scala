@@ -1,14 +1,16 @@
 package actors
 
-import akka.actor.{Actor, ActorSystem}
+import akka.actor.{Actor, ActorLogging, ActorSystem}
 import db.{BuildsDao, TagsDao}
+import io.flow.akka.SafeReceive
+import io.flow.akka.recurring.{ScheduleConfig, Scheduler}
 import io.flow.delta.api.lib.StateDiff
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.{ErrorHandler, Scheduler}
-import io.flow.play.util.{Config, FlowEnvironment}
+import io.flow.play.util.ApplicationConfig
 import io.flow.postgresql.Authorization
 import io.flow.rollbar.v0.models.Deploy
 import io.flow.rollbar.v0.{Client => Rollbar}
+import io.flow.util.FlowEnvironment
 import javax.inject.{Inject, Singleton}
 import play.api.libs.ws.WSClient
 
@@ -28,15 +30,16 @@ object RollbarActor {
 
 @Singleton
 class RollbarActor @Inject()(
-  override val logger: RollbarLogger,
+  logger: RollbarLogger,
   ws: WSClient,
   system: ActorSystem,
   buildsDao: BuildsDao,
   tagsDao: TagsDao,
-  val config: Config
-) extends Actor with ErrorHandler with Scheduler {
+  val config: ApplicationConfig
+) extends Actor with ActorLogging with Scheduler {
 
   private implicit val ec = system.dispatchers.lookup("rollbar-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("RollbarActor")
 
   private val rollbar = new Rollbar(ws)
 
@@ -53,14 +56,15 @@ class RollbarActor @Inject()(
 
   private val projectCache = new java.util.concurrent.ConcurrentHashMap[String, Project]()
 
-  scheduleRecurring(system, "rollbar.actor.refresh.seconds") {
-    self ! RollbarActor.Messages.Refresh
-  }
+  scheduleRecurring(
+    ScheduleConfig.fromConfig(config.underlying.underlying, "rollbar.actor.refresh"),
+    RollbarActor.Messages.Refresh
+  )
 
-  def receive = akka.event.LoggingReceive {
+  def receive = SafeReceive.withLogUnhandled {
 
-    case msg @ RollbarActor.Messages.Deployment(buildId, diffs) => withErrorHandler(msg) {
-      accessToken.foreach { token =>
+    case msg @ RollbarActor.Messages.Deployment(buildId, diffs) =>
+      accessToken.foreach { _ =>
         buildsDao.findById(Authorization.All, buildId) match {
           case None => throw new IllegalArgumentException(buildId)
           case Some(build) =>
@@ -93,9 +97,8 @@ class RollbarActor @Inject()(
             }
         }
       }
-    }
 
-    case msg @ RollbarActor.Messages.Refresh => withErrorHandler(msg) {
+    case RollbarActor.Messages.Refresh =>
       accessToken.foreach { token =>
         rollbar.projects.getProjects(token).flatMap { projects =>
           Future.sequence(projects.result.map { project =>
@@ -107,10 +110,6 @@ class RollbarActor @Inject()(
           })
         }
       }
-
-    }
-
-
   }
 
 }

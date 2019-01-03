@@ -15,7 +15,7 @@ class GithubWebhooks @javax.inject.Inject() (
   val flowControllerComponents: FlowControllerComponents
 ) extends FlowController {
 
-  def postByProjectId(projectId: String) = Action { request =>
+  def postByProjectId(projectId: String) = Action {
     projectsDao.findById(Authorization.All, projectId) match {
       case None => {
         NotFound

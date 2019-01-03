@@ -6,7 +6,6 @@ import io.flow.delta.www.lib.DeltaClientProvider
 import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.{Config, PaginatedCollection, Pagination}
 import org.joda.time.DateTime
-import play.api.i18n.MessagesApi
 import play.api.mvc._
 
 import scala.concurrent.ExecutionContext
@@ -84,7 +83,6 @@ case class BuildView(dashboardBuild: io.flow.delta.v0.models.DashboardBuild) {
 
 class ApplicationController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -100,8 +98,8 @@ class ApplicationController @javax.inject.Inject() (
   def index(organization: Option[String], buildsPage: Int = 0) = User.async { implicit request =>
     for {
       dashboardBuilds <- deltaClient(request).dashboardBuilds.get(
-        limit = Pagination.DefaultLimit+1,
-        offset = buildsPage * Pagination.DefaultLimit
+        limit = Pagination.DefaultLimit.toLong + 1L,
+        offset = buildsPage * Pagination.DefaultLimit.toLong
       ).recover {
         case UnitResponse(401) => Nil
       }

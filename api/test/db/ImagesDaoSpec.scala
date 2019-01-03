@@ -119,25 +119,25 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
 
   "validate" must {
     "require version" in {
-      imagesWriteDao.validate(systemUser, createImageForm().copy(version = "   ")) must be(
+      imagesWriteDao.validate(createImageForm().copy(version = "   ")) must be(
         Seq("Version cannot be empty")
       )
     }
 
     "require name" in {
-      imagesWriteDao.validate(systemUser, createImageForm().copy(name = "   ")) must be(
+      imagesWriteDao.validate(createImageForm().copy(name = "   ")) must be(
         Seq("Name cannot be empty")
       )
     }
 
     "validate version is semver" in {
-      imagesWriteDao.validate(systemUser, createImageForm().copy(version = "release")) must be(
+      imagesWriteDao.validate(createImageForm().copy(version = "release")) must be(
         Seq("Version must match semver pattern (e.g. 0.1.2)")
       )
     }
 
     "validate build exists" in {
-      imagesWriteDao.validate(systemUser, createImageForm().copy(buildId = createTestKey())) must be(
+      imagesWriteDao.validate(createImageForm().copy(buildId = createTestKey())) must be(
         Seq("Build not found")
       )
     }

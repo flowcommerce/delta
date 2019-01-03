@@ -5,8 +5,8 @@ import io.flow.delta.v0.models.{Publication, SubscriptionForm}
 import io.flow.delta.www.lib.{DeltaClientProvider, UiData}
 import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.Config
-import play.api.i18n._
-import play.api.mvc._
+import play.api.i18n.I18nSupport
+import play.api.mvc.{ControllerComponents, Request}
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -23,7 +23,6 @@ object Subscriptions {
 
 class SubscriptionsController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -48,7 +47,7 @@ class SubscriptionsController @javax.inject.Inject() (
       user <- Future { users.headOption.map(u => UserReference(u.id)) }
       subscriptions <- deltaClientProvider.newClient(user = user, requestId = None).subscriptions.get(
         identifier = Some(identifier),
-        limit = Publication.all.size + 1
+        limit = Publication.all.size.toLong + 1L
       )
     } yield {
       val userPublications = Publication.all.map { p =>
@@ -61,7 +60,7 @@ class SubscriptionsController @javax.inject.Inject() (
     }
   }
 
-  def postToggle(identifier: String, publication: Publication) = Action.async { implicit request =>
+  def postToggle(identifier: String, publication: Publication) = Action.async {
     client.users.get(identifier = Some(identifier)).flatMap { users =>
       users.headOption match {
         case None => Future {

@@ -46,7 +46,7 @@ class BuildStatesDaoSpec extends FlowPlaySpec with Helpers {
 
   "delete" in {
     val build = upsertBuild()
-    val state = upsertBuildDesiredState(build)
+    upsertBuildDesiredState(build)
     buildDesiredStatesDao.delete(systemUser, build)
     buildDesiredStatesDao.findByBuildId(Authorization.All, build.id) must be(None)
   }

@@ -3,12 +3,14 @@ package io.flow.delta.actors
 import java.util.UUID
 
 import actors.RollbarActor
-import akka.actor._
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
+import com.typesafe.config.Config
 import db.{BuildsDao, ItemsDao, ProjectsDao}
+import io.flow.akka.SafeReceive
+import io.flow.akka.recurring.{ScheduleConfig, Scheduler}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.StateDiff
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.{ErrorHandler, Scheduler}
 import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, Pager}
 import javax.inject.Named
@@ -59,8 +61,8 @@ object MainActor {
 
 @javax.inject.Singleton
 class MainActor @javax.inject.Inject() (
-  override val logger: RollbarLogger,
-  override val config: io.flow.play.util.Config,
+  logger: RollbarLogger,
+  config: Config,
   buildFactory: BuildActor.Factory,
   dockerHubFactory: DockerHubActor.Factory,
   dockerHubTokenFactory: DockerHubTokenActor.Factory,
@@ -74,9 +76,10 @@ class MainActor @javax.inject.Inject() (
   projectsDao: ProjectsDao,
   itemsDao: ItemsDao,
   @Named("rollbar-actor") rollbarActor: ActorRef,
-) extends Actor with ActorLogging with ErrorHandler with Scheduler with InjectedActorSupport {
+) extends Actor with ActorLogging with Scheduler with InjectedActorSupport {
 
   private[this] implicit val ec = system.dispatchers.lookup("main-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("MainActor")
 
   private[this] val name = "main"
 
@@ -96,11 +99,15 @@ class MainActor @javax.inject.Inject() (
     }
 
     case _ => {
-      scheduleRecurring(system, "main.actor.update.jwt.token.seconds") {
-        dockerHubTokenActor ! DockerHubTokenActor.Messages.Refresh
-      }
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.update.jwt.token"),
+        DockerHubTokenActor.Messages.Refresh,
+        dockerHubTokenActor
+      )
 
-      scheduleRecurring(system, "main.actor.ensure.container.agent.health.seconds") {
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.ensure.container.agent.health")
+      ){
         Pager.create { offset =>
           buildsDao.findAll(Authorization.All, offset = offset)
         }.foreach { build =>
@@ -108,7 +115,9 @@ class MainActor @javax.inject.Inject() (
         }
       }
 
-      scheduleRecurring(system, "main.actor.update.container.agent.seconds") {
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.update.container.agent")
+      ) {
         Pager.create { offset =>
           buildsDao.findAll(Authorization.All, offset = offset)
         }.foreach { build =>
@@ -116,7 +125,9 @@ class MainActor @javax.inject.Inject() (
         }
       }
 
-      scheduleRecurring(system, "main.actor.remove.old.services.seconds") {
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.remove.old.services")
+      ) {
         Pager.create { offset =>
           buildsDao.findAll(Authorization.All, offset = offset)
         }.foreach { build =>
@@ -124,7 +135,9 @@ class MainActor @javax.inject.Inject() (
         }
       }
 
-      scheduleRecurring(system, "main.actor.project.sync.seconds") {
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.project.sync")
+      ) {
         Pager.create { offset =>
           projectsDao.findAll(Authorization.All, offset = offset)
         }.foreach { project =>
@@ -132,7 +145,9 @@ class MainActor @javax.inject.Inject() (
         }
       }
 
-      scheduleRecurring(system, "main.actor.project.inactive.check.seconds") {
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.project.inactive.checkc")
+      ) {
         Pager.create { offset =>
           projectsDao.findAll(Authorization.All, offset = offset, minutesSinceLastEvent = Some(15))
         }.foreach { project =>
@@ -150,118 +165,92 @@ class MainActor @javax.inject.Inject() (
       }
     }
 
-    case _ => akka.event.LoggingReceive {
-      case msg @ MainActor.Messages.BuildCreated(id) => withErrorHandler(msg) {
+    case _ => SafeReceive.withLogUnhandled {
+      case MainActor.Messages.BuildCreated(id) =>
         upsertBuildSupervisorActor(id) ! BuildSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.BuildUpdated(id) => withErrorHandler(msg) {
+      case MainActor.Messages.BuildUpdated(id) =>
         upsertBuildSupervisorActor(id) ! BuildSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.BuildDeleted(id) => withErrorHandler(msg) {
-        (buildActors -= id).map { case (_, actor) =>
+      case MainActor.Messages.BuildDeleted(id) =>
+        (buildActors -= id).foreach { case (_, actor) =>
           actor ! BuildActor.Messages.Delete
           actor ! PoisonPill
         }
-      }
 
-      case msg @ MainActor.Messages.BuildSync(id) => withErrorHandler(msg) {
+      case MainActor.Messages.BuildSync(id) =>
         upsertBuildSupervisorActor(id) ! BuildSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.BuildCheckTag(id, name) => withErrorHandler(msg) {
+      case MainActor.Messages.BuildCheckTag(id, name) =>
         upsertBuildSupervisorActor(id) ! BuildSupervisorActor.Messages.CheckTag(name)
-      }
 
-      case msg @ MainActor.Messages.UserCreated(id) => withErrorHandler(msg) {
+      case MainActor.Messages.UserCreated(id) =>
         upsertUserActor(id) ! UserActor.Messages.Created
-      }
 
-      case msg @ MainActor.Messages.ProjectCreated(id) => withErrorHandler(msg) {
+      case MainActor.Messages.ProjectCreated(id) =>
         self ! MainActor.Messages.ProjectSync(id)
-      }
 
-      case msg @ MainActor.Messages.ProjectUpdated(id) => withErrorHandler(msg) {
+      case MainActor.Messages.ProjectUpdated(id) =>
         searchActor ! SearchActor.Messages.SyncProject(id)
         upsertProjectSupervisorActor(id) ! ProjectSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.ProjectDeleted(id) => withErrorHandler(msg) {
+      case MainActor.Messages.ProjectDeleted(id) =>
         searchActor ! SearchActor.Messages.SyncProject(id)
 
-        (projectActors -= id).map { case (id, actor) =>
+        (projectActors -= id).foreach { case (_, actor) =>
           actor ! PoisonPill
         }
 
-        (projectSupervisorActors -= id).map { case (id, actor) =>
+        (projectSupervisorActors -= id).foreach { case (_, actor) =>
           actor ! PoisonPill
         }
-      }
 
-      case msg @ MainActor.Messages.ProjectSync(id) => withErrorHandler(msg) {
+      case MainActor.Messages.ProjectSync(id) =>
         val ref = upsertProjectActor(id)
         ref ! ProjectActor.Messages.SyncConfig
         ref ! ProjectActor.Messages.SyncBuilds
         upsertProjectSupervisorActor(id) ! ProjectSupervisorActor.Messages.PursueDesiredState
         searchActor ! SearchActor.Messages.SyncProject(id)
-      }
 
-      case msg @ MainActor.Messages.Scale(buildId, diffs) => withErrorHandler(msg) {
+      case MainActor.Messages.Scale(buildId, diffs) =>
         rollbarActor ! RollbarActor.Messages.Deployment(buildId, diffs)
         upsertBuildActor(buildId) ! BuildActor.Messages.Scale(diffs)
-      }
 
-      case msg @ MainActor.Messages.ShaUpserted(projectId, _) => withErrorHandler(msg) {
+      case MainActor.Messages.ShaUpserted(projectId, _) =>
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.TagCreated(projectId, _, name) => withErrorHandler(msg) {
+      case MainActor.Messages.TagCreated(projectId, _, name) =>
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.CheckTag(name)
-      }
 
-      case msg @ MainActor.Messages.TagUpdated(projectId, _, name) => withErrorHandler(msg) {
+      case MainActor.Messages.TagUpdated(projectId, _, name) =>
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.CheckTag(name)
-      }
 
-      case msg @ MainActor.Messages.ImageCreated(buildId, _, version) => withErrorHandler(msg) {
+      case MainActor.Messages.ImageCreated(buildId, _, version) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.CheckTag(version)
-      }
 
-      case msg @ MainActor.Messages.BuildDockerImage(buildId, version) => withErrorHandler(msg) {
+      case MainActor.Messages.BuildDockerImage(buildId, version) =>
         upsertDockerHubActor(buildId) ! DockerHubActor.Messages.Build(version)
-      }
 
-      case msg @ MainActor.Messages.CheckLastState(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.CheckLastState(buildId) =>
         upsertBuildActor(buildId) ! BuildActor.Messages.CheckLastState
-      }
 
-      case msg @ MainActor.Messages.BuildDesiredStateUpdated(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.BuildDesiredStateUpdated(buildId) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.BuildLastStateUpdated(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.BuildLastStateUpdated(buildId) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
-      }
 
-      case msg @ MainActor.Messages.ConfigureAWS(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.ConfigureAWS(buildId) =>
         upsertBuildActor(buildId) ! BuildActor.Messages.ConfigureAWS
-      }
 
-      case msg @ MainActor.Messages.RemoveOldServices(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.RemoveOldServices(buildId) =>
         upsertBuildActor(buildId) ! BuildActor.Messages.RemoveOldServices
-      }
 
-      case msg @ MainActor.Messages.UpdateContainerAgent(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.UpdateContainerAgent(buildId) =>
         upsertBuildActor(buildId) ! BuildActor.Messages.UpdateContainerAgent
-      }
 
-      case msg @ MainActor.Messages.EnsureContainerAgentHealth(buildId) => withErrorHandler(msg) {
+      case MainActor.Messages.EnsureContainerAgentHealth(buildId) =>
         upsertBuildActor(buildId) ! BuildActor.Messages.EnsureContainerAgentHealth
-      }
-
-      case msg: Any => logUnhandledMessage(msg)
-
     }
   }
 

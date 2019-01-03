@@ -1,8 +1,7 @@
 package io.flow.delta.lib
 
-import io.flow.delta.v0.models.{ItemSummary, ItemSummaryUndefinedType, OrganizationSummary, ProjectSummary}
-import io.flow.play.util.{IdGenerator, Random}
-import org.joda.time.DateTime
+import io.flow.delta.v0.models.{OrganizationSummary, ProjectSummary}
+import io.flow.util.{IdGenerator, Random}
 
 trait Factories {
 
@@ -18,7 +17,7 @@ trait Factories {
   }
 
   def makeKey(): String = {
-    "z-test-${random.alphaNumeric(20)}"
+    s"z-test-${random.alphaNumeric(20)}"
   }
 
   def makeProjectSummary(

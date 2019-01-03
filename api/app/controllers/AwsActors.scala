@@ -15,7 +15,7 @@ class AwsActors @javax.inject.Inject() (
   val flowControllerComponents: FlowControllerComponents
 ) extends BaseIdentifiedRestController {
 
-  def postByBuildId(buildId: String) = Action { request =>
+  def postByBuildId(buildId: String) = Action {
     buildsDao.findById(Authorization.All, buildId) match {
       case None => {
         NotFound

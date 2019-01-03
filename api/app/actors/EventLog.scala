@@ -10,7 +10,7 @@ trait EventLog {
     */
   def logPrefix: String = {
     val base = format(this)
-    withProject { project =>
+    getProject.map { project =>
       base + s"[${project.id}]"
     }.getOrElse(base)
   }
@@ -34,10 +34,7 @@ trait EventLog {
     }
   }
   
-  /**
-    * Event log relies on a project; this method can be provided by mixing in WithProject
-    **/
-  def withProject[T](f: Project => T): Option[T]
+  def getProject: Option[Project]
 
   def log(projectId: String): io.flow.delta.api.lib.EventLog = io.flow.delta.api.lib.EventLog.withSystemUser(projectId, logPrefix)
 

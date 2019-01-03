@@ -42,8 +42,6 @@ class Scale @Inject()(
 
   def run(
     build: Build
-  ) (
-    implicit ec: scala.concurrent.ExecutionContext
   ): SupervisorResult = {
     val lastState = buildLastStatesDao.findByBuildId(Authorization.All, build.id)
     val desiredState = buildDesiredStatesDao.findByBuildId(Authorization.All, build.id)

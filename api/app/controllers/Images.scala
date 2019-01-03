@@ -1,7 +1,6 @@
 package controllers
 
 import db.{ImagesDao, ImagesWriteDao}
-import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.Image
 import io.flow.delta.v0.models.json._
 import io.flow.play.controllers.FlowControllerComponents
@@ -24,7 +23,7 @@ class Images @javax.inject.Inject() (
     limit: Long,
     offset: Long,
     sort: String
-  ) = Identified { request =>
+  ) = Identified {
     helpers.withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
@@ -41,20 +40,20 @@ class Images @javax.inject.Inject() (
     }
   }
 
-  def getById(id: String) = Identified { request =>
-    withImage(request.user, id) { image =>
+  def getById(id: String) = Identified {
+    withImage(id) { image =>
       Ok(Json.toJson(image))
     }
   }
 
   def deleteById(id: String) = Identified { request =>
-    withImage(request.user, id) { image =>
+    withImage(id) { image =>
       imagesWriteDao.delete(request.user, image)
       NoContent
     }
   }
 
-  def withImage(user: UserReference, id: String)(
+  private def withImage(id: String)(
     f: Image => Result
   ): Result = {
     imagesDao.findById(id) match {

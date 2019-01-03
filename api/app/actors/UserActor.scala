@@ -2,12 +2,11 @@ package io.flow.delta.actors
 
 import javax.inject.Inject
 import akka.actor.Actor
-import com.google.inject.assistedinject.Assisted
 import db.{SubscriptionsDao, UserIdentifiersDao, UsersDao}
+import io.flow.akka.SafeReceive
 import io.flow.common.v0.models.{User, UserReference}
 import io.flow.delta.v0.models.{Publication, SubscriptionForm}
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.ErrorHandler
 
 object UserActor {
 
@@ -25,22 +24,21 @@ object UserActor {
 }
 
 class UserActor @Inject()(
-  override val logger: RollbarLogger,
+  logger: RollbarLogger,
   subscriptionsDao: SubscriptionsDao,
   usersDao: UsersDao,
   userIdentifiersDao: UserIdentifiersDao,
-  @Assisted id: String
-) extends Actor with ErrorHandler {
+) extends Actor {
+  private[this] implicit val configuredRollbar = logger.fingerprint("UserActor")
 
   var dataUser: Option[User] = None
 
-  def receive = {
+  def receive = SafeReceive.withLogUnhandled {
 
-    case msg @ UserActor.Messages.Data(id) => withErrorHandler(msg) {
+    case UserActor.Messages.Data(id) =>
       dataUser = usersDao.findById(id)
-    }
 
-    case msg @ UserActor.Messages.Created => withErrorHandler(msg) {
+    case UserActor.Messages.Created =>
       dataUser.foreach { user =>
         // This method will force create an identifier
         userIdentifiersDao.latestForUser(MainActor.SystemUser, UserReference(id = user.id))
@@ -56,9 +54,6 @@ class UserActor @Inject()(
           )
         }
       }
-    }
-
-    case msg: Any => logUnhandledMessage(msg)
   }
 
 }

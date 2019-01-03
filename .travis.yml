@@ -12,7 +12,7 @@ services:
 before_script:
   - docker run -d -p 127.0.0.1:6099:5432 flowcommerce/delta-postgresql:latest
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean compile test
+  - sbt ++$TRAVIS_SCALA_VERSION clean compile test doc
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm

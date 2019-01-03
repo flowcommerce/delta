@@ -1,5 +1,6 @@
 @(
   data: io.flow.delta.www.lib.UiData,
+  urls: io.flow.delta.lib.Urls,
   query: Option[String],
   items: io.flow.play.util.PaginatedCollection[io.flow.delta.v0.models.Item]
 )(implicit flash: Flash, messages: Messages)
@@ -20,7 +21,7 @@
                 case s: io.flow.delta.v0.models.ProjectSummary => "Project"
                 case io.flow.delta.v0.models.ItemSummaryUndefinedType(other) => other
               }}
-              <a href="@data.urls.itemSummary(item.summary)">@item.label</a>
+              <a href="@urls.itemSummary(item.summary)">@item.label</a>
             </td>
           </tr>
         }

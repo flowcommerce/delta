@@ -49,22 +49,22 @@ object Text {
     val period = new Period(date, base)
 
     val label = if (period.getYears > 0) {
-      Text.pluralize(period.getYears, "year", "years")
+      Text.pluralize(period.getYears.toLong, "year", "years")
 
     } else if (period.getMonths > 0) {
-      Text.pluralize(period.getMonths, "month", "months")
+      Text.pluralize(period.getMonths.toLong, "month", "months")
 
     } else if (period.getWeeks > 0) {
-      Text.pluralize(period.getWeeks, "week", "weeks")
+      Text.pluralize(period.getWeeks.toLong, "week", "weeks")
 
     } else if (period.getDays > 0) {
-      Text.pluralize(period.getDays, "day", "days")
+      Text.pluralize(period.getDays.toLong, "day", "days")
 
     } else if (period.getHours > 0) {
-      Text.pluralize(period.getHours, "hour", "hours")
+      Text.pluralize(period.getHours.toLong, "hour", "hours")
 
     } else if (period.getMinutes > 0) {
-      Text.pluralize(period.getMinutes, "minute", "minutes")
+      Text.pluralize(period.getMinutes.toLong, "minute", "minutes")
 
     } else {
       "seconds"

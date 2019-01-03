@@ -1,5 +1,7 @@
 package io.flow.delta.actors
 
+import java.util.concurrent.atomic.AtomicReference
+
 import db.{ConfigsDao, OrganizationsDao, ProjectsDao}
 import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
@@ -11,40 +13,43 @@ import play.api.libs.json.Json
 
 trait DataProject {
 
-  val logger: RollbarLogger
+  val   logger: RollbarLogger
 
   def configsDao: ConfigsDao
   def organizationsDao: OrganizationsDao
   def projectsDao: ProjectsDao
 
-  private[this] var dataProject: Option[Project] = None
+  private[this] val dataProject: AtomicReference[Option[Project]] = new AtomicReference(None)
 
   /**
     * Looks up the project with the specified ID, setting the local
     * dataProject var to that project
     */
-  def setProjectId(id: String) {
-    dataProject = projectsDao.findById(Authorization.All, id)
-    if (dataProject.isEmpty) {
+  def setProjectId(id: String): Unit = {
+    val p = projectsDao.findById(Authorization.All, id)
+    dataProject.set(p)
+    if (p.isEmpty) {
       logger.withKeyValue("project_id", id).warn(s"Could not find project")
     }
   }
+
+  def getProject: Option[Project] = dataProject.get
 
   /**
     * Invokes the specified function w/ the current project, but only
     * if we have a project set.
     */
-  def withProject[T](f: Project => T): Option[T] = {
-    dataProject.map { f(_) }
+  def withProject[T](f: Project => T): Unit = {
+    dataProject.get.foreach(f)
   }
 
   /**
     * Invokes the specified function w/ the current organization, but only
     * if we have one
     */
-  def withOrganization[T](f: Organization => T): Option[T] = {
-    dataProject.flatMap { project =>
-      organizationsDao.findById(Authorization.All, project.organization.id).map { org =>
+  def withOrganization[T](f: Organization => T): Unit = {
+    dataProject.get.foreach { project =>
+      organizationsDao.findById(Authorization.All, project.organization.id).foreach { org =>
         f(org)
       }
     }
@@ -55,7 +60,7 @@ trait DataProject {
     * it is valid.
     */
   def withConfig[T](f: ConfigProject => T): Option[T] = {
-    dataProject.flatMap { project =>
+    dataProject.get.flatMap { project =>
       configsDao.findByProjectId(Authorization.All, project.id).map(_.config) match {
         case None => {
           logger.withKeyValue("project_id", project.id).info(s"Project does not have a configuration")
@@ -81,7 +86,7 @@ trait DataProject {
     * into a valid Repo.
     */
   def withRepo[T](f: Repo => T): Option[T] = {
-    dataProject.flatMap { project =>
+    dataProject.get.flatMap { project =>
       GithubUtil.parseUri(project.uri) match {
         case Left(error) => {
           logger.withKeyValue("project", Json.toJson(project)).withKeyValue("error", error).warn(s"Cannot parse repo from project")

@@ -55,10 +55,10 @@ object SupervisorResult {
 
     results.foreach { r =>
       val name = r match {
-        case Ready(desc) => "ready"
-        case Change(desc) => "change"
-        case Checkpoint(desc) => "checkpoint"
-        case Error(desc, ex) => "error"
+        case Ready(_) => "ready"
+        case Change(_) => "change"
+        case Checkpoint(_) => "checkpoint"
+        case Error(_, _) => "error"
       }
 
       byType.get(name) match {

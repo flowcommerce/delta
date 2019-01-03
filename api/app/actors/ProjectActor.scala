@@ -2,21 +2,21 @@ package io.flow.delta.actors
 
 import akka.actor.{Actor, ActorSystem}
 import db._
+import io.flow.akka.SafeReceive
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.{GitHubHelper, Github, Repo}
 import io.flow.delta.lib.config.Parser
 import io.flow.delta.v0.models.Project
 import io.flow.github.v0.models.{HookConfig, HookEvent, HookForm}
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.ErrorHandler
-import io.flow.play.util.{Config, Constants}
 import io.flow.postgresql.Authorization
+import io.flow.util.{Config, Constants}
 
 import scala.concurrent.duration._
 
 object ProjectActor {
 
-  val SyncIfInactiveIntervalMinutes = 15
+  val SyncIfInactiveIntervalMinutes = 15L
 
   trait Message
 
@@ -47,9 +47,10 @@ class ProjectActor @javax.inject.Inject() (
   override val logger: RollbarLogger,
   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
   @com.google.inject.assistedinject.Assisted projectId: String
-) extends Actor with ErrorHandler with DataBuild with DataProject with EventLog {
+) extends Actor with DataBuild with DataProject with EventLog {
 
   private[this] implicit val ec = system.dispatchers.lookup("project-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("ProjectActor")
 
   private[this] def log(project: Project): RollbarLogger = {
     logger.
@@ -58,9 +59,9 @@ class ProjectActor @javax.inject.Inject() (
       withKeyValue("project_name", project.name)
   }
 
-  def receive = {
+  def receive = SafeReceive.withLogUnhandled {
 
-    case msg @ ProjectActor.Messages.Setup => withErrorHandler(msg) {
+    case ProjectActor.Messages.Setup =>
       setProjectId(projectId)
 
       withProject { project =>
@@ -75,15 +76,14 @@ class ProjectActor @javax.inject.Inject() (
       ) {
         self ! ProjectActor.Messages.SyncIfInactive
       }
-    }
+      ()
 
-    case msg @ ProjectActor.Messages.SyncBuilds => withErrorHandler(msg) {
+    case ProjectActor.Messages.SyncBuilds =>
       buildsDao.findAllByProjectId(Authorization.All, projectId).foreach { build =>
         mainActor ! MainActor.Messages.BuildDesiredStateUpdated(build.id)
       }
-    }
 
-    case msg @ ProjectActor.Messages.SyncConfig => withErrorHandler(msg) {
+    case ProjectActor.Messages.SyncConfig =>
       withProject { project =>
         withRepo { repo =>
           github.dotDeltaFile(UserReference(project.user.id), repo.owner, repo.project).map {
@@ -97,9 +97,8 @@ class ProjectActor @javax.inject.Inject() (
           }
         }
       }
-    }
 
-    case msg @ ProjectActor.Messages.SyncIfInactive => withErrorHandler(msg) {
+    case ProjectActor.Messages.SyncIfInactive =>
       withProject { project =>
         eventsDao.findAll(
           projectId = Some(project.id),
@@ -110,17 +109,13 @@ class ProjectActor @javax.inject.Inject() (
           case None => mainActor ! MainActor.Messages.ProjectSync(project.id)
         }
       }
-    }
-
-    case msg: Any => logUnhandledMessage(msg)
-
   }
 
   private[this] val HookBaseUrl = config.requiredString("delta.api.host") + "/webhooks/github/"
   private[this] val HookName = "web"
   private[this] val HookEvents = Seq(HookEvent.Push)
 
-  private[this] def createHooks(project: Project, repo: Repo) {
+  private[this] def createHooks(project: Project, repo: Repo): Unit = {
     gitHubHelper.apiClientFromUser(project.user.id) match {
       case None => {
         log(project).warn("Could not create github client")
@@ -130,7 +125,7 @@ class ProjectActor @javax.inject.Inject() (
           val targetUrl = HookBaseUrl + project.id
 
           hooks.find(_.config.url == Some(targetUrl)) match {
-            case Some(hook) => {
+            case Some(_) => {
               // No-op hook exists
             }
             case None => {
@@ -156,6 +151,7 @@ class ProjectActor @javax.inject.Inject() (
             }
           }
         }
+        () // Should Await the Future?
       }
     }
   }

@@ -1,7 +1,6 @@
 package db
 
 import javax.inject.{Inject, Singleton}
-
 import akka.actor.ActorRef
 import anorm._
 import io.flow.common.v0.models.UserReference
@@ -13,6 +12,7 @@ import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
 import play.api.libs.json._
 import io.flow.delta.v0.models.json._
+import io.flow.util.IdGenerator
 
 @Singleton
 class BuildDesiredStatesDao @Inject()(
@@ -22,7 +22,7 @@ class BuildDesiredStatesDao @Inject()(
   db: Database
 ) {
 
-  def onChange(mainActor: ActorRef, buildId: String) {
+  def onChange(mainActor: ActorRef, buildId: String): Unit = {
     mainActor ! MainActor.Messages.BuildDesiredStateUpdated(buildId)
   }
   
@@ -63,16 +63,14 @@ class BuildDesiredStatesDao @Inject()(
      where build_id = {build_id}
   """
 
-  private[this] val idGenerator = io.flow.play.util.IdGenerator("bds")
+  private[this] val idGenerator = IdGenerator("bds")
 
   private[db] def validate(
-    user: UserReference,
     build: Build,
-    form: StateForm
   ): Seq[String] = {
     buildsDao.findById(Authorization.All, build.id) match {
       case None => Seq("Build not found")
-      case Some(build) => Nil
+      case Some(_) => Nil
     }
   }
 
@@ -111,7 +109,7 @@ class BuildDesiredStatesDao @Inject()(
   }
 
   def create(createdBy: UserReference, build: Build, form: StateForm): Either[Seq[String], State] = {
-    validate(createdBy, build, form) match {
+    validate(build) match {
       case Nil => {
 
         val id = idGenerator.randomId()
@@ -146,7 +144,7 @@ class BuildDesiredStatesDao @Inject()(
 
   private[this] def update(createdBy: UserReference, build: Build, existing: State, form: StateForm): Either[Seq[String], State] = {
 
-    validate(createdBy, build, form) match {
+    validate(build) match {
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
@@ -186,8 +184,8 @@ class BuildDesiredStatesDao @Inject()(
       }
   }
   
-  def delete(deletedBy: UserReference, build: Build) {
-    lookupId(build.id).map { id =>
+  def delete(deletedBy: UserReference, build: Build): Unit = {
+    lookupId(build.id).foreach { id =>
       delete.delete("build_desired_states", deletedBy.id, id)
     }
   }

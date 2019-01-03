@@ -4,11 +4,11 @@ import javax.inject.Inject
 import akka.actor.{Actor, ActorSystem}
 import com.google.inject.assistedinject.Assisted
 import db.{BuildsDao, ConfigsDao, OrganizationsDao, ProjectsDao}
+import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.EventLogProcessor
 import io.flow.delta.config.v0.models.ConfigProject
 import io.flow.delta.v0.models.Project
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.ErrorHandler
 import io.flow.postgresql.Authorization
 import play.api.Application
 
@@ -45,17 +45,17 @@ class ProjectSupervisorActor @Inject()(
   system: ActorSystem,
   implicit val app: Application,
   @Assisted id: String
-) extends Actor with ErrorHandler with DataBuild with DataProject with EventLog {
+) extends Actor with DataBuild with DataProject with EventLog {
 
   private[this] implicit val ec = system.dispatchers.lookup("supervisor-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("ProjectSupervisorActor")
 
-  def receive = {
+  def receive = SafeReceive {
 
-    case msg @ ProjectSupervisorActor.Messages.Data(id) => withErrorHandler(msg) {
+    case ProjectSupervisorActor.Messages.Data(id) =>
       setProjectId(id)
-    }
 
-    case msg @ ProjectSupervisorActor.Messages.PursueDesiredState => withErrorHandler(msg) {
+    case ProjectSupervisorActor.Messages.PursueDesiredState =>
       withProject { project =>
         withConfig { config =>
           logger.
@@ -73,15 +73,13 @@ class ProjectSupervisorActor @Inject()(
           }
         }
       }
-    }
 
-    case msg @ ProjectSupervisorActor.Messages.CheckTag(name: String) => withErrorHandler(msg) {
+    case ProjectSupervisorActor.Messages.CheckTag(name: String) =>
       withProject { project =>
         buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
           sender ! MainActor.Messages.BuildCheckTag(build.id, name)
         }
       }
-    }
 
   }
 
@@ -91,10 +89,11 @@ class ProjectSupervisorActor @Inject()(
     * SupervisorResult.Error, returns that result. Otherwise will
     * return Ready at the end of all the functions.
     */
-  private[this] def run(project: Project, config: ConfigProject, functions: Seq[ProjectSupervisorFunction]) {
+  private[this] def run(project: Project, config: ConfigProject, functions: Seq[ProjectSupervisorFunction]): Unit = {
     functions.headOption match {
       case None => {
         SupervisorResult.Ready("All functions returned without modification")
+        ()
       }
       case Some(f) => {
         if (config.stages.contains(f.stage)) {
@@ -120,6 +119,7 @@ class ProjectSupervisorActor @Inject()(
           }.recover {
             case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log(project.id))
           }
+          () // Should Await the Future?
         } else {
           eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log(project.id))
           run(project, config, functions.drop(1))

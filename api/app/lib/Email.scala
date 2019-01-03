@@ -1,7 +1,8 @@
 package io.flow.delta.api.lib
 
 import io.flow.common.v0.models.Name
-import io.flow.play.util.{DefaultConfig, IdGenerator}
+import io.flow.play.util.DefaultConfig
+import io.flow.util.IdGenerator
 import java.nio.file.{Files, Path, Paths}
 import java.nio.charset.StandardCharsets
 
@@ -41,7 +42,7 @@ class Email @javax.inject.Inject() (
     recipient: Recipient,
     subject: String,
     body: String
-  ) {
+  ): Unit = {
     val prefixedSubject = subjectWithPrefix(subject)
 
     val from = new com.sendgrid.Email(fromEmail)
@@ -56,6 +57,7 @@ class Email @javax.inject.Inject() (
     localDeliveryDir match {
       case Some(dir) => {
         localDelivery(dir, recipient, prefixedSubject, body)
+        ()
       }
 
       case None => {

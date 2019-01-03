@@ -52,10 +52,10 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
     val project = createProject()
 
     val masterForm = createShaForm(project).copy(branch = "master")
-    val master = rightOrErrors(shasWriteDao.create(systemUser, masterForm))
+    rightOrErrors(shasWriteDao.create(systemUser, masterForm))
 
     val fooForm = createShaForm(project).copy(branch = "foo")
-    val foo = rightOrErrors(shasWriteDao.create(systemUser, fooForm))
+    rightOrErrors(shasWriteDao.create(systemUser, fooForm))
 
     shasDao.findByProjectIdAndBranch(Authorization.All, project.id, "master").map(_.hash) must be(Some(masterForm.hash))
     shasDao.findByProjectIdAndBranch(Authorization.All, project.id, "foo").map(_.hash) must be(Some(fooForm.hash))
@@ -96,32 +96,32 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
   "validate" must {
 
     "require sha" in {
-      shasWriteDao.validate(systemUser, createShaForm().copy(hash = "   ")) must be(
+      shasWriteDao.validate(createShaForm().copy(hash = "   ")) must be(
         Seq("Hash cannot be empty")
       )
     }
 
     "require branch" in {
-      shasWriteDao.validate(systemUser, createShaForm().copy(branch = "   ")) must be(
+      shasWriteDao.validate(createShaForm().copy(branch = "   ")) must be(
         Seq("Branch cannot be empty")
       )
     }
 
     "validate project exists" in {
-      shasWriteDao.validate(systemUser, createShaForm().copy(projectId = createTestKey())) must be(
+      shasWriteDao.validate(createShaForm().copy(projectId = createTestKey())) must be(
         Seq("Project not found")
       )
     }
  
     "validate existing record" in {
       val form = createShaForm()
-      val sha = createSha(form)
+      createSha(form)
 
-      shasWriteDao.validate(systemUser, form) must be(
+      shasWriteDao.validate(form) must be(
         Seq("Project already has a hash for this branch")
       )
 
-      shasWriteDao.validate(systemUser, form.copy(branch = createTestKey())) must be(Nil)
+      shasWriteDao.validate(form.copy(branch = createTestKey())) must be(Nil)
     }
 
   }

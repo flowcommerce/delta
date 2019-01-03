@@ -1,5 +1,6 @@
 package controllers
 
+import com.github.ghik.silencer.silent
 import db.SubscriptionsDao
 import io.flow.delta.v0.models.json._
 import io.flow.delta.v0.models.{Publication, Subscription, SubscriptionForm}
@@ -25,7 +26,7 @@ class Subscriptions @javax.inject.Inject() (
     limit: Long,
     offset: Long,
     sort: String
-  ) = Identified { request =>
+  ) = Identified {
     helpers.withOrderBy(sort) { orderBy =>
       Ok(
         Json.toJson(
@@ -43,12 +44,13 @@ class Subscriptions @javax.inject.Inject() (
     }
   }
 
-  def getById(id: String) = Identified { request =>
+  def getById(id: String) = Identified {
     withSubscription(id) { subscription =>
       Ok(Json.toJson(subscription))
     }
   }
 
+  @silent
   def post(identifier: Option[String]) = Identified(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
@@ -64,6 +66,7 @@ class Subscriptions @javax.inject.Inject() (
     }
   }
 
+  @silent
   def deleteById(id: String, identifier: Option[String]) = Identified { request =>
     withSubscription(id) { subscription =>
       subscriptionsDao.delete(request.user, subscription)

@@ -5,6 +5,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models._
 import io.flow.delta.v0.models.json._
 import io.flow.postgresql.{Authorization, OrderBy, Query}
+import io.flow.util.IdGenerator
 import play.api.db._
 import play.api.libs.json._
 
@@ -48,24 +49,24 @@ class ItemsDao @javax.inject.Inject() (
 
   private[this] def objectId(summary: ItemSummary): String = {
     summary match {
-     case ProjectSummary(id, org, name, uri) => id
+     case ProjectSummary(id, _, _, _) => id
      case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a id from ItemSummaryUndefinedType($name)")
     }
   }
 
   private[this] def organization(summary: ItemSummary): OrganizationSummary = {
     summary match {
-      case ProjectSummary(id, org, name, uri) => org
+      case ProjectSummary(_, org, _, _) => org
       case ItemSummaryUndefinedType(name) => sys.error(s"Cannot get a id from ItemSummaryUndefinedType($name)")
     }
   }
 
   private[this] def visibility(summary: ItemSummary): Visibility = {
     summary match {
-      case ProjectSummary(id, org, name, uri) => {
+      case ProjectSummary(id, _, _, _) => {
         projectsDao.findById(Authorization.All, id).map(_.visibility).getOrElse(Visibility.Private)
       }
-      case ItemSummaryUndefinedType(name) => {
+      case ItemSummaryUndefinedType(_) => {
         Visibility.Private
       }
     }
@@ -94,7 +95,7 @@ class ItemsDao @javax.inject.Inject() (
   private[db] def replace(user: UserReference, form: ItemForm): Item = {
     db.withConnection { implicit c =>
       findByObjectId(Authorization.All, objectId(form.summary)).map { item =>
-        deleteWithConnection(user, item)(c)
+        delete(user, item)
       }
 
       Try(create(user, form)(c)) match {
@@ -109,7 +110,7 @@ class ItemsDao @javax.inject.Inject() (
   }
 
   private[this] def create(createdBy: UserReference, form: ItemForm)(implicit c: java.sql.Connection): Item = {
-    val id = io.flow.play.util.IdGenerator("itm").randomId()
+    val id = IdGenerator("itm").randomId()
 
     SQL(InsertQuery).on(
       'id -> id,
@@ -128,20 +129,12 @@ class ItemsDao @javax.inject.Inject() (
     }
   }
 
-  def delete(deletedBy: UserReference, item: Item) {
-    db.withConnection { implicit c =>
-      deleteWithConnection(deletedBy, item)(c)
-    }
-  }
-
-  private[this] def deleteWithConnection(deletedBy: UserReference, item: Item)(
-    implicit c: java.sql.Connection
-  ) {
+  def delete(deletedBy: UserReference, item: Item): Unit = {
     delete.delete("items", deletedBy.id, item.id)
   }
 
-  def deleteByObjectId(auth: Authorization, deletedBy: UserReference, objectId: String) {
-    findByObjectId(auth, objectId).map { item =>
+  def deleteByObjectId(auth: Authorization, deletedBy: UserReference, objectId: String): Unit = {
+    findByObjectId(auth, objectId).foreach { item =>
       delete(deletedBy, item)
     }
   }
@@ -169,7 +162,7 @@ class ItemsDao @javax.inject.Inject() (
         and(Filters(auth).organizations("items.organization_id", Some("items.visibility")).sql).
         equals("items.id", id).
         optionalIn("items.id", ids).
-        and(q.map { v => "items.contents like '%' || lower(trim({q})) || '%' " }).bind("q", q).
+        and(q.map { _ => "items.contents like '%' || lower(trim({q})) || '%' " }).bind("q", q).
         equals("items.object_id", objectId).
         orderBy(orderBy.sql).
         limit(limit).

@@ -114,7 +114,7 @@ class SyncDockerImages @Inject()(
           )
         ) match {
           case Left(msgs) => sys.error(msgs.mkString(", "))
-          case Right(img) => true
+          case Right(_) => true
         }
       }
     }

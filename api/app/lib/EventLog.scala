@@ -129,7 +129,7 @@ class EventLogProcessor @Inject()(
     }
   }
 
-  private[this] def process(typ: EventType, message: String, ex: Option[Throwable] = None, log: EventLog) {
+  private[this] def process(typ: EventType, message: String, ex: Option[Throwable] = None, log: EventLog): Unit = {
     val formatted = s"${log.prefix}: $message"
     val ts = new DateTime()
 
@@ -144,6 +144,7 @@ class EventLogProcessor @Inject()(
         println(s"[$ts] ${log.projectId} error $formatted: ${error.getMessage}\n\n$sw")
         eventsDao.create(log.user, log.projectId, EventType.Info, s"error $message", ex = Some(error))
     }
+    ()
   }
 
 }

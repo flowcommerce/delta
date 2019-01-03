@@ -4,14 +4,12 @@ import io.flow.delta.v0.models.EventType
 import io.flow.delta.www.lib.DeltaClientProvider
 import io.flow.play.controllers.FlowControllerComponents
 import io.flow.play.util.{Config, PaginatedCollection}
-import play.api.i18n.MessagesApi
 import play.api.mvc.ControllerComponents
 
 import scala.concurrent.ExecutionContext
 
 class EventsController @javax.inject.Inject() (
   val config: Config,
-  messagesApi: MessagesApi,
   deltaClientProvider: DeltaClientProvider,
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
@@ -33,8 +31,8 @@ class EventsController @javax.inject.Inject() (
         projectId = projectId,
         `type` = `type`,
         hasError = hasError,
-        limit = Limit+1,
-        offset = page * Limit
+        limit = Limit.toLong + 1L,
+        offset = page * Limit.toLong
       )
     } yield {
       val title = projectId match {

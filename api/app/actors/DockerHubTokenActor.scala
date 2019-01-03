@@ -4,12 +4,12 @@ import java.util.concurrent.TimeUnit
 
 import akka.actor.{Actor, ActorSystem}
 import db.{OrganizationsDao, UsersDao, VariablesDao}
+import io.flow.akka.SafeReceive
 import io.flow.delta.v0.models.VariableForm
 import io.flow.docker.hub.v0.Client
 import io.flow.docker.hub.v0.models.{Jwt, JwtForm}
 import io.flow.log.RollbarLogger
-import io.flow.play.actors.ErrorHandler
-import io.flow.play.util.Config
+import io.flow.util.Config
 import io.flow.postgresql.Authorization
 import play.api.libs.ws.WSClient
 
@@ -40,7 +40,7 @@ class DockerHubToken @javax.inject.Inject() (
   private[this] lazy val orgTokenMap = {
     val map = scala.collection.mutable.HashMap.empty[String, String]
     organizationsDao.findAll(auth = auth).foreach { organization =>
-      val token = variablesDao.findByOrganizationAndKey(auth = auth, organization = organization.id, key = tokenKey) match {
+      val token = variablesDao.findByOrganizationAndKey(auth = auth, key = tokenKey) match {
         case None => {
           val jwt = generate
           val form = VariableForm(organization.id, tokenKey, jwt)
@@ -84,7 +84,7 @@ class DockerHubToken @javax.inject.Inject() (
     * Function called when periodically trying to refresh
     * Should iterate through organizations and update their tokens
     */
-  def refresh()(implicit ec: ExecutionContext) {
+  def refresh()(implicit ec: ExecutionContext): Unit = {
     organizationsDao.findAll(Authorization.All).foreach { organization =>
       generateTokenFuture.map { jwt =>
         val form = VariableForm(organization.id, tokenKey, jwt.token)
@@ -126,19 +126,17 @@ object DockerHubTokenActor {
 }
 
 class DockerHubTokenActor @javax.inject.Inject() (
-  override val logger: RollbarLogger,
+  logger: RollbarLogger,
   system: ActorSystem,
   dockerHubToken: DockerHubToken
-) extends Actor with ErrorHandler {
+) extends Actor {
 
   private[this] implicit val ec = system.dispatchers.lookup("dockerhub-actor-context")
+  private[this] implicit val configuredRollbar = logger.fingerprint("DockerHubTokenActor")
 
-  def receive = {
-
-    case msg @ DockerHubTokenActor.Messages.Refresh => withErrorHandler(msg) {
+  def receive = SafeReceive.withLogUnhandled {
+    case DockerHubTokenActor.Messages.Refresh =>
       dockerHubToken.refresh()
-    }
-
   }
 
 }

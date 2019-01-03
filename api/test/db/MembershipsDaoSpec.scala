@@ -56,7 +56,7 @@ class MembershipsDaoSpec extends FlowPlaySpec with Helpers {
     val org = createOrganization()
     val user = createUserReference()
     val form = createMembershipForm(org = org, user = user, role = Role.Member)
-    val membership = createMembership(form)
+    createMembership(form)
 
     membershipsDao.validate(systemUser, form) must be(Seq("User is already a member"))
     membershipsDao.validate(systemUser, form.copy(role = Role.Admin)) must be(Seq("User is already a member"))
