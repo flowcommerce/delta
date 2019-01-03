@@ -146,7 +146,7 @@ class MainActor @javax.inject.Inject() (
       }
 
       scheduleRecurring(
-        ScheduleConfig.fromConfig(config, "main.actor.project.inactive.checkc")
+        ScheduleConfig.fromConfig(config, "main.actor.project.inactive.check")
       ) {
         Pager.create { offset =>
           projectsDao.findAll(Authorization.All, offset = offset, minutesSinceLastEvent = Some(15))
