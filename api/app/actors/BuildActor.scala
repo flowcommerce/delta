@@ -253,8 +253,20 @@ class BuildActor @javax.inject.Inject() (
   }
 
   def createCluster(build: Build): Future[String] = {
-    eventLogProcessor.runSync("Create cluster", log = log(build.project.id)) {
-       ecs.createCluster(BuildNames.projectName(build))
+    eventLogProcessor.runAsync("Create cluster", log = log(build.project.id)) {
+      val projectId = BuildNames.projectName(build)
+
+      /**
+        * Only create cluster if it does not exist
+        * Reduce noise for: com.amazonaws.services.ecs.model.AmazonECSException: Rate exceeded
+        */
+      ecs.getClusterInfo(projectId).map { versions =>
+        if (versions.isEmpty) {
+          ecs.createCluster(projectId)
+        } else {
+          EC2ContainerService.getClusterName(projectId)
+        }
+      }
     }
   }
 
