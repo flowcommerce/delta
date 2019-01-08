@@ -9,6 +9,7 @@ import io.flow.log.RollbarLogger
 import io.flow.play.util.ApplicationConfig
 import io.flow.postgresql.Authorization
 import io.flow.rollbar.v0.models.Deploy
+import io.flow.rollbar.v0.models.json._
 import io.flow.rollbar.v0.{Client => Rollbar}
 import io.flow.util.FlowEnvironment
 import javax.inject.{Inject, Singleton}
@@ -101,9 +102,11 @@ class RollbarActor @Inject()(
     case RollbarActor.Messages.Refresh =>
       accessToken.foreach { token =>
         rollbar.projects.getProjects(token).flatMap { projects =>
+          logger.withKeyValue("project-list", projects.result).info("got list of rollbar projects")
           Future.sequence(projects.result.map { project =>
             rollbar.projects.getProjectAndAccessTokensByProjectId(project.id, token).map { accessTokens =>
               accessTokens.result.find(_.scopes.contains("post_server_item")).foreach { token =>
+                logger.withKeyValue("project", project).info("got post_server_item key")
                 projectCache.put(project.name, Project(project.name, project.id, token.accessToken))
               }
             }
