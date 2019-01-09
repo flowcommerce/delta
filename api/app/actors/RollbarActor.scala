@@ -103,11 +103,13 @@ class RollbarActor @Inject()(
       accessToken.foreach { token =>
         rollbar.projects.getProjects(token).flatMap { projects =>
           logger.withKeyValue("project-list", projects.result).info("got list of rollbar projects")
-          Future.sequence(projects.result.map { project =>
-            rollbar.projects.getProjectAndAccessTokensByProjectId(project.id, token).map { accessTokens =>
-              accessTokens.result.find(_.scopes.contains("post_server_item")).foreach { token =>
-                logger.withKeyValue("project", project).info("got post_server_item key")
-                projectCache.put(project.name, Project(project.name, project.id, token.accessToken))
+          Future.sequence(projects.result.flatMap { project =>
+            project.name.map { projectName =>
+              rollbar.projects.getProjectAndAccessTokensByProjectId(project.id, token).map { accessTokens =>
+                accessTokens.result.find(_.scopes.contains("post_server_item")).foreach { token =>
+                  logger.withKeyValue("project", project).info("got post_server_item key")
+                  projectCache.put(projectName, Project(projectName, project.id, token.accessToken))
+                }
               }
             }
           })
