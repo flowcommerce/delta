@@ -74,82 +74,83 @@ class AmiUpdatesDao @Inject() (
     Seq(
       'id -> form.id,
       'name -> form.name,
+      'updated_by_user_id -> updatedBy.id,
       'hash_code -> form.hashCode()
     )
   }
 
-  def upsertIfChangedById(updatedBy: UserReference, form: AmiUpdateForm) {
+  def upsertIfChangedById(updatedBy: UserReference, form: AmiUpdateForm): Unit = {
     if (!findById(form.id).map(_.form).contains(form)) {
       upsertById(updatedBy, form)
     }
   }
 
-  def upsertById(updatedBy: UserReference, form: AmiUpdateForm) {
+  def upsertById(updatedBy: UserReference, form: AmiUpdateForm): Unit = {
     db.withConnection { implicit c =>
       upsertById(c, updatedBy, form)
     }
   }
 
-  def upsertById(implicit c: Connection, updatedBy: UserReference, form: AmiUpdateForm) {
+  def upsertById(implicit c: Connection, updatedBy: UserReference, form: AmiUpdateForm): Unit = {
     bindQuery(UpsertQuery, form).
       bind("id", form.id).
       bind("updated_by_user_id", updatedBy.id).
       anormSql.execute()
   }
 
-  def upsertBatchById(updatedBy: UserReference, forms: Seq[AmiUpdateForm]) {
+  def upsertBatchById(updatedBy: UserReference, forms: Seq[AmiUpdateForm]): Unit = {
     db.withConnection { implicit c =>
       upsertBatchById(c, updatedBy, forms)
     }
   }
 
-  def upsertBatchById(implicit c: Connection, updatedBy: UserReference, forms: Seq[AmiUpdateForm]) {
+  def upsertBatchById(implicit c: Connection, updatedBy: UserReference, forms: Seq[AmiUpdateForm]): Unit = {
     if (forms.nonEmpty) {
       val params = forms.map(toNamedParameter(updatedBy, _))
       BatchSql(UpsertQuery.sql(), params.head, params.tail: _*).execute()
     }
   }
 
-  def updateIfChangedById(updatedBy: UserReference, id: String, form: AmiUpdateForm) {
+  def updateIfChangedById(updatedBy: UserReference, id: String, form: AmiUpdateForm): Unit = {
     if (!findById(id).map(_.form).contains(form)) {
       updateById(updatedBy, id, form)
     }
   }
 
-  def updateById(updatedBy: UserReference, id: String, form: AmiUpdateForm) {
+  def updateById(updatedBy: UserReference, id: String, form: AmiUpdateForm): Unit = {
     db.withConnection { implicit c =>
       updateById(c, updatedBy, id, form)
     }
   }
 
-  def updateById(implicit c: Connection, updatedBy: UserReference, id: String, form: AmiUpdateForm) {
+  def updateById(implicit c: Connection, updatedBy: UserReference, id: String, form: AmiUpdateForm): Unit = {
     bindQuery(UpdateQuery, form).
       bind("id", id).
       bind("updated_by_user_id", updatedBy.id).
       anormSql.execute()
   }
 
-  def update(updatedBy: UserReference, existing: AmiUpdate, form: AmiUpdateForm) {
+  def update(updatedBy: UserReference, existing: AmiUpdate, form: AmiUpdateForm): Unit = {
     db.withConnection { implicit c =>
       update(c, updatedBy, existing, form)
     }
   }
 
-  def update(implicit c: Connection, updatedBy: UserReference, existing: AmiUpdate, form: AmiUpdateForm) {
+  def update(implicit c: Connection, updatedBy: UserReference, existing: AmiUpdate, form: AmiUpdateForm): Unit = {
     updateById(c, updatedBy, existing.id, form)
   }
 
-  def delete(deletedBy: UserReference, amiUpdate: AmiUpdate) {
+  def delete(deletedBy: UserReference, amiUpdate: AmiUpdate): Unit = {
     dbHelpers.delete(deletedBy, amiUpdate.id)
   }
 
-  def deleteById(deletedBy: UserReference, id: String) {
+  def deleteById(deletedBy: UserReference, id: String): Unit = {
     db.withConnection { implicit c =>
       deleteById(c, deletedBy, id)
     }
   }
 
-  def deleteById(c: java.sql.Connection, deletedBy: UserReference, id: String) {
+  def deleteById(c: java.sql.Connection, deletedBy: UserReference, id: String): Unit = {
     dbHelpers.delete(c, deletedBy, id)
   }
 
@@ -200,14 +201,14 @@ class AmiUpdatesDao @Inject() (
       limit(limit).
       offset(offset).
       orderBy(orderBy.sql).
-      as(AmiUpdatesDao.parser().*)(c)
+      as(AmiUpdatesDao.parser.*)(c)
   }
 
 }
 
 object AmiUpdatesDao {
 
-  def parser(): RowParser[AmiUpdate] = {
+  val parser: RowParser[AmiUpdate] = {
     SqlParser.str("id") ~
     SqlParser.str("name") ~
     SqlParser.get[DateTime]("created_at") map {

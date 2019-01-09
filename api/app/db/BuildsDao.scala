@@ -79,14 +79,14 @@ class BuildsDao @Inject()(
 }
 
 case class BuildsWriteDao @javax.inject.Inject() (
-  imagesWriteDao: ImagesWriteDao,
-  buildsDao: BuildsDao,
-  buildDesiredStatesDao: BuildDesiredStatesDao,
-  buildLastStatesDao: BuildLastStatesDao,
-  delete: Delete,
-  imagesDao: ImagesDao,
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  db: Database
+                                                   imagesWriteDao: ImagesWriteDao,
+                                                   buildsDao: BuildsDao,
+                                                   buildDesiredStatesDao: BuildDesiredStatesDao,
+                                                   buildLastStatesDao: InternalBuildLastStatesDao,
+                                                   delete: Delete,
+                                                   imagesDao: ImagesDao,
+                                                   @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+                                                   db: Database
 ) {
 
   private[this] val UpsertQuery = """

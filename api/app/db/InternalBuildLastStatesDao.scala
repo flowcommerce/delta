@@ -2,7 +2,6 @@ package db
 
 import javax.inject.{Inject, Singleton}
 import akka.actor.ActorRef
-import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.api.lib.StateDiff
@@ -12,12 +11,12 @@ import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
 import play.api.libs.json._
 import io.flow.delta.v0.models.json._
-import io.flow.util.IdGenerator
+import org.joda.time.DateTime
 
 @Singleton
-class BuildLastStatesDao @Inject()(
+class InternalBuildLastStatesDao @Inject()(
+  dao: generated.BuildLastStatesDao,
   buildsDao: BuildsDao,
-  delete: Delete,
   @javax.inject.Named("main-actor") mainActor: ActorRef,
   db: Database
 ) {
@@ -40,30 +39,6 @@ class BuildLastStatesDao @Inject()(
       join builds on builds.id = build_last_states.build_id
       join projects on projects.id = builds.project_id
   """)
-
-  private[this] val LookupIdQuery = s"select id from build_last_states where build_id = {build_id} limit 1"
-
-  private[this] val UpsertQuery = s"""
-    insert into build_last_states
-    (id, build_id, versions, timestamp, updated_by_user_id)
-    values
-    ({id}, {build_id}, {versions}::json, now(), {updated_by_user_id})
-    on conflict(build_id)
-    do update
-          set versions = {versions}::json,
-          timestamp = now(),
-          updated_by_user_id = {updated_by_user_id}
-  """
-
-  private[this] val UpdateQuery = s"""
-    update build_last_states
-       set versions = {versions}::json,
-           timestamp = now(),
-           updated_by_user_id = {updated_by_user_id}
-     where build_id = {build_id}
-  """
-
-  private[this] val idGenerator = IdGenerator("bls")
 
   private[db] def validate(
     build: Build,
@@ -90,7 +65,6 @@ class BuildLastStatesDao @Inject()(
     limit: Long = 25,
     offset: Long = 0
   ): Seq[State] = {
-
     db.withConnection { implicit c =>
       Standards.query(
         BaseQuery,
@@ -111,17 +85,14 @@ class BuildLastStatesDao @Inject()(
   def create(createdBy: UserReference, build: Build, form: StateForm): Either[Seq[String], State] = {
     validate(build) match {
       case Nil => {
-
-        val id = idGenerator.randomId()
-
-        db.withConnection { implicit c =>
-          SQL(UpsertQuery).on(
-            'id -> id,
-            'build_id -> build.id,
-            'versions -> Json.toJson(normalize(form.versions)).toString,
-            'updated_by_user_id -> createdBy.id
-          ).execute()
-        }
+        dao.upsertByBuildId(
+          createdBy,
+          generated.BuildLastStatesForm(
+            buildId = build.id,
+            timestamp = DateTime.now,
+            versions = normalize(form.versions).map(Json.toJson(_))
+          )
+        )
 
         onChange(mainActor, build.id)
 
@@ -143,27 +114,28 @@ class BuildLastStatesDao @Inject()(
   }
 
   private[this] def update(createdBy: UserReference, build: Build, existing: State, form: StateForm): Either[Seq[String], State] = {
-
     validate(build) match {
       case Nil => {
-        db.withConnection { implicit c =>
-          SQL(UpdateQuery).on(
-            'build_id -> build.id,
-            'versions -> Json.toJson(normalize(form.versions)).toString,
-            'updated_by_user_id -> createdBy.id
-          ).execute()
-        }
+        val normalized = normalize(form.versions)
+        if (StateDiff.diff(existing.versions, normalized).isEmpty) {
+          // no change
+          Right(existing)
+        } else {
+          dao.upsertByBuildId(
+            createdBy,
+            generated.BuildLastStatesForm(
+              buildId = build.id,
+              timestamp = DateTime.now,
+              versions = normalized.map(Json.toJson(_))
+            )
+          )
 
-        val updated = findByBuildId(Authorization.All, build.id).getOrElse {
-          sys.error(s"Failed to update last state")
+          val updated = findByBuildId(Authorization.All, build.id).getOrElse {
+            sys.error(s"Failed to update last state")
+          }
+          onChange(mainActor, build.id)
+          Right(updated)
         }
-
-        StateDiff.diff(existing.versions, updated.versions) match {
-          case Nil => // No-op
-          case _ => onChange(mainActor, build.id)
-        }
-
-        Right(updated)
       }
       case errors => Left(errors)
     }
@@ -185,17 +157,6 @@ class BuildLastStatesDao @Inject()(
   }
 
   def delete(deletedBy: UserReference, build: Build): Unit = {
-    lookupId(build.id).foreach { id =>
-      delete.delete("build_last_states", deletedBy.id, id)
-    }
+    dao.deleteById(deletedBy, build.id)
   }
-
-  private[this] def lookupId(buildId: String): Option[String] = {
-    db.withConnection { implicit c =>
-      SQL(LookupIdQuery).on(
-        'build_id -> buildId
-      ).as(SqlParser.get[String]("id").*).headOption
-    }
-  }
-
 }

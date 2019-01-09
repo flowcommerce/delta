@@ -1,7 +1,7 @@
 package io.flow.delta.actors.functions
 
 import javax.inject.Inject
-import db.{BuildDesiredStatesDao, BuildLastStatesDao}
+import db.{BuildDesiredStatesDao, InternalBuildLastStatesDao}
 import io.flow.delta.actors.{BuildActor, BuildSupervisorFunction, MainActor, SupervisorResult}
 import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.v0.models.Build
@@ -33,9 +33,9 @@ object Scale extends BuildSupervisorFunction {
   * scale down only initiated after Scale Up is complete.
   */
 class Scale @Inject()(
-  buildDesiredStatesDao: BuildDesiredStatesDao,
-  buildLastStatesDao: BuildLastStatesDao,
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
+                       buildDesiredStatesDao: BuildDesiredStatesDao,
+                       buildLastStatesDao: InternalBuildLastStatesDao,
+                       @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
 ) {
 
   private[this] val SecondsUntilStale = (BuildActor.CheckLastStateIntervalSeconds * 2.5).toInt
