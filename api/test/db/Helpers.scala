@@ -24,7 +24,7 @@ trait Helpers {
   lazy val database = init[play.api.db.Database]
 
   lazy val buildDesiredStatesDao = init[BuildDesiredStatesDao]
-  lazy val buildLastStatesDao = init[BuildLastStatesDao]
+  lazy val buildLastStatesDao = init[InternalBuildLastStatesDao]
   lazy val buildsDao = init[BuildsDao]
   lazy val buildsWriteDao = init[BuildsWriteDao]
   lazy val configsDao = init[ConfigsDao]

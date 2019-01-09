@@ -15,16 +15,16 @@ import play.api.mvc._
 
 @javax.inject.Singleton
 class Projects @javax.inject.Inject() (
-  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-  buildsDao: BuildsDao,
-  buildDesiredStatesDao: BuildDesiredStatesDao,
-  buildLastStatesDao: BuildLastStatesDao,
-  helpers: Helpers,
-  imagesDao: ImagesDao,
-  projectsDao: ProjectsDao,
-  projectsWriteDao: ProjectsWriteDao,
-  val controllerComponents: ControllerComponents,
-  val flowControllerComponents: FlowControllerComponents
+                                        @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+                                        buildsDao: BuildsDao,
+                                        buildDesiredStatesDao: BuildDesiredStatesDao,
+                                        buildLastStatesDao: InternalBuildLastStatesDao,
+                                        helpers: Helpers,
+                                        imagesDao: ImagesDao,
+                                        projectsDao: ProjectsDao,
+                                        projectsWriteDao: ProjectsWriteDao,
+                                        val controllerComponents: ControllerComponents,
+                                        val flowControllerComponents: FlowControllerComponents
 ) extends BaseIdentifiedRestController {
 
   def get(
