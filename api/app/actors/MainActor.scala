@@ -257,7 +257,7 @@ class MainActor @javax.inject.Inject() (
   def upsertDockerHubActor(buildId: String): ActorRef = {
     this.synchronized {
       dockerHubActors.lift(buildId).getOrElse {
-        val ref = injectedChild(dockerHubFactory(buildId), name = randomName())
+        val ref = injectedChild(dockerHubFactory(buildId), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! DockerHubActor.Messages.Setup
         dockerHubActors += (buildId -> ref)
         ref
@@ -268,7 +268,7 @@ class MainActor @javax.inject.Inject() (
   def upsertUserActor(id: String): ActorRef = {
     this.synchronized {
       userActors.lift(id).getOrElse {
-        val ref = injectedChild(userActorFactory(id), name = randomName())
+        val ref = injectedChild(userActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! UserActor.Messages.Data(id)
         userActors += (id -> ref)
         ref
@@ -279,7 +279,7 @@ class MainActor @javax.inject.Inject() (
   def upsertProjectActor(id: String): ActorRef = {
     this.synchronized {
       projectActors.lift(id).getOrElse {
-        val ref = injectedChild(projectFactory(id), name = randomName())
+        val ref = injectedChild(projectFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! ProjectActor.Messages.Setup
         projectActors += (id -> ref)
         ref
@@ -290,7 +290,7 @@ class MainActor @javax.inject.Inject() (
   def upsertBuildActor(id: String): ActorRef = {
     this.synchronized {
       buildActors.lift(id).getOrElse {
-        val ref = injectedChild(buildFactory(id), name = randomName())
+        val ref = injectedChild(buildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! BuildActor.Messages.Setup
         buildActors += (id -> ref)
         ref
@@ -301,7 +301,7 @@ class MainActor @javax.inject.Inject() (
   def upsertProjectSupervisorActor(id: String): ActorRef = {
     this.synchronized {
       projectSupervisorActors.lift(id).getOrElse {
-        val ref = injectedChild(projectSupervisorActorFactory(id), name = randomName())
+        val ref = injectedChild(projectSupervisorActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! ProjectSupervisorActor.Messages.Data(id)
         projectSupervisorActors += (id -> ref)
         ref
@@ -312,7 +312,7 @@ class MainActor @javax.inject.Inject() (
   def upsertBuildSupervisorActor(id: String): ActorRef = {
     this.synchronized {
       buildSupervisorActors.getOrElse(id, {
-        val ref = injectedChild(buildSupervisorActorFactory(id), name = randomName())
+        val ref = injectedChild(buildSupervisorActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! BuildSupervisorActor.Messages.Data(id)
         buildSupervisorActors += (id -> ref)
         ref
