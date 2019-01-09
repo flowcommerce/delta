@@ -111,6 +111,8 @@ class RollbarActor @Inject()(
               }
             }
           })
+        }.failed.foreach { ex =>
+          logger.error("failed to fetch rollbar projects", ex)
         }
       }
   }
