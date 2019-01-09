@@ -13,6 +13,7 @@ import io.flow.rollbar.v0.models.json._
 import io.flow.rollbar.v0.{Client => Rollbar}
 import io.flow.util.FlowEnvironment
 import javax.inject.{Inject, Singleton}
+import play.api.{Application, Mode}
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.Future
@@ -31,6 +32,7 @@ object RollbarActor {
 
 @Singleton
 class RollbarActor @Inject()(
+  app: Application,
   logger: RollbarLogger,
   ws: WSClient,
   system: ActorSystem,
@@ -46,7 +48,7 @@ class RollbarActor @Inject()(
 
   private val ConfigName = "rollbar.account_token"
   private val accessToken = config.optionalString(ConfigName)
-  if (accessToken.isEmpty) {
+  if (app.mode == Mode.Prod && accessToken.isEmpty) {
     logger
       .fingerprint("RollbarActor")
       .withKeyValue("config", ConfigName)
