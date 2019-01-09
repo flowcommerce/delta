@@ -21,7 +21,7 @@ package io.flow.rollbar.v0.models {
 
   final case class Project(
     id: Int,
-    name: String
+    name: _root_.scala.Option[String] = None
   )
 
   final case class ProjectAccessToken(
@@ -146,15 +146,17 @@ package io.flow.rollbar.v0.models {
     implicit def jsonReadsRollbarProject: play.api.libs.json.Reads[Project] = {
       for {
         id <- (__ \ "id").read[Int]
-        name <- (__ \ "name").read[String]
+        name <- (__ \ "name").readNullable[String]
       } yield Project(id, name)
     }
 
     def jsObjectProject(obj: io.flow.rollbar.v0.models.Project): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsNumber(obj.id),
-        "name" -> play.api.libs.json.JsString(obj.name)
-      )
+        "id" -> play.api.libs.json.JsNumber(obj.id)
+      ) ++ (obj.name match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("name" -> play.api.libs.json.JsString(x))
+      })
     }
 
     implicit def jsonWritesRollbarProject: play.api.libs.json.Writes[Project] = {
