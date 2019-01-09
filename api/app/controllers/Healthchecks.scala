@@ -1,5 +1,6 @@
 package controllers
 
+import akka.actor.ActorSystem
 import db.HealthchecksDao
 import io.flow.error.v0.models.json._
 import io.flow.healthcheck.v0.models.Healthcheck
@@ -12,8 +13,11 @@ import play.api.mvc._
 @Singleton
 class Healthchecks @Inject() (
   healthchecksDao: HealthchecksDao,
-  val controllerComponents: ControllerComponents
+  val controllerComponents: ControllerComponents,
+  system: ActorSystem
 ) extends BaseController {
+
+  private[this] implicit val ec = system.dispatchers.lookup("healthcheck-actor-context")
 
   private val HealthyJson = Json.toJson(Healthcheck(status = "healthy"))
 
