@@ -117,25 +117,25 @@ class InternalBuildLastStatesDao @Inject()(
     validate(build) match {
       case Nil => {
         val normalized = normalize(form.versions)
+        dao.upsertByBuildId(
+          createdBy,
+          generated.BuildLastStatesForm(
+            buildId = build.id,
+            timestamp = DateTime.now,
+            versions = normalized.map(Json.toJson(_))
+          )
+        )
+
         if (StateDiff.diff(existing.versions, normalized).isEmpty) {
           // no change
-          Right(existing)
-        } else {
-          dao.upsertByBuildId(
-            createdBy,
-            generated.BuildLastStatesForm(
-              buildId = build.id,
-              timestamp = DateTime.now,
-              versions = normalized.map(Json.toJson(_))
-            )
-          )
-
-          val updated = findByBuildId(Authorization.All, build.id).getOrElse {
-            sys.error(s"Failed to update last state")
-          }
           onChange(mainActor, build.id)
-          Right(updated)
         }
+
+        val updated = findByBuildId(Authorization.All, build.id).getOrElse {
+          sys.error(s"Failed to update last state")
+        }
+
+        Right(updated)
       }
       case errors => Left(errors)
     }
