@@ -55,7 +55,7 @@ lazy val api = project
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.2.88",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.2.89",
       "io.flow" %% "lib-event-play26" % "0.4.42",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
@@ -66,7 +66,7 @@ lazy val api = project
       "org.postgresql" % "postgresql" % "42.2.5",
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
       "io.flow" %% "lib-play-graphite-play26" % "0.0.71",
-      "io.flow" %% "lib-log" % "0.0.54",
+      "io.flow" %% "lib-log" % "0.0.55",
       "io.flow" %% "lib-akka" % "0.1.2",
       "com.github.ghik" %% "silencer-lib" % "1.3.0" % Provided,
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.3.0"),
