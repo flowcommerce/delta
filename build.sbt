@@ -55,8 +55,8 @@ lazy val api = project
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       jdbc,
-      "io.flow" %% "lib-postgresql-play-play26" % "0.2.86",
-      "io.flow" %% "lib-event-play26" % "0.4.41",
+      "io.flow" %% "lib-postgresql-play-play26" % "0.2.88",
+      "io.flow" %% "lib-event-play26" % "0.4.42",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
