@@ -6,29 +6,12 @@ flow:
     - api/app/generated/FlowCommonV0Parsers.scala
     play_2_x_json:
     - generated/app/FlowCommonV0Models.scala
-  delta:
-    anorm_2_6_parsers:
-    - api/app/generated/FlowDeltaV0Conversions.scala
-    - api/app/generated/FlowDeltaV0Parsers.scala
-    play_2_6_client:
-    - generated/app/FlowDeltaV0Client.scala
-    play_2_x_routes:
-    - api/conf/delta.routes
-  delta-config:
-    anorm_2_6_parsers:
-    - api/app/generated/FlowDeltaConfigV0Conversions.scala
-    - api/app/generated/FlowDeltaConfigV0Parsers.scala
-    play_2_6_client:
-    - generated/app/FlowDeltaConfigV0Client.scala
-  docker-hub:
-    play_2_6_client:
-    - generated/app/FlowDockerHubV0Client.scala
   docker-registry:
     play_2_6_client:
     - generated/app/FlowDockerRegistryV0Client.scala
-  email:
+  docker-hub:
     play_2_6_client:
-    - generated/app/FlowEmailV0Client.scala
+    - generated/app/FlowDockerHubV0Client.scala
   github:
     anorm_2_6_parsers:
     - api/app/generated/FlowGithubV0Conversions.scala
@@ -38,9 +21,26 @@ flow:
   github-oauth:
     play_2_6_client:
     - generated/app/FlowGithubOauthV0Client.scala
-  rollbar:
+  delta:
+    play_2_x_routes:
+    - api/conf/delta.routes
+    anorm_2_6_parsers:
+    - api/app/generated/FlowDeltaV0Conversions.scala
+    - api/app/generated/FlowDeltaV0Parsers.scala
     play_2_6_client:
-    - generated/app/FlowRollbarV0Client.scala
+    - generated/app/FlowDeltaV0Client.scala
+  delta-config:
+    anorm_2_6_parsers:
+    - api/app/generated/FlowDeltaConfigV0Conversions.scala
+    - api/app/generated/FlowDeltaConfigV0Parsers.scala
+    play_2_6_client:
+    - generated/app/FlowDeltaConfigV0Client.scala
   travis-ci:
     play_2_6_client:
     - generated/app/FlowTravisCiV0Client.scala
+  email:
+    play_2_6_client:
+    - generated/app/FlowEmailV0Client.scala
+  rollbar:
+    play_2_6_client:
+    - generated/app/FlowRollbarV0Client.scala
