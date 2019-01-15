@@ -230,7 +230,7 @@ class TravisCiDockerImageBuilder @Inject()(
       "docker --version",
       "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
       s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} --build-arg GOOGLE_PLACES_API_KEY=$${GOOGLE_PLACES_API_KEY} --build-arg NATERO_API_KEY=$${NATERO_API_KEY} --build-arg NATERO_AUTH_KEY=$${NATERO_AUTH_KEY} -f ${travisCiBuild.buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
-      "eval $(aws ecr get-login --no-include-email)",
+      "eval $(aws ecr get-login --no-include-email --region us-east-1)",
       s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
     )
   }
