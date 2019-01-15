@@ -93,10 +93,10 @@ class DockerHubActor @javax.inject.Inject() (
   private def handleMonitorEvent(version: String, start: DateTime) = {
     withEnabledBuild { build =>
       withOrganization { org =>
-        val imageFullName = BuildNames.dockerImageName(org.docker, build, version)
+        val imageFullName = BuildNames.dockerImageName(org.docker, build, requiredBuildConfig, version)
 
         Await.result(
-          syncDockerImages.run(build),
+          syncDockerImages.run(build, requiredBuildConfig),
           Duration.Inf
         )
 
@@ -151,7 +151,7 @@ class DockerHubActor @javax.inject.Inject() (
   }
 
   def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, config: BuildConfig): DockerBuildForm = {
-    val fullName = BuildNames.dockerImageName(docker, build)
+    val fullName = BuildNames.dockerImageName(docker, build, requiredBuildConfig)
     val buildTags = createBuildTags(config.dockerfile)
 
     val vcsRepoName = io.flow.delta.api.lib.GithubUtil.parseUri(scmsUri) match {

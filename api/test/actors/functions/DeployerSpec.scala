@@ -2,6 +2,7 @@ package io.flow.delta.actors.functions
 
 import akka.actor.ActorRef
 import io.flow.delta.actors.SupervisorResult
+import io.flow.delta.lib.config.Defaults
 import io.flow.delta.v0.models.{Build, State, Version}
 import io.flow.postgresql.Authorization
 import io.flow.test.utils.FlowPlaySpec
@@ -29,7 +30,7 @@ class DeployerSpec extends FlowPlaySpec with db.Helpers {
     // tag1
     createTag(createTagForm(project).copy(name = "0.0.1"))
     setLastStates(build, Nil)
-    await(SetDesiredState.run(build)) must be(
+    await(SetDesiredState.run(build, Defaults.Build)) must be(
       SupervisorResult.Change("Desired state changed to: 0.0.1: 2 instances")
     )
     Deployer(build, last(build), desired(build), mainActor).scale() must be(
@@ -38,7 +39,7 @@ class DeployerSpec extends FlowPlaySpec with db.Helpers {
     
     // tag2
     createTag(createTagForm(project).copy(name = "0.0.2"))
-    await(SetDesiredState.run(build)) must be(
+    await(SetDesiredState.run(build, Defaults.Build)) must be(
       SupervisorResult.Change("Desired state changed to: 0.0.2: 2 instances")
     )
     Deployer(build, last(build), desired(build), mainActor).scale() must be(
@@ -48,7 +49,7 @@ class DeployerSpec extends FlowPlaySpec with db.Helpers {
 
     // tag3
     createTag(createTagForm(project).copy(name = "0.0.3"))
-    await(SetDesiredState.run(build)) must be(
+    await(SetDesiredState.run(build, Defaults.Build)) must be(
       SupervisorResult.Change("Desired state changed to: 0.0.3: 2 instances")
     )
 

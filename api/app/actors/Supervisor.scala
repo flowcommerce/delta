@@ -112,7 +112,8 @@ trait BuildSupervisorFunction {
    * Responsible for actually running this function
    */
   def run(
-    build: Build
+    build: Build,
+    config: io.flow.delta.config.v0.models.Build
   ) (
     implicit ec: scala.concurrent.ExecutionContext,
     app: Application

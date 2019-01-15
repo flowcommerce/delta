@@ -61,11 +61,13 @@ trait DataBuild extends DataProject with EventLog {
     }
   }
 
-  /**
-    * Invokes the specified function w/ the current build config, but
-    * only if we have an enabled configuration matching this build.
-    */
-  def withBuildConfig[T](f: config.Build => T): Option[T] = {
+  def requiredBuildConfig: config.Build = {
+    optionalBuildConfig.getOrElse {
+      sys.error("No build config")
+    }
+  }
+
+  private[this] def optionalBuildConfig: Option[config.Build] = {
     dataBuild match {
       case None => {
         None
@@ -73,13 +75,20 @@ trait DataBuild extends DataProject with EventLog {
 
       case Some(build) => {
         withConfig { config =>
-          val bc = config.builds.find(_.name == build.name).getOrElse {
+          config.builds.find(_.name == build.name).getOrElse {
             sys.error(s"Build[${build.id}] does not have a configuration matching name[${build.name}]")
           }
-          f(bc)
         }
       }
     }
+  }
+
+  /**
+    * Invokes the specified function w/ the current build config, but
+    * only if we have an enabled configuration matching this build.
+    */
+  def withBuildConfig[T](f: config.Build => T): Option[T] = {
+    optionalBuildConfig.map(f)
   }
 
 }
