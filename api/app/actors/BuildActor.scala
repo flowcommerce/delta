@@ -209,7 +209,7 @@ class BuildActor @javax.inject.Inject() (
 
   def scale(docker: Docker, build: Build, diff: StateDiff): Future[Unit] = {
     val projectName = BuildNames.projectName(build)
-    val imageName = BuildNames.dockerImageName(docker, build)
+    val imageName = BuildNames.dockerImageName(docker, build, requiredBuildConfig)
     val imageVersion = diff.versionName
 
     // only need to run scale once with delta 1.1
