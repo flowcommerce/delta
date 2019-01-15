@@ -96,7 +96,7 @@ class DockerHubActor @javax.inject.Inject() (
         val imageFullName = BuildNames.dockerImageName(org.docker, build, requiredBuildConfig, version)
 
         Await.result(
-          syncDockerImages.run(build),
+          syncDockerImages.run(build, requiredBuildConfig),
           Duration.Inf
         )
 
