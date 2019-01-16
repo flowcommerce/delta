@@ -43,10 +43,10 @@ case class EC2ContainerService @javax.inject.Inject() (
 
 
   def getBaseName(org: Organization, build: Build, imageVersion: Option[String] = None): String = {
+    val projectId = BuildNames.projectName(build)
     Seq(
       Option(org.docker.organization),
-      Option(build.project.id),
-      Option(build.name).filterNot(_ == "root"),
+      Option(projectId),
       imageVersion.map { v => s"${v.replaceAll("[.]","-")}" } // 1.2.3 becomes 1-2-3
     ).flatten.mkString("-").replaceAll("_", "-")
   }
@@ -375,11 +375,12 @@ case class EC2ContainerService @javax.inject.Inject() (
   }
 
   def getServiceInstances(org: Organization, build: Build, imageVersion: String): Future[Seq[String]] = {
-    val clusterName = EC2ContainerService.getClusterName(build.project.id)
+    val projectId = BuildNames.projectName(build)
+    val clusterName = EC2ContainerService.getClusterName(projectId)
     val serviceName = getServiceName(org, build)
     val log = logger.
       fingerprint(this.getClass.getName).
-      withKeyValue("project_id", build.project.id).
+      withKeyValue("project_id", projectId).
       withKeyValue("build_id", build.id).
       withKeyValue("image_version", imageVersion).
       withKeyValue("cluster_name", clusterName).
@@ -413,13 +414,14 @@ case class EC2ContainerService @javax.inject.Inject() (
     desiredCount: Long
   ): Future[String] = {
     Future {
-      val clusterName = EC2ContainerService.getClusterName(build.project.id)
+      val projectId = BuildNames.projectName(build)
+      val clusterName = EC2ContainerService.getClusterName(projectId)
       val serviceName = getServiceName(org, build)
       val containerName = getContainerName(org, build)
-      val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(build.project.id)
+      val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
       val log = logger.
         fingerprint(this.getClass.getName).
-        withKeyValue("project_id", build.project.id).
+        withKeyValue("project_id", projectId).
         withKeyValue("build_id", build.id).
         withKeyValue("image_version", imageVersion).
         withKeyValue("cluster_name", clusterName).
