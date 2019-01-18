@@ -59,6 +59,7 @@ lazy val api = project
       "io.flow" %% "lib-event-play26" % "0.4.42",
       "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
+      "com.amazonaws" % "aws-java-sdk-ecr" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
       "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
