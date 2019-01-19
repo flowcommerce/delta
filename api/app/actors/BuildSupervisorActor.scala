@@ -113,23 +113,26 @@ class BuildSupervisorActor @Inject()(
           }
           case true => {
             eventLogProcessor.started(format(f), log = log(projectId))
-            f.run(build, requiredBuildConfig).map {
-              case SupervisorResult.Change(desc) => {
-                eventLogProcessor.changed(format(f, desc), log = log(projectId))
-              }
-              case SupervisorResult.Checkpoint(desc) => {
-                eventLogProcessor.checkpoint(format(f, desc), log = log(projectId))
-              }
-              case SupervisorResult.Error(desc, ex) => {
-                val err = ex.getOrElse {
-                  new Exception(desc)
+            f.run(build).map { result =>
+              result match {
+                case SupervisorResult.Change(desc) => {
+                  eventLogProcessor.changed(format(f, desc), log = log(projectId))
                 }
-                eventLogProcessor.completed(format(f, desc), Some(err), log = log(projectId))
+                case SupervisorResult.Checkpoint(desc) => {
+                  eventLogProcessor.checkpoint(format(f, desc), log = log(projectId))
+                }
+                case SupervisorResult.Error(desc, ex)=> {
+                  val err = ex.getOrElse {
+                    new Exception(desc)
+                  }
+                  eventLogProcessor.completed(format(f, desc), Some(err), log = log(projectId))
+                }
+               case SupervisorResult.Ready(desc)=> {
+                 eventLogProcessor.completed(format(f, desc), log = log(projectId))
+                  run(build, stages, functions.drop(1))
+                }
               }
-              case SupervisorResult.Ready(desc) => {
-                eventLogProcessor.completed(format(f, desc), log = log(projectId))
-                run(build, stages, functions.drop(1))
-              }
+
             }.recover {
               case ex: Throwable => eventLogProcessor.completed(format(f, ex.getMessage), Some(ex), log = log(projectId))
             }

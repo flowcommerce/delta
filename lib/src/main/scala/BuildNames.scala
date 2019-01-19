@@ -10,22 +10,12 @@ object BuildNames {
     * Given a build, returns the full docker image name
     * (e.g. flowcommerce/delta-api)
     */
-  def dockerImageName(docker: Docker, build: Build, cfg: io.flow.delta.config.v0.models.Build): String = {
-    DockerHost(cfg) match {
-      case DockerHost.Ecr => ecrDockerImageName(docker, build)
-      case DockerHost.DockerHub => docker.organization + "/" + projectName(build)
-    }
+  def dockerImageName(docker: Docker, build: Build): String = {
+    docker.organization + "/" + projectName(build)
   }
 
-  private[this] def ecrDockerImageName(docker: Docker, build: Build): String = {
-    (docker.organization match {
-      case "flowvault" => sys.error("TODO: Not yet supporting flowvault")
-      case "flowcommerce" | "apicollective" => "479720515435.dkr.ecr.us-east-1.amazonaws.com" // TODO: Move somewhere
-    }) + "/" + projectName(build)
-  }
-
-  def dockerImageName(docker: Docker, build: Build, cfg: io.flow.delta.config.v0.models.Build, version: String): String = {
-    dockerImageName(docker, build, cfg) + s":$version"
+  def dockerImageName(docker: Docker, build: Build, version: String): String = {
+    dockerImageName(docker, build) + s":$version"
   }
 
   /**

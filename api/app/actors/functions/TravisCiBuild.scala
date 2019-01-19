@@ -6,8 +6,8 @@ import javax.inject.Inject
 import db._
 import io.flow.delta.actors.DataBuild
 import io.flow.delta.api.lib.{BuildLockUtil, EventLogProcessor}
-import io.flow.delta.config.v0.{models => config}
-import io.flow.delta.lib.{BuildNames, DockerHost}
+import io.flow.delta.config.v0.models.{Build => BuildConfig}
+import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Organization, Project, Visibility, EventType => DeltaEventType}
 import io.flow.log.RollbarLogger
 import io.flow.util.Config
@@ -23,7 +23,7 @@ case class TravisCiBuild(
     org: Organization,
     project: Project,
     build: Build,
-    buildConfig: config.Build,
+    buildConfig: BuildConfig,
     wSClient: WSClient
 ) {
   def withProject[T](f: Project => T): Option[T] = {
@@ -50,7 +50,7 @@ class TravisCiDockerImageBuilder @Inject()(
 ) extends DataBuild {
 
   def buildDockerImage(travisCiBuild: TravisCiBuild): Unit = {
-    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build, travisCiBuild.buildConfig)
+    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
     val projectId = travisCiBuild.project.id
 
     buildLockUtil.withLock(travisCiBuild.build.id) ({
@@ -112,7 +112,7 @@ class TravisCiDockerImageBuilder @Inject()(
   }
 
   private def postBuildRequest(travisCiBuild: TravisCiBuild, client: Client): Unit = {
-    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build, travisCiBuild.buildConfig)
+    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
     val projectId = travisCiBuild.project.id
 
     try {
@@ -143,7 +143,7 @@ class TravisCiDockerImageBuilder @Inject()(
   }
 
   private def createRequestPostForm(travisCiBuild: TravisCiBuild): RequestPostForm = {
-    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build, travisCiBuild.buildConfig)
+    val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build)
 
     RequestPostForm(
       request = RequestPostFormData(
@@ -166,9 +166,13 @@ class TravisCiDockerImageBuilder @Inject()(
           beforeInstall = Option(Seq("echo Delta: skipping before_install step")),
           install = Option(Seq("echo Delta: skipping install step")),
           beforeScript = Option(Seq("echo Delta: skipping before_script step")),
-          script = Option(
-            script(travisCiBuild, dockerImageName)
-          ),
+          script = Option(Seq(
+            "docker --version",
+            "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
+            s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} --build-arg GOOGLE_PLACES_API_KEY=$${GOOGLE_PLACES_API_KEY} --build-arg NATERO_API_KEY=$${NATERO_API_KEY} --build-arg NATERO_AUTH_KEY=$${NATERO_AUTH_KEY} -f ${travisCiBuild.buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
+            "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
+            s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
+          )),
           jobs = None,
           stages = None,
           afterScript = Option(Seq("echo Delta: skipping after_script step")),
@@ -218,30 +222,4 @@ class TravisCiDockerImageBuilder @Inject()(
     s"Delta: building image ${dockerImageName}:${version}"
   }
 
-  private def script(build: TravisCiBuild, dockerImageName: String): Seq[String] = {
-    DockerHost(build.buildConfig) match {
-      case DockerHost.Ecr => ecrScript(build, dockerImageName)
-      case DockerHost.DockerHub => dockerHubScript(build, dockerImageName)
-    }
-  }
-
-  private[this] def ecrScript(travisCiBuild: TravisCiBuild, dockerImageName: String): Seq[String] = {
-    Seq(
-      "docker --version",
-      "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
-      s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} --build-arg GOOGLE_PLACES_API_KEY=$${GOOGLE_PLACES_API_KEY} --build-arg NATERO_API_KEY=$${NATERO_API_KEY} --build-arg NATERO_AUTH_KEY=$${NATERO_AUTH_KEY} -f ${travisCiBuild.buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
-      "eval $(aws ecr get-login --no-include-email)",
-      s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
-    )
-  }
-
-  private[this] def dockerHubScript(travisCiBuild: TravisCiBuild, dockerImageName: String): Seq[String] = {
-    Seq(
-      "docker --version",
-      "echo TRAVIS_BRANCH=$TRAVIS_BRANCH",
-      s"docker build --build-arg NPM_TOKEN=$${NPM_TOKEN} --build-arg AWS_ACCESS_KEY_ID=$${AWS_ACCESS_KEY_ID} --build-arg AWS_SECRET_ACCESS_KEY=$${AWS_SECRET_ACCESS_KEY} --build-arg GOOGLE_PLACES_API_KEY=$${GOOGLE_PLACES_API_KEY} --build-arg NATERO_API_KEY=$${NATERO_API_KEY} --build-arg NATERO_AUTH_KEY=$${NATERO_AUTH_KEY} -f ${travisCiBuild.buildConfig.dockerfile} -t ${dockerImageName}:$${TRAVIS_BRANCH} .",
-      "docker login -u=$DOCKER_USERNAME -p=$DOCKER_PASSWORD",
-      s"docker push ${dockerImageName}:$${TRAVIS_BRANCH}"
-    )
-  }
 }
