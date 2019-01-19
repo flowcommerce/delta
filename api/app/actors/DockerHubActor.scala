@@ -1,14 +1,12 @@
 package io.flow.delta.actors
 
-import actors.functions.SyncECRImages
 import akka.actor.{Actor, ActorSystem}
 import db._
 import io.flow.akka.SafeReceive
 import io.flow.delta.actors.functions.{SyncDockerImages, TravisCiBuild, TravisCiDockerImageBuilder}
 import io.flow.delta.api.lib.EventLogProcessor
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
-import io.flow.delta.lib.DockerHost.{DockerHub, Ecr}
-import io.flow.delta.lib.{BuildNames, DockerHost}
+import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models._
 import io.flow.docker.registry.v0.Client
 import io.flow.docker.registry.v0.models.{BuildForm => DockerBuildForm, BuildTag => DockerBuildTag}
@@ -16,8 +14,8 @@ import io.flow.log.RollbarLogger
 import org.joda.time.DateTime
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
+import scala.concurrent.duration._
 
 object DockerHubActor {
 
@@ -54,7 +52,6 @@ class DockerHubActor @javax.inject.Inject() (
   imagesDao: ImagesDao,
   eventLogProcessor: EventLogProcessor,
   syncDockerImages: SyncDockerImages,
-  syncECRImages: SyncECRImages,
   system: ActorSystem,
   travisCiDockerImageBuilder: TravisCiDockerImageBuilder,
   wSClient: WSClient,
@@ -93,17 +90,15 @@ class DockerHubActor @javax.inject.Inject() (
     }
   }
 
-
-
   private def handleMonitorEvent(version: String, start: DateTime) = {
     withEnabledBuild { build =>
       withOrganization { org =>
-        val imageFullName = BuildNames.dockerImageName(org.docker, build, requiredBuildConfig, version)
+        val imageFullName = BuildNames.dockerImageName(org.docker, build, version)
 
-        DockerHost(requiredBuildConfig) match {
-          case Ecr => monitorECRVersions(build)
-          case DockerHub => monitorDockerHubVersions(build)
-        }
+        Await.result(
+          syncDockerImages.run(build),
+          Duration.Inf
+        )
 
         val projectId = build.project.id
 
@@ -128,17 +123,6 @@ class DockerHubActor @javax.inject.Inject() (
         }
       }
     }
-  }
-
-  private def monitorECRVersions(build: Build): SupervisorResult = {
-    syncECRImages.run(build, requiredBuildConfig)
-  }
-
-  private def monitorDockerHubVersions(build: Build) = {
-    Await.result(
-      syncDockerImages.run(build, requiredBuildConfig),
-      Duration.Inf
-    )
   }
 
   def postDockerHubImageBuild(org: Organization, project: Project, build: Build, buildConfig: BuildConfig): Future[Unit] = {
@@ -167,7 +151,7 @@ class DockerHubActor @javax.inject.Inject() (
   }
 
   def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, config: BuildConfig): DockerBuildForm = {
-    val fullName = BuildNames.dockerImageName(docker, build, requiredBuildConfig)
+    val fullName = BuildNames.dockerImageName(docker, build)
     val buildTags = createBuildTags(config.dockerfile)
 
     val vcsRepoName = io.flow.delta.api.lib.GithubUtil.parseUri(scmsUri) match {
