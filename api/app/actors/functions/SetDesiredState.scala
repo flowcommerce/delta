@@ -18,7 +18,8 @@ object SetDesiredState extends BuildSupervisorFunction {
   override val stage = BuildStage.SetDesiredState
 
   override def run(
-    build: Build
+    build: Build,
+    cfg: io.flow.delta.config.v0.models.Build
   ) (
     implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = Future {

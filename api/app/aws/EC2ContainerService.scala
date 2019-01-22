@@ -4,7 +4,9 @@ import akka.actor.ActorSystem
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
-import io.flow.delta.v0.models.Version
+import io.flow.delta.lib.BuildNames
+import io.flow.delta.v0.models.{Build, Organization, Version}
+import io.flow.delta.config.v0.{models => config}
 import io.flow.log.RollbarLogger
 import org.joda.time.DateTime
 
@@ -40,23 +42,25 @@ case class EC2ContainerService @javax.inject.Inject() (
     build()
 
 
-  def getBaseName(imageName: String, imageVersion: Option[String] = None): String = {
+  def getBaseName(org: Organization, build: Build, imageVersion: Option[String] = None): String = {
+    val projectId = BuildNames.projectName(build)
     Seq(
-      Some(s"${imageName.replaceAll("_", "-").replaceAll("[/]","-")}"), // flow/registry becomes flow-registry
+      Option(org.docker.organization),
+      Option(projectId),
       imageVersion.map { v => s"${v.replaceAll("[.]","-")}" } // 1.2.3 becomes 1-2-3
-    ).flatten.mkString("-")
+    ).flatten.mkString("-").replaceAll("_", "-")
   }
 
-  def getServiceName(imageName: String): String = {
-    s"${getBaseName(imageName).replaceAll("_", "-")}-service"
+  private def getServiceName(org: Organization, build: Build): String = {
+    s"${getBaseName(org, build)}-service"
   }
 
-  def getContainerName(imageName: String): String = {
-    s"${getBaseName(imageName).replaceAll("_", "-")}-container"
+  private def getContainerName(org: Organization, build: Build): String = {
+    s"${getBaseName(org, build)}-container"
   }
 
-  def getTaskName(imageName: String, imageVersion: String): String = {
-    s"${getBaseName(imageName, Some(imageVersion)).replaceAll("_", "-")}-task"
+  private def getTaskName(org: Organization, build: Build, imageVersion: String): String = {
+    s"${getBaseName(org, build, Some(imageVersion))}-task"
   }
 
   /**
@@ -177,14 +181,15 @@ case class EC2ContainerService @javax.inject.Inject() (
   // scale to the desired count - can be up or down
   def scale(
     settings: Settings,
-    imageName: String,
+    org: Organization,
+    build: Build,
+    cfg: config.Build,
     imageVersion: String,
-    projectId: String,
     desiredCount: Long
   ): Future[Unit] = {
     for {
-      taskDef <- registerTaskDefinition(settings, imageName, imageVersion)
-      _ <- createOrUpdateService(settings, imageName, imageVersion, projectId, taskDef, desiredCount)
+      taskDef <- registerTaskDefinition(settings, org, build, cfg, imageVersion)
+      _ <- createOrUpdateService(settings, org, build, imageVersion, taskDef, desiredCount)
     } yield {
       // Nothing
     }
@@ -310,11 +315,14 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   def registerTaskDefinition(
     settings: Settings,
-    imageName: String,
+    org: Organization,
+    build: Build,
+    cfg: config.Build,
     imageVersion: String,
   ): Future[String] = {
-    val taskName = getTaskName(imageName, imageVersion)
-    val containerName = getContainerName(imageName)
+    val taskName = getTaskName(org, build, imageVersion)
+    val containerName = getContainerName(org, build)
+    val imageName = BuildNames.dockerImageName(org.docker, build, cfg)
 
     logger.fingerprint(this.getClass.getName).withKeyValue("task",taskName).withKeyValue("container",containerName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService registerTaskDefinition")
 
@@ -366,12 +374,20 @@ case class EC2ContainerService @javax.inject.Inject() (
     }
   }
 
-  def getServiceInstances(imageName: String, imageVersion: String, projectId: String): Future[Seq[String]] = {
+  def getServiceInstances(org: Organization, build: Build, imageVersion: String): Future[Seq[String]] = {
+    val projectId = BuildNames.projectName(build)
     val clusterName = EC2ContainerService.getClusterName(projectId)
-    val serviceName = getServiceName(imageName)
+    val serviceName = getServiceName(org, build)
+    val log = logger.
+      fingerprint(this.getClass.getName).
+      withKeyValue("project_id", projectId).
+      withKeyValue("build_id", build.id).
+      withKeyValue("image_version", imageVersion).
+      withKeyValue("cluster_name", clusterName).
+      withKeyValue("service_name", serviceName)
 
     Future {
-      logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeTasks")
+      log.info(s"AWS EC2ContainerService describeTasks")
       val taskArns = client.listTasks(
         new ListTasksRequest().withCluster(clusterName).withServiceName(serviceName)
       ).getTaskArns
@@ -380,7 +396,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         new DescribeTasksRequest().withCluster(clusterName).withTasks(taskArns)
       ).getTasks.asScala.map(_.getContainerInstanceArn).asJava
 
-      logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeContainerInstances")
+      log.info(s"AWS EC2ContainerService describeContainerInstances")
       client.describeContainerInstances(
         new DescribeContainerInstancesRequest()
         .withCluster(clusterName)
@@ -391,22 +407,32 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   def createOrUpdateService(
     settings: Settings,
-    imageName: String,
+    org: Organization,
+    build: Build,
     imageVersion: String,
-    projectId: String,
     taskDefinition: String,
     desiredCount: Long
   ): Future[String] = {
     Future {
+      val projectId = BuildNames.projectName(build)
       val clusterName = EC2ContainerService.getClusterName(projectId)
-      val serviceName = getServiceName(imageName)
-      val containerName = getContainerName(imageName)
+      val serviceName = getServiceName(org, build)
+      val containerName = getContainerName(org, build)
       val loadBalancerName = ElasticLoadBalancer.getLoadBalancerName(projectId)
+      val log = logger.
+        fingerprint(this.getClass.getName).
+        withKeyValue("project_id", projectId).
+        withKeyValue("build_id", build.id).
+        withKeyValue("image_version", imageVersion).
+        withKeyValue("cluster_name", clusterName).
+        withKeyValue("service_name", serviceName).
+        withKeyValue("container_name", containerName).
+        withKeyValue("load_balancer_name", loadBalancerName)
 
       // allows ECS to deploy new task definitions
       val (serviceDesiredCount,minimumHealthyPercent) = (desiredCount.toInt, 50)
 
-      logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService describeServices")
+      log.info(s"AWS EC2ContainerService describeServices")
       val resp = client.describeServices(
         new DescribeServicesRequest()
           .withCluster(clusterName)
@@ -417,7 +443,7 @@ case class EC2ContainerService @javax.inject.Inject() (
           (!resp.getServices().isEmpty() && resp.getServices().get(0).getStatus() == "INACTIVE")) {
         // If there are failures (because the service doesn't exist)
         // or the service exists but is INACTIVE, then create the service
-        logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService createOrUpdateService")
+        log.info(s"AWS EC2ContainerService createOrUpdateService")
         client.createService(
           // MaximumPercent is set to 200 to allow services with only 1 
           // instance to be deployed with ECS.
@@ -444,7 +470,7 @@ case class EC2ContainerService @javax.inject.Inject() (
 
       } else {
         // Service exists in cluster, update service task definition
-        logger.fingerprint(this.getClass.getName).withKeyValue("project_id",projectId).withKeyValue("cluster",clusterName).withKeyValue("service",serviceName).withKeyValue("image", imageName).withKeyValue("image_version", imageVersion).info(s"AWS EC2ContainerService 1.1 createOrUpdateService")
+        log.info(s"AWS EC2ContainerService 1.1 createOrUpdateService")
         client.updateService(
           new UpdateServiceRequest()
             .withCluster(clusterName)

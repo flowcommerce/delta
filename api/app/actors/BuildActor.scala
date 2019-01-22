@@ -6,10 +6,10 @@ import db.generated.AmiUpdatesDao
 import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.aws.{AutoScalingGroup, DefaultSettings, EC2ContainerService, ElasticLoadBalancer}
-import io.flow.delta.config.v0.models.BuildStage
+import io.flow.delta.config.v0.models.{BuildStage, Build => BuildConfig}
 import io.flow.delta.lib.config.InstanceTypeDefaults
 import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
-import io.flow.delta.v0.models.{Build, Docker, StateForm}
+import io.flow.delta.v0.models.{Build, Organization, StateForm}
 import io.flow.log.RollbarLogger
 import io.flow.util.Config
 import io.flow.postgresql.OrderBy
@@ -110,7 +110,7 @@ class BuildActor @javax.inject.Inject() (
       withOrganization { org =>
         withEnabledBuild { build =>
           diffs.foreach { diff =>
-            scale(org.docker, build, diff) // Should Await the Future?
+            scale(org, build, requiredBuildConfig, diff) // Should Await the Future?
           }
         }
       }
@@ -207,16 +207,14 @@ class BuildActor @javax.inject.Inject() (
     }
   }
 
-  def scale(docker: Docker, build: Build, diff: StateDiff): Future[Unit] = {
-    val projectName = BuildNames.projectName(build)
-    val imageName = BuildNames.dockerImageName(docker, build)
+  def scale(org: Organization, build: Build, cfg: BuildConfig, diff: StateDiff): Future[Unit] = {
     val imageVersion = diff.versionName
 
     // only need to run scale once with delta 1.1
     if (diff.lastInstances == 0) {
       self ! BuildActor.Messages.ConfigureAWS
       eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log(build.project.id)) {
-        ecs.scale(awsSettings, imageName, imageVersion, projectName, diff.desiredInstances)
+        ecs.scale(awsSettings, org, build, cfg, imageVersion, diff.desiredInstances)
       }
     } else {
       Future.successful(())

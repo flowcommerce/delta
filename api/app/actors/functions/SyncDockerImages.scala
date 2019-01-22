@@ -7,6 +7,7 @@ import io.flow.delta.actors.{BuildSupervisorFunction, DockerHubToken, Supervisor
 import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.lib.{BuildNames, Semver}
 import io.flow.delta.v0.models.{Build, Docker, ImageForm}
+import io.flow.delta.config.v0.{models => config}
 import io.flow.docker.registry.v0.Client
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
@@ -20,12 +21,13 @@ object SyncDockerImages extends BuildSupervisorFunction {
   override val stage = BuildStage.SyncDockerImage
 
   override def run(
-    build: Build
+    build: Build,
+    cfg: config.Build
   ) (
     implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = {
     val syncDockerImages = app.injector.instanceOf[SyncDockerImages]
-    syncDockerImages.run(build)
+    syncDockerImages.run(build, cfg)
   }
 
 }
@@ -42,7 +44,7 @@ class SyncDockerImages @Inject()(
 ) {
   private[this] val client = new Client(ws = wSClient)
 
-  def run(build: Build)(
+  def run(build: Build, cfg: config.Build)(
     implicit ec: ExecutionContext
   ): Future[SupervisorResult] = {
     organizationsDao.findById(Authorization.All, build.project.organization.id) match {
@@ -52,14 +54,15 @@ class SyncDockerImages @Inject()(
       }
 
       case Some(org) => {
-        syncImages(org.docker, build)
+        syncImages(org.docker, build, cfg)
       }
     }
   }
 
   def syncImages(
     docker: Docker,
-    build: Build
+    build: Build,
+    cfg: config.Build
   ) (
     implicit ec: ExecutionContext
   ): Future[SupervisorResult] = {
@@ -69,7 +72,7 @@ class SyncDockerImages @Inject()(
       requestHeaders = dockerHubToken.requestHeaders(build.project.organization.id)
     ).map { tags =>
       val newTags: Seq[String] = tags.results.filter(t => Semver.isSemver(t.name)).flatMap { tag =>
-        if (upsertImage(docker, build, tag.name)) {
+        if (upsertImage(docker, build, cfg, tag.name)) {
           Some(tag.name)
         } else {
           None
@@ -97,7 +100,7 @@ class SyncDockerImages @Inject()(
     }
   }
 
-  private[this] def upsertImage(docker: Docker, build: Build, version: String): Boolean = {
+  private[this] def upsertImage(docker: Docker, build: Build, cfg: config.Build, version: String): Boolean = {
     imagesDao.findByBuildIdAndVersion(build.id, version) match {
       case Some(_) => {
         // Already know about this tag
@@ -109,7 +112,7 @@ class SyncDockerImages @Inject()(
           Constants.SystemUser,
           ImageForm(
             buildId = build.id,
-            name = BuildNames.dockerImageName(docker, build),
+            name = BuildNames.dockerImageName(docker, build, cfg),
             version = version
           )
         ) match {
