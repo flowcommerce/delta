@@ -1,7 +1,7 @@
 package io.flow.delta.actors
 
 import actors.functions.SyncECRImages
-import akka.actor.{Actor, ActorSystem}
+import akka.actor.{Actor, ActorSystem, Cancellable}
 import db._
 import io.flow.akka.SafeReceive
 import io.flow.delta.actors.functions.{SyncDockerImages, TravisCiBuild, TravisCiDockerImageBuilder}
@@ -16,6 +16,7 @@ import io.flow.log.RollbarLogger
 import org.joda.time.DateTime
 import play.api.libs.ws.WSClient
 
+import scala.collection.mutable
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 
@@ -69,6 +70,8 @@ class DockerHubActor @javax.inject.Inject() (
   private[this] val intervalSeconds = 30L
   private[this] val timeoutSeconds = 1500
 
+  val monitors = mutable.HashMap[String, Cancellable]()
+
   def receive = SafeReceive.withLogUnhandled {
     case DockerHubActor.Messages.Setup =>
       setBuildId(buildId)
@@ -100,12 +103,22 @@ class DockerHubActor @javax.inject.Inject() (
       withOrganization { org =>
         val imageFullName = BuildNames.dockerImageName(org.docker, build, requiredBuildConfig, version)
 
-        DockerHost(requiredBuildConfig) match {
+        val dockerHost = DockerHost(requiredBuildConfig)
+
+        val result = dockerHost match {
           case Ecr => monitorECRVersions(build)
           case DockerHub => monitorDockerHubVersions(build)
         }
 
         val projectId = build.project.id
+
+        result match {
+          case SupervisorResult.Error(d, e) => {
+            eventLogProcessor.error(s"Error refreshing $dockerHost image $imageFullName: $d", e, log(projectId))
+          }
+          case _ =>
+        }
+
 
         imagesDao.findByBuildIdAndVersion(build.id, version) match {
           case Some(image) => {
@@ -119,10 +132,13 @@ class DockerHubActor @javax.inject.Inject() (
               eventLogProcessor.error(s"Timeout after $timeoutSeconds seconds. Docker image $imageFullName was not built", log = log(projectId))
 
             } else {
-              eventLogProcessor.checkpoint(s"Docker hub image $imageFullName is not ready. Will check again in $intervalSeconds seconds", log = log(projectId))
-              system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
+              eventLogProcessor.checkpoint(s"$dockerHost image $imageFullName is not ready. Will check again in $intervalSeconds seconds", log = log(projectId))
+              //cancel any pending waits and schedule a new, later wait for this version
+              monitors.get(version).foreach(_.cancel())
+              val c = system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
                 self ! DockerHubActor.Messages.Monitor(version, start)
               }
+              monitors += version -> c
             }
           }
         }
@@ -134,7 +150,7 @@ class DockerHubActor @javax.inject.Inject() (
     syncECRImages.run(build, requiredBuildConfig)
   }
 
-  private def monitorDockerHubVersions(build: Build) = {
+  private def monitorDockerHubVersions(build: Build): SupervisorResult = {
     Await.result(
       syncDockerImages.run(build, requiredBuildConfig),
       Duration.Inf
