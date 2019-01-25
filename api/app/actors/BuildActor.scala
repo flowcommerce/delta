@@ -276,6 +276,7 @@ class BuildActor @javax.inject.Inject() (
     // if `memory` passed in to .delta, use that (previously deprecated feature that could still be useful)
     // otherwise default to InstanceTypeDefaults.jvm
     val jvmMemory = bc.memory.map(_.toInt).getOrElse(instanceMemorySettings.jvm)
+    val containerMemory = bc.containerMemory.map(_.toInt).getOrElse(instanceMemorySettings.container)
 
     // if cross_zone_load_balancing is pass in the .delta file, use that
     val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(false)
@@ -298,7 +299,7 @@ class BuildActor @javax.inject.Inject() (
       serviceRole = config.requiredString("aws.service.role"),
       instanceType = instanceType,
       jvmMemory = jvmMemory,
-      containerMemory = instanceMemorySettings.container,
+      containerMemory = containerMemory,
       instanceMemory = instanceMemorySettings.instance,
       portContainer = bc.portContainer,
       portHost = bc.portHost,
