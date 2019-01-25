@@ -255,8 +255,8 @@ class AutoScalingGroup @javax.inject.Inject() (
 
     // other ECS, AWS, and OPSWORK stuff
     val completeEcsAndAwsSetup = Seq(
-      s"""echo '* soft nofile $nofileMax' >> /etc/security/limits.conf""",
-      s"""echo '* hard nofile $nofileMax' >> /etc/security/limits.conf""",
+      s"""echo '* soft nofile 1000000' >> /etc/security/limits.conf""",
+      s"""echo '* hard nofile 1000000' >> /etc/security/limits.conf""",
       """service docker restart""",
       """sed -i'' -e 's/.*requiretty.*//' /etc/sudoers""",
       """curl -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py""",
