@@ -13,34 +13,46 @@ import play.api.libs.json.Json
 
 trait DataProject {
 
-  val   logger: RollbarLogger
+  val logger: RollbarLogger
 
   def configsDao: ConfigsDao
   def organizationsDao: OrganizationsDao
   def projectsDao: ProjectsDao
 
-  private[this] val dataProject: AtomicReference[Option[Project]] = new AtomicReference(None)
+  private[this] val projectId: AtomicReference[Option[String]] = new AtomicReference(None)
 
   /**
     * Looks up the project with the specified ID, setting the local
-    * dataProject var to that project
+    * findProject var to that project
     */
   def setProjectId(id: String): Unit = {
-    val p = projectsDao.findById(Authorization.All, id)
-    dataProject.set(p)
-    if (p.isEmpty) {
-      logger.withKeyValue("project_id", id).warn(s"Could not find project")
+    projectId.set(Some(id))
+  }
+  private[this] def findProject = {
+    projectId.get() match {
+      case None => None
+      case Some(id) => {
+        projectsDao.findById(Authorization.All, id) match {
+          case None => {
+            logger.withKeyValue("project_id", id).warn("project not found")
+            None
+          }
+          case Some(p) => {
+            Some(p)
+          }
+        }
+      }
     }
   }
 
-  def getProject: Option[Project] = dataProject.get
+  def getProject: Option[Project] = findProject
 
   /**
     * Invokes the specified function w/ the current project, but only
     * if we have a project set.
     */
   def withProject[T](f: Project => T): Unit = {
-    dataProject.get.foreach(f)
+    findProject.foreach(f)
   }
 
   /**
@@ -48,7 +60,7 @@ trait DataProject {
     * if we have one
     */
   def withOrganization[T](f: Organization => T): Unit = {
-    dataProject.get.foreach { project =>
+    findProject.foreach { project =>
       organizationsDao.findById(Authorization.All, project.organization.id).foreach { org =>
         f(org)
       }
@@ -60,7 +72,7 @@ trait DataProject {
     * it is valid.
     */
   def withConfig[T](f: ConfigProject => T): Option[T] = {
-    dataProject.get.flatMap { project =>
+    findProject.flatMap { project =>
       configsDao.findByProjectId(Authorization.All, project.id).map(_.config) match {
         case None => {
           logger.withKeyValue("project_id", project.id).info(s"Project does not have a configuration")
@@ -86,7 +98,7 @@ trait DataProject {
     * into a valid Repo.
     */
   def withRepo[T](f: Repo => T): Option[T] = {
-    dataProject.get.flatMap { project =>
+    findProject.flatMap { project =>
       GithubUtil.parseUri(project.uri) match {
         case Left(error) => {
           logger.withKeyValue("project", Json.toJson(project)).withKeyValue("error", error).warn(s"Cannot parse repo from project")
