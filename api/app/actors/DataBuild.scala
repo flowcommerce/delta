@@ -1,5 +1,7 @@
 package io.flow.delta.actors
 
+import java.util.concurrent.atomic.AtomicReference
+
 import db.BuildsDao
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.lib.BuildNames
@@ -10,15 +12,15 @@ trait DataBuild extends DataProject with EventLog {
 
   def buildsDao: BuildsDao
 
-  private[this] var buildId: Option[String] = None
+  private[this] val buildId: AtomicReference[Option[String]] = new AtomicReference(None)
 
   private[this] def findBuild: Option[Build] = {
-    buildId match {
+    buildId.get() match {
       case None => None
       case Some(id) => {
         buildsDao.findById(Authorization.All, id) match {
           case None => {
-            logger.withKeyValue("build_id", buildId).warn("Build not found")
+            logger.withKeyValue("build_id", id).warn("Build not found")
             None
           }
           case Some(b) => {
@@ -30,7 +32,7 @@ trait DataBuild extends DataProject with EventLog {
   }
 
   def setBuildId(id: String): Unit = {
-    buildId = Some(id)
+    buildId.set(Some(id))
   }
 
   override def logPrefix: String = {

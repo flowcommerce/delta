@@ -28,6 +28,7 @@ trait DataProject {
   def setProjectId(id: String): Unit = {
     projectId.set(Some(id))
   }
+
   private[this] def findProject = {
     projectId.get() match {
       case None => None
