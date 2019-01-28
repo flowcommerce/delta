@@ -41,6 +41,9 @@ object BuildNames {
   }
   
   private[this] def projectName(projectId: String, buildName: String): String = {
+    if (projectId == "fulfillment") {
+      play.api.Logger.info(s"[PaoloDebug] projectId[$projectId] buildName[$buildName]")
+    }
     buildName match {
       case DefaultBuildName => projectId
       case _ => projectId + "-" + buildName
