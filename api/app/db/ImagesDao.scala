@@ -39,7 +39,7 @@ class ImagesDao @javax.inject.Inject() (
     findAll(
       buildId = Some(buildId),
       versions = Some(Seq(version)),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 
@@ -59,7 +59,7 @@ class ImagesDao @javax.inject.Inject() (
         equals("images.build_id", buildId).
         optionalIn("images.version", versions).
         orderBy(orderBy.sql).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(
           io.flow.delta.v0.anorm.parsers.Image.parser().*

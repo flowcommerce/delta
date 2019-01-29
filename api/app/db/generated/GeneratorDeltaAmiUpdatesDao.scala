@@ -167,7 +167,7 @@ class AmiUpdatesDao @Inject() (
   def findAll(
     ids: Option[Seq[String]] = None,
     id: Option[String] = None,
-    limit: Long,
+    limit: Option[Long],
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ami_updates.id")
   ) (
@@ -189,7 +189,7 @@ class AmiUpdatesDao @Inject() (
     c: java.sql.Connection,
     ids: Option[Seq[String]] = None,
     id: Option[String] = None,
-    limit: Long,
+    limit: Option[Long],
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("ami_updates.id")
   ) (
@@ -198,7 +198,7 @@ class AmiUpdatesDao @Inject() (
     customQueryModifier(BaseQuery).
       optionalIn("ami_updates.id", ids).
       equals("ami_updates.id", id).
-      limit(limit).
+      optionalLimit(limit).
       offset(offset).
       orderBy(orderBy.sql).
       as(AmiUpdatesDao.parser.*)(c)

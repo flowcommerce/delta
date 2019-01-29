@@ -36,7 +36,7 @@ class Users @javax.inject.Inject() (
             id = id,
             email = email,
             identifier = identifier,
-            limit = 1,
+            limit = Some(1),
             offset = 0
           )
         )

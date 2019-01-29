@@ -99,7 +99,7 @@ class SubscriptionsDao @javax.inject.Inject() (
     findAll(
       userId = Some(userId),
       publication = Some(publication),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 

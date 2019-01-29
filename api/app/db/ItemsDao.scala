@@ -165,7 +165,7 @@ class ItemsDao @javax.inject.Inject() (
         and(q.map { _ => "items.contents like '%' || lower(trim({q})) || '%' " }).bind("q", q).
         equals("items.object_id", objectId).
         orderBy(orderBy.sql).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(
           parser().*

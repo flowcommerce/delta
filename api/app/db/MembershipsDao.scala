@@ -117,7 +117,7 @@ class MembershipsDao @javax.inject.Inject() (
       auth,
       organizationId = Some(organizationId),
       userId = Some(userId),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 

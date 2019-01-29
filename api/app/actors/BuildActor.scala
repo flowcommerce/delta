@@ -271,7 +271,7 @@ class BuildActor @javax.inject.Inject() (
   private[this] def awsSettings(): DefaultSettings = withBuildConfig { bc =>
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
-    val latestAmi = amiUpdatesDao.findAll(limit = 1, orderBy = OrderBy("-ami_updates.created_at")).head.id
+    val latestAmi = amiUpdatesDao.findAll(limit = Some(1), orderBy = OrderBy("-ami_updates.created_at")).head.id
 
     // if `memory` passed in to .delta, use that (previously deprecated feature that could still be useful)
     // otherwise default to InstanceTypeDefaults.jvm

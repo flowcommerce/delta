@@ -46,7 +46,7 @@ class SetDesiredState @Inject()(
       Authorization.All,
       projectId = Some(build.project.id),
       orderBy = OrderBy("-tags.sort_key"),
-      limit = 1
+      limit = Some(1)
     ).headOption match {
       case None => {
         SupervisorResult.Checkpoint("Project does not have any tags")

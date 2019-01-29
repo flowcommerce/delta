@@ -4,7 +4,7 @@ import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.{DockerProvider, Organization, OrganizationForm, Role}
 import io.flow.play.util.UrlKey
-import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import play.api.db._
 
 @javax.inject.Singleton
@@ -105,9 +105,10 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
           organizationsDao.findById(Authorization.All, form.id) match {
             case None => Seq.empty
             case Some(p) => {
-              Some(p.id) == existing.map(_.id) match {
-                case true => Nil
-                case false => Seq("Organization with this id already exists")
+              if (existing.map(_.id).contains(p.id)) {
+                Nil
+              } else {
+                Seq("Organization with this id already exists")
               }
             }
           }
@@ -191,15 +192,11 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, organization: Organization): Unit = {
-    Pager.create { offset =>
-      projectsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
-    }.foreach { project =>
+    projectsDao.findAll(Authorization.All, organizationId = Some(organization.id), limit = None).foreach { project =>
       projectsWriteDao.delete(deletedBy, project)
     }
 
-    Pager.create { offset =>
-      membershipsDao.findAll(Authorization.All, organizationId = Some(organization.id), offset = offset)
-    }.foreach { membership =>
+    membershipsDao.findAll(Authorization.All, organizationId = Some(organization.id), limit = None).foreach { membership =>
       membershipsDao.delete(deletedBy, membership)
     }
 

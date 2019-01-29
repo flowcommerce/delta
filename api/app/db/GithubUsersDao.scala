@@ -85,7 +85,7 @@ class GithubUsersDao @javax.inject.Inject() (
         optionalText("github_users.login", login).
         equals("github_users.github_user_id", githubUserId).
         orderBy(orderBy.sql).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(
           io.flow.delta.v0.anorm.parsers.GithubUser.parser().*

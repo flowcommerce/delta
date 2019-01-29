@@ -229,7 +229,7 @@ class TokensDao @javax.inject.Inject() (
     userId: Option[String] = None,
     tag: Option[String] = None,
     orderBy: OrderBy = OrderBy("tokens.created_at"),
-    limit: Long,
+    limit: Option[Long],
     offset: Long = 0
   )(implicit c: java.sql.Connection): Seq[Token] = {
     Standards.query(

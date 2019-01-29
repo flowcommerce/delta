@@ -12,7 +12,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.StateDiff
 import io.flow.log.RollbarLogger
 import io.flow.util.Constants
-import io.flow.postgresql.{Authorization, Pager}
+import io.flow.postgresql.Authorization
 import javax.inject.Named
 import play.api.libs.concurrent.InjectedActorSupport
 import play.api.{Environment, Mode}
@@ -93,6 +93,10 @@ class MainActor @javax.inject.Inject() (
   private[this] val projectSupervisorActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val userActors = scala.collection.mutable.Map[String, ActorRef]()
 
+  private[this] def allBuilds() = {
+    buildsDao.findAll(Authorization.All, limit = None)
+  }
+
   playEnv.mode match {
     case Mode.Test => {
       logger.info("[MainActor] Background actors are disabled in Test")
@@ -108,9 +112,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.ensure.container.agent.health")
       ){
-        Pager.create { offset =>
-          buildsDao.findAll(Authorization.All, offset = offset)
-        }.foreach { build =>
+        allBuilds().foreach { build =>
           self ! MainActor.Messages.EnsureContainerAgentHealth(build.id)
         }
       }
@@ -118,9 +120,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.update.container.agent")
       ) {
-        Pager.create { offset =>
-          buildsDao.findAll(Authorization.All, offset = offset)
-        }.foreach { build =>
+        allBuilds().foreach { build =>
           self ! MainActor.Messages.UpdateContainerAgent(build.id)
         }
       }
@@ -128,9 +128,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.remove.old.services")
       ) {
-        Pager.create { offset =>
-          buildsDao.findAll(Authorization.All, offset = offset)
-        }.foreach { build =>
+        allBuilds().foreach { build =>
           self ! MainActor.Messages.RemoveOldServices(build.id)
         }
       }
@@ -138,9 +136,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.project.sync")
       ) {
-        Pager.create { offset =>
-          projectsDao.findAll(Authorization.All, offset = offset)
-        }.foreach { project =>
+        projectsDao.findAll(Authorization.All, limit = None).foreach { project =>
           self ! MainActor.Messages.ProjectSync(project.id)
         }
       }
@@ -148,9 +144,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.project.inactive.check")
       ) {
-        Pager.create { offset =>
-          projectsDao.findAll(Authorization.All, offset = offset, minutesSinceLastEvent = Some(15))
-        }.foreach { project =>
+        projectsDao.findAll(Authorization.All, limit = None, minutesSinceLastEvent = Some(15)).foreach { project =>
           logger.withKeyValue("project_id", project.id).info("Sending ProjectSync - no events found in last 15 minutes")
           self ! MainActor.Messages.ProjectSync(project.id)
         }
@@ -267,7 +261,7 @@ class MainActor @javax.inject.Inject() (
 
   def upsertUserActor(id: String): ActorRef = {
     this.synchronized {
-      userActors.lift(id).getOrElse {
+      userActors.get(id).getOrElse {
         val ref = injectedChild(userActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! UserActor.Messages.Data(id)
         userActors += (id -> ref)
@@ -278,7 +272,7 @@ class MainActor @javax.inject.Inject() (
 
   def upsertProjectActor(id: String): ActorRef = {
     this.synchronized {
-      projectActors.lift(id).getOrElse {
+      projectActors.get(id).getOrElse {
         val ref = injectedChild(projectFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! ProjectActor.Messages.Setup
         projectActors += (id -> ref)
@@ -289,7 +283,7 @@ class MainActor @javax.inject.Inject() (
 
   def upsertBuildActor(id: String): ActorRef = {
     this.synchronized {
-      buildActors.lift(id).getOrElse {
+      buildActors.get(id).getOrElse {
         val ref = injectedChild(buildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! BuildActor.Messages.Setup
         buildActors += (id -> ref)
@@ -300,7 +294,7 @@ class MainActor @javax.inject.Inject() (
 
   def upsertProjectSupervisorActor(id: String): ActorRef = {
     this.synchronized {
-      projectSupervisorActors.lift(id).getOrElse {
+      projectSupervisorActors.get(id).getOrElse {
         val ref = injectedChild(projectSupervisorActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! ProjectSupervisorActor.Messages.Data(id)
         projectSupervisorActors += (id -> ref)

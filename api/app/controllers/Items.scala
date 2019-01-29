@@ -15,7 +15,7 @@ class Items @javax.inject.Inject() (
 
   def get(
     q: Option[String],
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ) = Identified { request =>
     Ok(
