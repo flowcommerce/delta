@@ -64,15 +64,13 @@ class ProjectSupervisorActor @Inject()(
             withKeyValue("config", config.toString).
             info(s"PursueDesiredState starting")
 
-          Some(
-            eventLogProcessor.runSync("PursueDesiredState", log = log(id)) {
-              run(project, config, ProjectSupervisorActor.Functions)
+          eventLogProcessor.runSync("PursueDesiredState", log = log(id)) {
+            run(project, config, ProjectSupervisorActor.Functions)
 
-              buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
-                sender ! MainActor.Messages.BuildSync(build.id)
-              }
+            buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
+              sender ! MainActor.Messages.BuildSync(build.id)
             }
-          )
+          }
         }
       }
 
