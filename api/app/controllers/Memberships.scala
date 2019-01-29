@@ -24,7 +24,7 @@ class Memberships @javax.inject.Inject() (
     organization: Option[String],
     userId: Option[String],
     role: Option[Role],
-    limit: Option[Long],
+    limit: Long,
     offset: Long,
     sort: String
   ) = Identified { request =>
@@ -37,7 +37,7 @@ class Memberships @javax.inject.Inject() (
             organizationId = organization,
             userId = userId,
             role = role,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

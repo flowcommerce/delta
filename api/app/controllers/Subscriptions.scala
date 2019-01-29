@@ -23,7 +23,7 @@ class Subscriptions @javax.inject.Inject() (
     userId: Option[String],
     identifier: Option[String],
     publication: Option[Publication],
-    limit: Option[Long],
+    limit: Long,
     offset: Long,
     sort: String
   ) = Identified {
@@ -35,7 +35,7 @@ class Subscriptions @javax.inject.Inject() (
             userId = userId,
             identifier = identifier,
             publication = publication,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

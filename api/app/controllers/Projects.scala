@@ -31,7 +31,7 @@ class Projects @javax.inject.Inject() (
     id: Option[Seq[String]],
     organization: Option[String],
     name: Option[String],
-    limit: Option[Long],
+    limit: Long,
     offset: Long,
     sort: String
   ) = Identified { request =>
@@ -43,7 +43,7 @@ class Projects @javax.inject.Inject() (
             ids = optionals(id),
             name = name,
             organizationId = organization,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

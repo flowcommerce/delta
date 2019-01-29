@@ -20,7 +20,7 @@ class Organizations @javax.inject.Inject() (
   def get(
     id: Option[Seq[String]],
     userId: Option[String],
-    limit: Option[Long],
+    limit: Long,
     offset: Long,
     sort: String
   ) = Identified { request =>
@@ -31,7 +31,7 @@ class Organizations @javax.inject.Inject() (
             authorization(request),
             ids = optionals(id),
             userId = userId,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

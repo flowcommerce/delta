@@ -15,7 +15,7 @@ class Items @javax.inject.Inject() (
 
   def get(
     q: Option[String],
-    limit: Option[Long],
+    limit: Long,
     offset: Long = 0
   ) = Identified { request =>
     Ok(
@@ -23,7 +23,7 @@ class Items @javax.inject.Inject() (
         itemsDao.findAll(
           authorization(request),
           q = q,
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
       )

@@ -22,7 +22,7 @@ class Tags @javax.inject.Inject() (
     id: Option[Seq[String]],
     project: Option[String],
     name: Option[String],
-    limit: Option[Long],
+    limit: Long,
     offset: Long,
     sort: String
   ) = Identified { request =>
@@ -34,7 +34,7 @@ class Tags @javax.inject.Inject() (
             ids = optionals(id),
             projectId = project,
             name = name,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

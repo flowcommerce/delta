@@ -20,7 +20,7 @@ class Images @javax.inject.Inject() (
     id: Option[Seq[String]],
     build: Option[String],
     name: Option[String],
-    limit: Option[Long],
+    limit: Long,
     offset: Long,
     sort: String
   ) = Identified {
@@ -31,7 +31,7 @@ class Images @javax.inject.Inject() (
             ids = optionals(id),
             buildId = build,
             names = name.map { n => Seq(n) },
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )
