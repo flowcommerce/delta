@@ -1,43 +1,38 @@
 package io.flow.delta.actors
 
-import java.util.concurrent.atomic.AtomicReference
-
 import db.BuildsDao
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
 
+
 trait DataBuild extends DataProject with EventLog {
 
   def buildsDao: BuildsDao
 
-  private[this] val buildId: AtomicReference[Option[String]] = new AtomicReference(None)
+  private[this] var dataBuild: Option[Build] = None
 
-  private[this] def findBuild: Option[Build] = {
-    buildId.get() match {
-      case None => None
-      case Some(id) => {
-        buildsDao.findById(Authorization.All, id) match {
-          case None => {
-            logger.withKeyValue("build_id", id).warn("Build not found")
-            None
-          }
-          case Some(b) => {
-            Some(b)
-          }
-        }
+  /**
+    * Looks up the build with the specified ID, setting the local
+    * dataBuild var to that build
+    */
+  def setBuildId(id: String): Unit = {
+    buildsDao.findById(Authorization.All, id) match {
+      case None => {
+        dataBuild = None
+        logger.withKeyValue("build_id", id).warn(s"Could not find build")
+      }
+      case Some(b) => {
+        setProjectId(b.project.id)
+        dataBuild = Some(b)
       }
     }
   }
 
-  def setBuildId(id: String): Unit = {
-    buildId.set(Some(id))
-  }
-
   override def logPrefix: String = {
     val base = format(this)
-    findBuild.map { build =>
+    dataBuild.map { build =>
       s"$base[${BuildNames.projectName(build)}]"
     }.getOrElse {
       s"$base[unknown build]"
@@ -48,7 +43,7 @@ trait DataBuild extends DataProject with EventLog {
     * Invokes the specified function w/ the current build
     */
   def withBuild[T](f: Build => T): Unit = {
-    findBuild.foreach(f)
+    dataBuild.foreach(f)
   }
 
   /**
@@ -56,7 +51,7 @@ trait DataBuild extends DataProject with EventLog {
     * if we have a build set.
     */
   def withEnabledBuild[T](f: Build => T): Unit = {
-    findBuild.foreach { build =>
+    dataBuild.foreach { build =>
       build.status match {
         case Status.Enabled =>
           f(build)
@@ -73,7 +68,7 @@ trait DataBuild extends DataProject with EventLog {
   }
 
   private[this] def optionalBuildConfig: Option[config.Build] = {
-    findBuild match {
+    dataBuild match {
       case None => {
         None
       }
