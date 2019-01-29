@@ -72,7 +72,7 @@ trait DataProject {
     * Invokes the specified function w/ the current project config, if
     * it is valid.
     */
-  def withConfig[T](f: ConfigProject => T): Option[T] = {
+  def withConfig[T](f: ConfigProject => Option[T]): Option[T] = {
     findProject.flatMap { project =>
       configsDao.findByProjectId(Authorization.All, project.id).map(_.config) match {
         case None => {
@@ -82,7 +82,7 @@ trait DataProject {
 
         case Some(config) => config match {
           case c: ConfigProject => {
-            Some(f(c))
+            f(c)
           }
           case ConfigError(_) | ConfigUndefinedType(_) => {
             logger.withKeyValue("project_id", project.id).info(s"Project has an erroneous configuration")

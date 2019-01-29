@@ -80,8 +80,13 @@ trait DataBuild extends DataProject with EventLog {
 
       case Some(build) => {
         withConfig { config =>
-          config.builds.find(_.name == build.name).getOrElse {
-            sys.error(s"Build[${build.id}] does not have a configuration matching name[${build.name}]")
+          config.builds.find(_.name == build.name).orElse {
+            logger
+              .withKeyValue("build_id", build.id)
+              .withKeyValue("build_config_name", build.name)
+              .warn("Build does not have a configuration matching name")
+
+            None
           }
         }
       }
