@@ -6,7 +6,7 @@ trait EventLog {
 
   /**
     * The prefix used in entries in the log. By default this is the
-    * class name (exluding its package)
+    * class name (excluding its package)
     */
   def logPrefix: String = {
     val base = format(this)
@@ -28,9 +28,10 @@ trait EventLog {
     val name = f.getClass.getName
     val idx = name.lastIndexOf(".")  // Remove classpath to just get function name
     val className = name.substring(idx + 1)
-    className.endsWith("$") match {
-      case true => className.dropRight(1) // Remove trailing $
-      case false => className
+    if (className.endsWith("$")) {
+      className.dropRight(1)
+    } else {
+      className
     }
   }
   

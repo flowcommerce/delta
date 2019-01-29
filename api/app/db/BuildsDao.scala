@@ -30,17 +30,15 @@ class BuildsDao @Inject()(
   """)
 
   def findAllByProjectId(auth: Authorization, projectId: String): Seq[Build] = {
-    Pager.create { offset =>
-      findAll(auth, projectId = Some(projectId), offset = offset)
-    }.toSeq
+    findAll(auth, projectId = Some(projectId), limit = None)
   }
   
   def findByProjectIdAndName(auth: Authorization, projectId: String, name: String): Option[Build] = {
-    findAll(auth, projectId = Some(projectId), name = Some(name), limit = 1).headOption
+    findAll(auth, projectId = Some(projectId), name = Some(name), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Build] = {
-    findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -49,7 +47,7 @@ class BuildsDao @Inject()(
     projectId: Option[String] = None,
     name: Option[String] = None,
     orderBy: OrderBy = OrderBy("lower(projects.name), lower(builds.name)"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Build] = {
 

@@ -49,21 +49,21 @@ object BuildActor {
 }
 
 class BuildActor @javax.inject.Inject() (
-                                          asg: AutoScalingGroup,
-                                          override val buildsDao: BuildsDao,
-                                          override val configsDao: ConfigsDao,
-                                          override val projectsDao: ProjectsDao,
-                                          override val organizationsDao: OrganizationsDao,
-                                          buildLastStatesDao: InternalBuildLastStatesDao,
-                                          amiUpdatesDao: AmiUpdatesDao,
-                                          config: Config,
-                                          ecs: EC2ContainerService,
-                                          elb: ElasticLoadBalancer,
-                                          eventLogProcessor: EventLogProcessor,
-                                          usersDao: UsersDao,
-                                          system: ActorSystem,
-                                          override val logger: RollbarLogger,
-                                          @com.google.inject.assistedinject.Assisted buildId: String
+  asg: AutoScalingGroup,
+  override val buildsDao: BuildsDao,
+  override val configsDao: ConfigsDao,
+  override val projectsDao: ProjectsDao,
+  override val organizationsDao: OrganizationsDao,
+  buildLastStatesDao: InternalBuildLastStatesDao,
+  amiUpdatesDao: AmiUpdatesDao,
+  config: Config,
+  ecs: EC2ContainerService,
+  elb: ElasticLoadBalancer,
+  eventLogProcessor: EventLogProcessor,
+  usersDao: UsersDao,
+  system: ActorSystem,
+  override val logger: RollbarLogger,
+  @com.google.inject.assistedinject.Assisted buildId: String
 ) extends Actor with DataBuild {
 
   private[this] implicit val ec = system.dispatchers.lookup("build-actor-context")
@@ -116,7 +116,7 @@ class BuildActor @javax.inject.Inject() (
       }
   }
 
-  private[this] def handleReceiveSetupEvent() = {
+  private[this] def handleReceiveSetupEvent(): Unit = {
     setBuildId(buildId)
 
     if (isScaleEnabled) {
@@ -133,7 +133,7 @@ class BuildActor @javax.inject.Inject() (
     }
   }
 
-  private[this] def isScaleEnabled(): Boolean = {
+  private[this] def isScaleEnabled: Boolean = {
     withBuildConfig { buildConfig =>
       buildConfig.stages.contains(BuildStage.Scale)
     }.getOrElse(false)
