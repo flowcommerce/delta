@@ -48,13 +48,13 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
     val build1 = upsertBuild()
     val build2 = upsertBuild()
 
-    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, build2.id))).map(_.id).sorted must be(
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, build2.id)), limit = None).map(_.id).sorted must be(
       Seq(build1.id, build2.id).sorted
     )
 
-    buildsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    buildsDao.findAll(Authorization.All, ids = Some(Seq(createTestKey))) must be(Nil)
-    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, createTestKey))).map(_.id) must be(Seq(build1.id))
+    buildsDao.findAll(Authorization.All, ids = Some(Nil), limit = None) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(createTestKey)), limit = None) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, createTestKey)), limit = None).map(_.id) must be(Seq(build1.id))
   }
 
   "findAll by projectId" in {
@@ -66,15 +66,15 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
     // build2
     upsertBuild(project2)
 
-    buildsDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.project.id).distinct must be(
+    buildsDao.findAll(Authorization.All, projectId = Some(project1.id), limit = None).map(_.project.id).distinct must be(
       Seq(project1.id)
     )
 
-    buildsDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.project.id).distinct must be(
+    buildsDao.findAll(Authorization.All, projectId = Some(project2.id), limit = None).map(_.project.id).distinct must be(
       Seq(project2.id)
     )
 
-    buildsDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
+    buildsDao.findAll(Authorization.All, projectId = Some(createTestKey()), limit = None) must be(Nil)
   }
 
   "findAllByProjectId" in {
@@ -97,12 +97,12 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
 
     val build = upsertBuild(project)(createBuildConfig(), user = user)
 
-    buildsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(build.id))) must be(Nil)
-    buildsDao.findAll(Authorization.All, ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
-    buildsDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
-    buildsDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(build.id))) must be(Nil)
-    buildsDao.findAll(Authorization.User(user.id), ids = Some(Seq(build.id))).map(_.id) must be(Seq(build.id))
-    buildsDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(build.id))) must be(Nil)
+    buildsDao.findAll(Authorization.PublicOnly, ids = Some(Seq(build.id)), limit = None) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build.id)), limit = None).map(_.id) must be(Seq(build.id))
+    buildsDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(build.id)), limit = None).map(_.id) must be(Seq(build.id))
+    buildsDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(build.id)), limit = None) must be(Nil)
+    buildsDao.findAll(Authorization.User(user.id), ids = Some(Seq(build.id)), limit = None).map(_.id) must be(Seq(build.id))
+    buildsDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(build.id)), limit = None) must be(Nil)
   }
 
 }

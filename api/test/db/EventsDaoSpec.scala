@@ -32,13 +32,13 @@ class EventsDaoSpec extends FlowPlaySpec with Helpers {
     val event1 = createEvent()
     val event2 = createEvent()
 
-    eventsDao.findAll(ids = Some(Seq(event1.id, event2.id))).map(_.id).sorted must be(
+    eventsDao.findAll(ids = Some(Seq(event1.id, event2.id)), limit = None).map(_.id).sorted must be(
       Seq(event1.id, event2.id).sorted
     )
 
-    eventsDao.findAll(ids = Some(Nil)) must be(Nil)
-    eventsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    eventsDao.findAll(ids = Some(Seq(event1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(event1.id))
+    eventsDao.findAll(ids = Some(Nil), limit = None) must be(Nil)
+    eventsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    eventsDao.findAll(ids = Some(Seq(event1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(event1.id))
   }
 
   "findAll by projectId" in {
@@ -49,24 +49,24 @@ class EventsDaoSpec extends FlowPlaySpec with Helpers {
     val event2 = createEvent(project2)
     val ids = Seq(event1.id, event2.id)
 
-    eventsDao.findAll(ids = Some(ids), projectId = Some(project1.id)).map(_.id).sorted must be(
+    eventsDao.findAll(ids = Some(ids), projectId = Some(project1.id), limit = None).map(_.id).sorted must be(
       Seq(event1.id)
     )
 
-    eventsDao.findAll(ids = Some(ids), projectId = Some(project2.id)).map(_.id).sorted must be(
+    eventsDao.findAll(ids = Some(ids), projectId = Some(project2.id), limit = None).map(_.id).sorted must be(
       Seq(event2.id)
     )
 
-    eventsDao.findAll(projectId = Some(createTestKey())) must be(Nil)
+    eventsDao.findAll(projectId = Some(createTestKey()), limit = None) must be(Nil)
   }
 
   "findAll by numberMinutesSinceCreation" in {
     val event = createEvent()
 
-    eventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10)).map(_.id) must be(Seq(event.id))
+    eventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10), limit = None).map(_.id) must be(Seq(event.id))
 
     DirectDbAccess.setCreatedAt("events", event.id, -15)
-    eventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10)) must be(Nil)
+    eventsDao.findAll(ids = Some(Seq(event.id)), numberMinutesSinceCreation = Some(10), limit = None) must be(Nil)
   }
 
 }

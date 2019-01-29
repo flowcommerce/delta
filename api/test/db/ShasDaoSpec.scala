@@ -66,13 +66,13 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
     val sha1 = createSha()
     val sha2 = createSha()
 
-    shasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, sha2.id))).map(_.id).sorted must be(
+    shasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, sha2.id)), limit = None).map(_.id).sorted must be(
       Seq(sha1.id, sha2.id).sorted
     )
 
-    shasDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    shasDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    shasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(sha1.id))
+    shasDao.findAll(Authorization.All, ids = Some(Nil), limit = None) must be(Nil)
+    shasDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    shasDao.findAll(Authorization.All, ids = Some(Seq(sha1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(sha1.id))
   }
 
   "findAll by projectId" in {
@@ -82,15 +82,15 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
     val sha1 = createSha(createShaForm(project1))
     val sha2 = createSha(createShaForm(project2))
 
-    shasDao.findAll(Authorization.All, projectId = Some(project1.id)).map(_.id).sorted must be(
+    shasDao.findAll(Authorization.All, projectId = Some(project1.id), limit = None).map(_.id).sorted must be(
       Seq(sha1.id)
     )
 
-    shasDao.findAll(Authorization.All, projectId = Some(project2.id)).map(_.id).sorted must be(
+    shasDao.findAll(Authorization.All, projectId = Some(project2.id), limit = None).map(_.id).sorted must be(
       Seq(sha2.id)
     )
 
-    shasDao.findAll(Authorization.All, projectId = Some(createTestKey())) must be(Nil)
+    shasDao.findAll(Authorization.All, projectId = Some(createTestKey()), limit = None) must be(Nil)
   }
 
   "validate" must {
@@ -134,12 +134,12 @@ class ShasDaoSpec extends FlowPlaySpec with Helpers {
 
     val sha = createSha(createShaForm(project), user = user)
 
-    shasDao.findAll(Authorization.PublicOnly, ids = Some(Seq(sha.id))) must be(Nil)
-    shasDao.findAll(Authorization.All, ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
-    shasDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
-    shasDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(sha.id))) must be(Nil)
-    shasDao.findAll(Authorization.User(user.id), ids = Some(Seq(sha.id))).map(_.id) must be(Seq(sha.id))
-    shasDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(sha.id))) must be(Nil)
+    shasDao.findAll(Authorization.PublicOnly, ids = Some(Seq(sha.id)), limit = None) must be(Nil)
+    shasDao.findAll(Authorization.All, ids = Some(Seq(sha.id)), limit = None).map(_.id) must be(Seq(sha.id))
+    shasDao.findAll(Authorization.Organization(org.id), ids = Some(Seq(sha.id)), limit = None).map(_.id) must be(Seq(sha.id))
+    shasDao.findAll(Authorization.Organization(createOrganization().id), ids = Some(Seq(sha.id)), limit = None) must be(Nil)
+    shasDao.findAll(Authorization.User(user.id), ids = Some(Seq(sha.id)), limit = None).map(_.id) must be(Seq(sha.id))
+    shasDao.findAll(Authorization.User(createUser().id), ids = Some(Seq(sha.id)), limit = None) must be(Nil)
   }
 
 }

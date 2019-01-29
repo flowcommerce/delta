@@ -62,6 +62,6 @@ class SyncECRImagesSpec extends FlowPlaySpec with db.Helpers {
       case _ => fail("Should have changed but didn't")
     }
 
-    imagesDao.findAll(buildId = Some(b.id)).nonEmpty must be(true)
+    imagesDao.findAll(buildId = Some(b.id), limit = None) must not be(empty)
   }
 }

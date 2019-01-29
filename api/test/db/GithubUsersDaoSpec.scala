@@ -32,13 +32,13 @@ class GithubUsersDaoSpec extends FlowPlaySpec with Helpers {
     val user1 = createGithubUser()
     val user2 = createGithubUser()
 
-    githubUsersDao.findAll(id = Some(Seq(user1.id, user2.id))).map(_.id) must be(
+    githubUsersDao.findAll(id = Some(Seq(user1.id, user2.id)), limit = None).map(_.id) must be(
       Seq(user1.id, user2.id)
     )
 
-    githubUsersDao.findAll(id = Some(Nil)) must be(Nil)
-    githubUsersDao.findAll(id = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    githubUsersDao.findAll(id = Some(Seq(user1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(user1.id))
+    githubUsersDao.findAll(id = Some(Nil), limit = None) must be(Nil)
+    githubUsersDao.findAll(id = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    githubUsersDao.findAll(id = Some(Seq(user1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(user1.id))
   }
 
 }

@@ -49,13 +49,13 @@ class TokensDaoSpec extends FlowPlaySpec with Helpers {
     val token1 = createToken()
     val token2 = createToken()
 
-    tokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, token2.id))).map(_.id) must be(
+    tokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, token2.id)), limit = None).map(_.id) must be(
       Seq(token1.id, token2.id)
     )
 
-    tokensDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    tokensDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    tokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(token1.id))
+    tokensDao.findAll(Authorization.All, ids = Some(Nil), limit = None) must be(Nil)
+    tokensDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    tokensDao.findAll(Authorization.All, ids = Some(Seq(token1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(token1.id))
   }
 
   "can only see own tokens" in {
@@ -65,9 +65,9 @@ class TokensDaoSpec extends FlowPlaySpec with Helpers {
     val user2 = createUserReference()
     val token2 = createToken(createTokenForm(user = user2))
 
-    tokensDao.findAll(Authorization.User(user1.id)).map(_.id) must be(Seq(token1.id))
-    tokensDao.findAll(Authorization.User(user2.id)).map(_.id) must be(Seq(token2.id))
-    tokensDao.findAll(Authorization.User(createUser().id)).map(_.id) must be(Nil)
+    tokensDao.findAll(Authorization.User(user1.id), limit = None).map(_.id) must be(Seq(token1.id))
+    tokensDao.findAll(Authorization.User(user2.id), limit = None).map(_.id) must be(Seq(token2.id))
+    tokensDao.findAll(Authorization.User(createUser().id), limit = None).map(_.id) must be(Nil)
 
   }
 

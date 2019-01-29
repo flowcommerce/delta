@@ -8,7 +8,7 @@ import io.flow.test.utils.FlowPlaySpec
 
 class ItemsDaoSpec extends FlowPlaySpec with Helpers {
 
-  lazy val org = createOrganization()
+  private[this] lazy val org = createOrganization()
 
   "replace" in {
     val form = createItemForm(org)()
@@ -42,13 +42,13 @@ class ItemsDaoSpec extends FlowPlaySpec with Helpers {
     val item1 = replaceItem(org)()
     val item2 = replaceItem(org)()
 
-    itemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, item2.id))).map(_.id).sorted must be(
+    itemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, item2.id)), limit = None).map(_.id).sorted must be(
       Seq(item1.id, item2.id).sorted
     )
 
-    itemsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-    itemsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    itemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(item1.id))
+    itemsDao.findAll(Authorization.All, ids = Some(Nil), limit = None) must be(Nil)
+    itemsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    itemsDao.findAll(Authorization.All, ids = Some(Seq(item1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(item1.id))
   }
 
   "supports projects" in {
@@ -68,8 +68,8 @@ class ItemsDaoSpec extends FlowPlaySpec with Helpers {
       )
     )
 
-    itemsDao.findAll(Authorization.All, q = Some(project.id.toString)).headOption.map(_.id) must be(Some(actual.id))
-    itemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString)) must be(Nil)
+    itemsDao.findAll(Authorization.All, q = Some(project.id.toString), limit = None).headOption.map(_.id) must be(Some(actual.id))
+    itemsDao.findAll(Authorization.All, q = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
   }
 
   "authorization for public projects" in {
@@ -78,11 +78,11 @@ class ItemsDaoSpec extends FlowPlaySpec with Helpers {
     val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Public))
     val item = itemsDao.replaceProject(systemUser, project)
 
-    itemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.All, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.Organization(org.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.Organization(createOrganization().id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.User(user.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.All, objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.Organization(org.id), objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.Organization(createOrganization().id), objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.User(user.id), objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
   }
 
   "authorization for private projects" in {
@@ -91,12 +91,12 @@ class ItemsDaoSpec extends FlowPlaySpec with Helpers {
     val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Private))
     val item = itemsDao.replaceProject(systemUser, project)
 
-    itemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id)) must be(Nil)
-    itemsDao.findAll(Authorization.All, objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.Organization(org.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.Organization(createOrganization().id), objectId = Some(project.id)) must be(Nil)
-    itemsDao.findAll(Authorization.User(user.id), objectId = Some(project.id)).map(_.id) must be(Seq(item.id))
-    itemsDao.findAll(Authorization.User(createUser().id), objectId = Some(project.id)) must be(Nil)
+    itemsDao.findAll(Authorization.PublicOnly, objectId = Some(project.id), limit = None) must be(Nil)
+    itemsDao.findAll(Authorization.All, objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.Organization(org.id), objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.Organization(createOrganization().id), objectId = Some(project.id), limit = None) must be(Nil)
+    itemsDao.findAll(Authorization.User(user.id), objectId = Some(project.id), limit = None).map(_.id) must be(Seq(item.id))
+    itemsDao.findAll(Authorization.User(createUser().id), objectId = Some(project.id), limit = None) must be(Nil)
   }
 
 }
