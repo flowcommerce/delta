@@ -134,11 +134,18 @@ class DockerHubActor @javax.inject.Inject() (
             } else {
               eventLogProcessor.checkpoint(s"$dockerHost image $imageFullName is not ready. Will check again in $intervalSeconds seconds", log = log(projectId))
               //cancel any pending waits and schedule a new, later wait for this version
-              monitors.get(version).foreach(_.cancel())
-              val c = system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
+              val clog = logger.withKeyValue("build_id", build.id)
+                .withKeyValue("version", version)
+                .fingerprint("DockerHubActor.cancelSchedule")
+              monitors.get(version).foreach{
+                clog.info("Cancelling scheduled monitor message")
+                _.cancel()
+              }
+              val cancellable = system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
+                clog.info("Sending new monitor message to self")
                 self ! DockerHubActor.Messages.Monitor(version, start)
               }
-              monitors += version -> c
+              monitors += version -> cancellable
             }
           }
         }
@@ -223,3 +230,4 @@ class DockerHubActor @javax.inject.Inject() (
     )
   }
 }
+
