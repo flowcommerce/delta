@@ -103,6 +103,7 @@ class MainActor @javax.inject.Inject() (
     }
 
     case _ => {
+      logger.info("MainActor Starting")
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.update.jwt.token"),
         DockerHubTokenActor.Messages.Refresh,
@@ -182,6 +183,7 @@ class MainActor @javax.inject.Inject() (
         upsertUserActor(id) ! UserActor.Messages.Created
 
       case MainActor.Messages.ProjectCreated(id) =>
+        logger.withKeyValue("project_id", id).info("MainActor.Messages.ProjectCreated")
         self ! MainActor.Messages.ProjectSync(id)
 
       case MainActor.Messages.ProjectUpdated(id) =>
