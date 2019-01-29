@@ -71,7 +71,7 @@ class BuildDockerImage @Inject()(
               projectId = Some(build.project.id),
               `type` = Some(EventType.Change),
               summaryKeywords = Some(msg),
-              limit = 1
+              limit = Some(1)
             ).headOption match {
               case None => SupervisorResult.Change(msg)
               case Some(_) => SupervisorResult.Checkpoint(s"Waiting for build of $label")

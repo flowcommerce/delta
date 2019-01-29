@@ -21,7 +21,7 @@ class Tokens @javax.inject.Inject() (
   def get(
     id: Option[Seq[String]],
     userId: Option[String],
-    limit: Long,
+    limit: Option[Long],
     offset: Long,
     sort: String
   ) = Identified { request =>

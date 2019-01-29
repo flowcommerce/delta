@@ -20,7 +20,7 @@ class Images @javax.inject.Inject() (
     id: Option[Seq[String]],
     build: Option[String],
     name: Option[String],
-    limit: Long,
+    limit: Option[Long],
     offset: Long,
     sort: String
   ) = Identified {

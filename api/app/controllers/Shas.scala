@@ -23,7 +23,7 @@ class Shas @javax.inject.Inject() (
     project: Option[String],
     branch: Option[String],
     hash: Option[String],
-    limit: Long,
+    limit: Option[Long],
     offset: Long,
     sort: String
   ) = Identified { request =>

@@ -21,7 +21,7 @@ class Events @javax.inject.Inject() (
     `type`: Option[EventType],
     numberMinutesSinceCreation: Option[Long],
     hasError: Option[Boolean],
-    limit: Long,
+    limit: Option[Long],
     offset: Long,
     sort: String
   ) = Identified {

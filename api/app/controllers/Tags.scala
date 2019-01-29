@@ -22,7 +22,7 @@ class Tags @javax.inject.Inject() (
     id: Option[Seq[String]],
     project: Option[String],
     name: Option[String],
-    limit: Long,
+    limit: Option[Long],
     offset: Long,
     sort: String
   ) = Identified { request =>

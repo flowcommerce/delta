@@ -77,7 +77,7 @@ class TravisCiDockerImageBuilder @Inject()(
               projectId = Some(travisCiBuild.project.id),
               `type` = Some(DeltaEventType.Change),
               summaryKeywords = Some(travisChangedMessage(dockerImageName, travisCiBuild.version)),
-              limit = 1
+              limit = Some(1)
             ).headOption match {
               case None => {
                 postBuildRequest(travisCiBuild, client)

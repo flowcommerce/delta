@@ -30,7 +30,7 @@ class GithubUsersSpec extends MockClient with db.Helpers {
 
     user.email must be(githubUser.email)
 
-    githubUsersDao.findAll(userId = Some(user.id), limit = 1).headOption.map(_.user.id) must be(Some(user.id))
+    githubUsersDao.findAll(userId = Some(user.id), limit = Some(1)).headOption.map(_.user.id) must be(Some(user.id))
 
     // Test idempotence
     val user2 = await(anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code)))
