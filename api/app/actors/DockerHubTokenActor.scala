@@ -39,10 +39,10 @@ class DockerHubToken @javax.inject.Inject() (
     */
   private[this] lazy val orgTokenMap = {
     val map = scala.collection.mutable.HashMap.empty[String, String]
-    organizationsDao.findAll(auth = auth).foreach { organization =>
+    organizationsDao.findAll(auth = auth, limit = None).foreach { organization =>
       val token = variablesDao.findByOrganizationAndKey(auth = auth, key = tokenKey) match {
         case None => {
-          val jwt = generate
+          val jwt = generate()
           val form = VariableForm(organization.id, tokenKey, jwt)
           variablesDao.upsert(Authorization.All, usersDao.systemUser, form)
           jwt
@@ -58,13 +58,12 @@ class DockerHubToken @javax.inject.Inject() (
     * Get token given an organization
     */
   def get(organization: String): String = {
-    orgTokenMap.contains(organization) match {
-      case true => orgTokenMap(organization)
-      case false => {
-        val token = generate
-        orgTokenMap += (organization -> token)
-        token
-      }
+    if (orgTokenMap.contains(organization)) {
+      orgTokenMap(organization)
+    } else {
+      val token = generate()
+      orgTokenMap += (organization -> token)
+      token
     }
   }
 
@@ -85,11 +84,11 @@ class DockerHubToken @javax.inject.Inject() (
     * Should iterate through organizations and update their tokens
     */
   def refresh()(implicit ec: ExecutionContext): Unit = {
-    organizationsDao.findAll(Authorization.All).foreach { organization =>
+    organizationsDao.findAll(Authorization.All, limit = None).foreach { organization =>
       generateTokenFuture.map { jwt =>
         val form = VariableForm(organization.id, tokenKey, jwt.token)
         variablesDao.upsert(Authorization.All, usersDao.systemUser, form) match {
-          case Left(errors) => logger.withKeyValue("errors", errors).error(s"Error refreshing docker hub JWT token")
+          case Left(errors) => logger.withKeyValues("error", errors).error(s"Error refreshing docker hub JWT token")
           case Right(variable) => {
             orgTokenMap += (organization.id -> variable.value)
           }
@@ -108,7 +107,7 @@ class DockerHubToken @javax.inject.Inject() (
     jwtClient.jwts.postLogin(form)
   }
 
-  def requestHeaders(organization: String) = {
+  def requestHeaders(organization: String): Seq[(String, String)] = {
     Seq(
       ("Authorization", s"Bearer ${get(organization)}")
     )

@@ -33,15 +33,15 @@ class ProjectsDao @javax.inject.Inject() (
   """)
   
   def findByOrganizationIdAndName(auth: Authorization, organizationId: String, name: String): Option[Project] = {
-    findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = 1).headOption
+    findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Project] = {
-    findAll(auth, id = Some(id), limit = 1).headOption
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findByBuildId(auth: Authorization, buildId: String): Option[Project] = {
-    findAll(auth, buildId = Some(buildId), limit = 1).headOption
+    findAll(auth, buildId = Some(buildId), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -53,7 +53,7 @@ class ProjectsDao @javax.inject.Inject() (
     name: Option[String] = None,
     minutesSinceLastEvent: Option[Long] = None,
     orderBy: OrderBy = OrderBy("lower(projects.name), projects.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Project] = {
 

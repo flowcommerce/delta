@@ -140,11 +140,11 @@ class ItemsDao @javax.inject.Inject() (
   }
 
   def findById(auth: Authorization, id: String): Option[Item] = {
-    findAll(auth, id = Some(id), limit = 1).headOption
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findByObjectId(auth: Authorization, objectId: String): Option[Item] = {
-    findAll(auth, objectId = Some(objectId), limit = 1).headOption
+    findAll(auth, objectId = Some(objectId), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -154,7 +154,7 @@ class ItemsDao @javax.inject.Inject() (
     q: Option[String] = None,
     objectId: Option[String] = None,
     orderBy: OrderBy = OrderBy("-lower(items.label), items.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Item] = {
     db.withConnection { implicit c =>

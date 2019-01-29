@@ -27,7 +27,7 @@ class OrganizationsDao @javax.inject.Inject() (
   """)
 
   def findById(auth: Authorization, id: String): Option[Organization] = {
-    findAll(auth, id = Some(id), limit = 1).headOption
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -36,7 +36,7 @@ class OrganizationsDao @javax.inject.Inject() (
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     orderBy: OrderBy = OrderBy("organizations.id"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Organization] = {
     db.withConnection { implicit c =>

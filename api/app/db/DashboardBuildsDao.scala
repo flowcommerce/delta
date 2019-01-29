@@ -31,14 +31,14 @@ class DashboardBuildsDao @Inject()(
 
   def findAll(
     auth: Authorization,
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[DashboardBuild] = {
 
     db.withConnection { implicit c =>
       BaseQuery.
         and(Filters(auth).organizations("projects.organization_id").sql).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         orderBy("case when build_desired_states.versions::varchar = build_last_states.versions::varchar then 1 else 0 end, build_desired_states.timestamp desc").
         as(

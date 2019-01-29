@@ -31,19 +31,19 @@ class UsersDao @javax.inject.Inject() (
 
 
   def findByGithubUserId(githubUserId: Long): Option[User] = {
-    findAll(githubUserId = Some(githubUserId), limit = 1).headOption
+    findAll(githubUserId = Some(githubUserId), limit = Some(1)).headOption
   }
 
   def findByEmail(email: String): Option[User] = {
-    findAll(email = Some(email), limit = 1).headOption
+    findAll(email = Some(email), limit = Some(1)).headOption
   }
 
   def findByToken(token: String): Option[User] = {
-    findAll(token = Some(token), limit = 1).headOption
+    findAll(token = Some(token), limit = Some(1)).headOption
   }
 
   def findById(id: String): Option[User] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -54,7 +54,7 @@ class UsersDao @javax.inject.Inject() (
     identifier: Option[String] = None,
     githubUserId: Option[Long] = None,
     orderBy: OrderBy = OrderBy("users.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[User] = {
     db.withConnection { implicit c =>

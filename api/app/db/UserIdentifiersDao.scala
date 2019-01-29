@@ -78,7 +78,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
       'updated_by_user_id -> createdBy.id
     ).execute()
 
-    findAllWithConnection(id = Some(id), limit = 1).headOption.getOrElse {
+    findAllWithConnection(id = Some(id), limit = Some(1)).headOption.getOrElse {
       sys.error("Failed to create identifier")
     }
   }
@@ -88,7 +88,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
   }
 
   def findById(id: String): Option[UserIdentifier] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -96,7 +96,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     value: Option[String] = None,
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[UserIdentifier] = {
     db.withConnection { implicit c =>

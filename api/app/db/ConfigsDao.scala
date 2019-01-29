@@ -45,11 +45,11 @@ class ConfigsDao @javax.inject.Inject() (
   private[this] lazy val idGenerator = IdGenerator("cfg")
 
   def findByProjectId(auth: Authorization, projectId: String): Option[InternalConfig] = {
-    findAll(auth, projectId = Some(projectId), limit = 1).headOption
+    findAll(auth, projectId = Some(projectId), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[InternalConfig] = {
-    findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -57,7 +57,7 @@ class ConfigsDao @javax.inject.Inject() (
     ids: Option[Seq[String]] = None,
     projectId: Option[String] = None,
     orderBy: OrderBy = OrderBy("-configs.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[InternalConfig] = {
 

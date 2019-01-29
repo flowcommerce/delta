@@ -73,7 +73,7 @@ class TokensDao @javax.inject.Inject() (
   """
 
   def setLatestByTag(createdBy: UserReference, form: InternalTokenForm): Token = {
-    findAll(Authorization.All, userId = Some(form.userId), tag = Some(form.tag), limit = 1).headOption match {
+    findAll(Authorization.All, userId = Some(form.userId), tag = Some(form.tag), limit = Some(1)).headOption match {
       case None => {
         create(createdBy, form) match {
           case Left(errors) => sys.error("Failed to create token: " + errors.mkString(", "))
@@ -127,7 +127,7 @@ class TokensDao @javax.inject.Inject() (
         ).execute()
 
         Right(
-          findAllWithConnection(Authorization.All, id = Some(id), limit = 1).headOption.getOrElse {
+          findAllWithConnection(Authorization.All, id = Some(id), limit = Some(1)).headOption.getOrElse {
             sys.error("Failed to create token")
           }
         )
@@ -191,11 +191,11 @@ class TokensDao @javax.inject.Inject() (
   }
 
   def findById(auth: Authorization, id: String): Option[Token] = {
-    findAll(auth, id = Some(id), limit = 1).headOption
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findByToken(token: String): Option[Token] = {
-    findAll(Authorization.All, userId = Some(token), limit = 1).headOption
+    findAll(Authorization.All, userId = Some(token), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -205,7 +205,7 @@ class TokensDao @javax.inject.Inject() (
     userId: Option[String] = None,
     tag: Option[String] = None,
     orderBy: OrderBy = OrderBy("tokens.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Token] = {
     db.withConnection { implicit c =>

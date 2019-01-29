@@ -62,11 +62,11 @@ class GithubUsersDao @javax.inject.Inject() (
   }
 
   def findByGithubUserId(githubUserId: Long): Option[GithubUser] = {
-    findAll(githubUserId = Some(githubUserId), limit = 1).headOption
+    findAll(githubUserId = Some(githubUserId), limit = Some(1)).headOption
   }
 
   def findById(id: String): Option[GithubUser] = {
-    findAll(id = Some(Seq(id)), limit = 1).headOption
+    findAll(id = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -75,7 +75,7 @@ class GithubUsersDao @javax.inject.Inject() (
     login: Option[String] = None,
     githubUserId: Option[Long] = None,
     orderBy: OrderBy = OrderBy("github_users.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[GithubUser] = {
     db.withConnection { implicit c =>

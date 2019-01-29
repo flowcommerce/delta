@@ -32,7 +32,7 @@ class ImagesDao @javax.inject.Inject() (
   """)
 
   def findById(id: String): Option[Image] = {
-    findAll(ids = Some(Seq(id)), limit = 1).headOption
+    findAll(ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findByBuildIdAndVersion(buildId: String, version: String): Option[Image] = {
@@ -49,7 +49,7 @@ class ImagesDao @javax.inject.Inject() (
    names: Option[Seq[String]] = None,
    versions: Option[Seq[String]] = None,
    orderBy: OrderBy = OrderBy("lower(images.name),-images.sort_key"),
-   limit: Long = 25,
+   limit: Option[Long],
    offset: Long = 0
   ): Seq[Image] = {
     db.withConnection { implicit c =>

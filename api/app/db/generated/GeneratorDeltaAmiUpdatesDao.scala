@@ -161,7 +161,7 @@ class AmiUpdatesDao @Inject() (
   }
 
   def findByIdWithConnection(c: java.sql.Connection, id: String): Option[AmiUpdate] = {
-    findAllWithConnection(c, ids = Some(Seq(id)), limit = 1).headOption
+    findAllWithConnection(c, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
