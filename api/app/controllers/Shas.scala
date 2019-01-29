@@ -36,7 +36,7 @@ class Shas @javax.inject.Inject() (
             projectId = project,
             branch = branch,
             hash = hash,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

@@ -31,7 +31,7 @@ class Organizations @javax.inject.Inject() (
             authorization(request),
             ids = optionals(id),
             userId = userId,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

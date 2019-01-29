@@ -35,15 +35,15 @@ class TagsDao @javax.inject.Inject() (
 
 
   def findLatestByProjectId(auth: Authorization, projectId: String): Option[Tag] = {
-    findAll(auth, projectId = Some(projectId), orderBy = OrderBy("-tags.created_at"), limit = 1).headOption
+    findAll(auth, projectId = Some(projectId), orderBy = OrderBy("-tags.created_at"), limit = Some(1)).headOption
   }
 
   def findByProjectIdAndName(auth: Authorization, projectId: String, name: String): Option[Tag] = {
-    findAll(auth, projectId = Some(projectId), name = Some(name), limit = 1).headOption
+    findAll(auth, projectId = Some(projectId), name = Some(name), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Tag] = {
-    findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -52,7 +52,7 @@ class TagsDao @javax.inject.Inject() (
     projectId: Option[String] = None,
     name: Option[String] = None,
     orderBy: OrderBy = OrderBy("-tags.sort_key, tags.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Tag] = {
 

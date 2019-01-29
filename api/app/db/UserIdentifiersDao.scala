@@ -33,7 +33,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
     * Returns the latest identifier, creating if necessary
     */
   def latestForUser(createdBy: UserReference, user: UserReference): UserIdentifier = {
-    findAll(userId = Some(user.id)).headOption match {
+    findAll(userId = Some(user.id), limit = Some(1)).headOption match {
       case None => {
         createForUser(createdBy, user)
       }
@@ -56,7 +56,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
   private[this] val CharactersAndNumbers = Characters + Numbers
 
   private[this] def randomString(alphabet: String)(n: Int): String = {
-    Stream.continually(random.nextInt(alphabet.size)).map(alphabet).take(n).mkString
+    Stream.continually(random.nextInt(alphabet.length)).map(alphabet).take(n).mkString
   }
 
   /**
@@ -78,7 +78,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
       'updated_by_user_id -> createdBy.id
     ).execute()
 
-    findAllWithConnection(id = Some(id), limit = 1).headOption.getOrElse {
+    findAllWithConnection(id = Some(id), limit = Some(1)).headOption.getOrElse {
       sys.error("Failed to create identifier")
     }
   }
@@ -88,7 +88,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
   }
 
   def findById(id: String): Option[UserIdentifier] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -96,7 +96,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
     ids: Option[Seq[String]] = None,
     userId: Option[String] = None,
     value: Option[String] = None,
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[UserIdentifier] = {
     db.withConnection { implicit c =>
@@ -117,7 +117,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
     userId: Option[String] = None,
     value: Option[String] = None,
     orderBy: OrderBy = OrderBy("-user_identifiers.created_at"),
-    limit: Long,
+    limit: Option[Long],
     offset: Long = 0
   )(implicit c: java.sql.Connection): Seq[UserIdentifier] = {
     Standards.query(

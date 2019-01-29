@@ -72,7 +72,7 @@ class EventsDao @javax.inject.Inject() (
   }
 
   def findById(id: String): Option[Event] = {
-    findAll(ids = Some(Seq(id)), limit = 1).headOption
+    findAll(ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   /**
@@ -87,7 +87,7 @@ class EventsDao @javax.inject.Inject() (
     numberMinutesSinceCreation: Option[Long] = None,
     hasError: Option[Boolean] = None,
     orderBy: OrderBy = OrderBy("-events.created_at, events.id"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Event] = {
     db.withConnection { implicit c =>
@@ -102,15 +102,13 @@ class EventsDao @javax.inject.Inject() (
           s"events.created_at >= now() - interval '$minutes minutes'"
         }).
         and(
-          hasError.map { v =>
-            v match {
-              case true => "events.error is not null"
-              case false => "events.error is null"
-            }
+          hasError.map {
+            case true => "events.error is not null"
+            case false => "events.error is null"
           }
         ).
         orderBy(orderBy.sql).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(
           io.flow.delta.v0.anorm.parsers.Event.parser().*

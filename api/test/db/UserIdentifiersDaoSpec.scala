@@ -40,13 +40,13 @@ class UserIdentifiersDaoSpec extends FlowPlaySpec with Helpers {
       val (_, identifier1) = createUserIdentifier()
       val (_, identifier2) = createUserIdentifier()
 
-      userIdentifiersDao.findAll(ids = Some(Seq(identifier1.id, identifier2.id))).map(_.id).sorted must be(
+      userIdentifiersDao.findAll(ids = Some(Seq(identifier1.id, identifier2.id)), limit = None).map(_.id).sorted must be(
         Seq(identifier1.id, identifier2.id).sorted
       )
 
-      userIdentifiersDao.findAll(ids = Some(Nil)) must be(Nil)
-      userIdentifiersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-      userIdentifiersDao.findAll(ids = Some(Seq(identifier1.id, UUID.randomUUID.toString))).map(_.id) must be(
+      userIdentifiersDao.findAll(ids = Some(Nil), limit = None) must be(Nil)
+      userIdentifiersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+      userIdentifiersDao.findAll(ids = Some(Seq(identifier1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(
         Seq(identifier1.id)
       )
     }
@@ -54,8 +54,8 @@ class UserIdentifiersDaoSpec extends FlowPlaySpec with Helpers {
     "filter by identifier" in {
       val (_, identifier) = createUserIdentifier()
 
-      userIdentifiersDao.findAll(value = Some(identifier.value)).map(_.id) must be(Seq(identifier.id))
-      userIdentifiersDao.findAll(value = Some(createTestKey())) must be(Nil)
+      userIdentifiersDao.findAll(value = Some(identifier.value), limit = None).map(_.id) must be(Seq(identifier.id))
+      userIdentifiersDao.findAll(value = Some(createTestKey()), limit = None) must be(Nil)
     }
   }
 }

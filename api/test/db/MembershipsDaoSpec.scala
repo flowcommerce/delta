@@ -73,29 +73,29 @@ class MembershipsDaoSpec extends FlowPlaySpec with Helpers {
     "ids" in {
       val membership2 = createMembership()
 
-      membershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, membership2.id))).map(_.id) must be(
+      membershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, membership2.id)), limit = None).map(_.id) must be(
         Seq(membership.id, membership2.id)
       )
 
-      membershipsDao.findAll(Authorization.All, ids = Some(Nil)) must be(Nil)
-      membershipsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-      membershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(membership.id))
+      membershipsDao.findAll(Authorization.All, ids = Some(Nil), limit = None) must be(Nil)
+      membershipsDao.findAll(Authorization.All, ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+      membershipsDao.findAll(Authorization.All, ids = Some(Seq(membership.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(membership.id))
     }
 
     "userId" in {
-      membershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(user.id)).map(_.id) must be(
+      membershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(user.id), limit = None).map(_.id) must be(
         Seq(membership.id)
       )
 
-      membershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(UUID.randomUUID.toString)) must be(Nil)
+      membershipsDao.findAll(Authorization.All, id = Some(membership.id), userId = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
     }
 
     "organizationId" in {
-      membershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(membership.organization.id)).map(_.id) must be(
+      membershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(membership.organization.id), limit = None).map(_.id) must be(
         Seq(membership.id)
       )
 
-      membershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(UUID.randomUUID.toString)) must be(Nil)
+      membershipsDao.findAll(Authorization.All, id = Some(membership.id), organizationId = Some(UUID.randomUUID.toString), limit = None) must be(Nil)
     }
   }
 

@@ -21,7 +21,7 @@ class DashboardBuilds @javax.inject.Inject() (
       Json.toJson(
         dashboardBuildsDao.findAll(
           authorization(request),
-          limit = limit,
+          limit = Some(limit),
           offset = offset
         )
       )

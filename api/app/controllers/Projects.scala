@@ -43,7 +43,7 @@ class Projects @javax.inject.Inject() (
             ids = optionals(id),
             name = name,
             organizationId = organization,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )
@@ -109,9 +109,9 @@ class Projects @javax.inject.Inject() (
               name = build.name,
               desired = buildDesiredStatesDao.findByBuildId(authorization(request), build.id),
               last = buildLastStatesDao.findByBuildId(authorization(request), build.id),
-              latestImage = imagesDao.findAll(buildId = Some(build.id)).headOption.map( i => s"${i.name}:${i.version}" )
+              latestImage = imagesDao.findAll(buildId = Some(build.id), limit = Some(1)).headOption.map( i => s"${i.name}:${i.version}" )
             )
-          }.toSeq
+          }
         )
       )
     }

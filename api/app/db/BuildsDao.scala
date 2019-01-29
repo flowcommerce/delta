@@ -6,7 +6,7 @@ import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
 import io.flow.delta.config.v0.models.{Build => BuildConfig}
 import io.flow.delta.v0.models.{Build, Status}
-import io.flow.postgresql.{Authorization, OrderBy, Pager, Query}
+import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.util.IdGenerator
 import play.api.db._
 
@@ -30,17 +30,15 @@ class BuildsDao @Inject()(
   """)
 
   def findAllByProjectId(auth: Authorization, projectId: String): Seq[Build] = {
-    Pager.create { offset =>
-      findAll(auth, projectId = Some(projectId), offset = offset)
-    }.toSeq
+    findAll(auth, projectId = Some(projectId), limit = None)
   }
   
   def findByProjectIdAndName(auth: Authorization, projectId: String, name: String): Option[Build] = {
-    findAll(auth, projectId = Some(projectId), name = Some(name), limit = 1).headOption
+    findAll(auth, projectId = Some(projectId), name = Some(name), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Build] = {
-    findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -49,7 +47,7 @@ class BuildsDao @Inject()(
     projectId: Option[String] = None,
     name: Option[String] = None,
     orderBy: OrderBy = OrderBy("lower(projects.name), lower(builds.name)"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Build] = {
 
@@ -151,9 +149,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
   }
 
   def delete(deletedBy: UserReference, build: Build): Unit = {
-    Pager.create { offset =>
-      imagesDao.findAll(buildId = Some(build.id), offset = offset)
-    }.foreach { image =>
+    imagesDao.findAll(buildId = Some(build.id), limit = None).foreach { image =>
       imagesWriteDao.delete(deletedBy, image)
     }
 

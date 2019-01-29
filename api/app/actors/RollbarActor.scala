@@ -9,7 +9,6 @@ import io.flow.log.RollbarLogger
 import io.flow.play.util.ApplicationConfig
 import io.flow.postgresql.Authorization
 import io.flow.rollbar.v0.models.Deploy
-import io.flow.rollbar.v0.models.json._
 import io.flow.rollbar.v0.{Client => Rollbar}
 import io.flow.util.FlowEnvironment
 import javax.inject.{Inject, Singleton}
@@ -49,10 +48,9 @@ class RollbarActor @Inject()(
   private val ConfigName = "rollbar.account_token"
   private val accessToken = config.optionalString(ConfigName)
   if (app.mode == Mode.Prod && accessToken.isEmpty) {
-    logger
-      .fingerprint("RollbarActor")
+    configuredRollbar
       .withKeyValue("config", ConfigName)
-      .error(s"Rollbar will not know about deploys because rollbar.account_token (ROLLBAR_ACCESS_TOKEN in env) is missing")
+      .warn(s"Rollbar will not know about deploys because rollbar.account_token (ROLLBAR_ACCESS_TOKEN in env) is missing")
   }
 
   private case class Project(name: String, id: Int, postAccessKey: String)
@@ -76,7 +74,7 @@ class RollbarActor @Inject()(
               case Some(diff) =>
 
                 // log to determine whether we should only post when lastInstances == 0
-                logger.fingerprint("RollbarActor").withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).withKeyValue("diffs", diffs.map(_.toString)).warn(s"got deploy")
+                configuredRollbar.withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).withKeyValue("diffs", diffs.map(_.toString)).warn(s"got deploy")
 
                 if (diff.desiredInstances > diff.lastInstances) { // scale up
                   tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
@@ -93,7 +91,7 @@ class RollbarActor @Inject()(
                           case Failure(e) => logger.error(s"failed to post deploy $msg", e)
                         }
                       } else {
-                        logger.fingerprint("RollbarActor").withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).warn(s"no project or access key for project exist in rollbar")
+                        configuredRollbar.withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).warn(s"no project or access key for project exist in rollbar")
                       }
                   }
                 }
@@ -104,19 +102,17 @@ class RollbarActor @Inject()(
     case RollbarActor.Messages.Refresh =>
       accessToken.foreach { token =>
         rollbar.projects.getProjects(token).flatMap { projects =>
-          logger.withKeyValue("project-list", projects.result).info("got list of rollbar projects")
           Future.sequence(projects.result.flatMap { project =>
             project.name.map { projectName =>
               rollbar.projects.getProjectAndAccessTokensByProjectId(project.id, token).map { accessTokens =>
                 accessTokens.result.find(_.scopes.contains("post_server_item")).foreach { token =>
-                  logger.withKeyValue("project", project).info("got post_server_item key")
                   projectCache.put(projectName, Project(projectName, project.id, token.accessToken))
                 }
               }
             }
           })
         }.failed.foreach { ex =>
-          logger.error("failed to fetch rollbar projects", ex)
+          logger.warn("failed to fetch rollbar projects", ex)
         }
       }
   }

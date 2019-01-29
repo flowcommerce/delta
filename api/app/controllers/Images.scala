@@ -31,7 +31,7 @@ class Images @javax.inject.Inject() (
             ids = optionals(id),
             buildId = build,
             names = name.map { n => Seq(n) },
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

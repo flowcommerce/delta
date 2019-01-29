@@ -50,11 +50,11 @@ class InternalBuildLastStatesDao @Inject()(
   }
 
   def findByBuildId(auth: Authorization, buildId: String): Option[State] = {
-    findAll(auth, buildId = Some(buildId), limit = 1).headOption
+    findAll(auth, buildId = Some(buildId), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[State] = {
-    findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -62,7 +62,7 @@ class InternalBuildLastStatesDao @Inject()(
     ids: Option[Seq[String]] = None,
     buildId: Option[String] = None,
     orderBy: OrderBy = OrderBy(s"-build_last_states.timestamp,-build_last_states.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[State] = {
     db.withConnection { implicit c =>

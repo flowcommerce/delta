@@ -84,13 +84,13 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
     val image1 = createImage()
     val image2 = createImage()
 
-    imagesDao.findAll(ids = Some(Seq(image1.id, image2.id))).map(_.id).sorted must be(
+    imagesDao.findAll(ids = Some(Seq(image1.id, image2.id)), limit = None).map(_.id).sorted must be(
       Seq(image1.id, image2.id).sorted
     )
 
-    imagesDao.findAll(ids = Some(Nil)) must be(Nil)
-    imagesDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    imagesDao.findAll(ids = Some(Seq(image1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(image1.id))
+    imagesDao.findAll(ids = Some(Nil), limit = None) must be(Nil)
+    imagesDao.findAll(ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    imagesDao.findAll(ids = Some(Seq(image1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(image1.id))
 
     imagesWriteDao.delete(systemUser, image1)
     imagesWriteDao.delete(systemUser, image2)
@@ -103,15 +103,15 @@ class ImagesDaoSpec extends FlowPlaySpec with Helpers {
     val image1 = createImage(createImageForm(build1))
     val image2 = createImage(createImageForm(build2))
 
-    imagesDao.findAll(buildId = Some(build1.id)).map(_.id).sorted must be(
+    imagesDao.findAll(buildId = Some(build1.id), limit = None).map(_.id).sorted must be(
       Seq(image1.id)
     )
 
-    imagesDao.findAll(buildId = Some(build2.id)).map(_.id).sorted must be(
+    imagesDao.findAll(buildId = Some(build2.id), limit = None).map(_.id).sorted must be(
       Seq(image2.id)
     )
 
-    imagesDao.findAll(buildId = Some(createTestKey())) must be(Nil)
+    imagesDao.findAll(buildId = Some(createTestKey()), limit = None) must be(Nil)
 
     imagesWriteDao.delete(systemUser, image1)
     imagesWriteDao.delete(systemUser, image2)

@@ -42,13 +42,13 @@ class SubscriptionsDaoSpec extends FlowPlaySpec with Helpers {
     val subscription1 = createSubscription()
     val subscription2 = createSubscription()
 
-    subscriptionsDao.findAll(ids = Some(Seq(subscription1.id, subscription2.id))).map(_.id) must be(
+    subscriptionsDao.findAll(ids = Some(Seq(subscription1.id, subscription2.id)), limit = None).map(_.id) must be(
       Seq(subscription1.id, subscription2.id)
     )
 
-    subscriptionsDao.findAll(ids = Some(Nil)) must be(Nil)
-    subscriptionsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-    subscriptionsDao.findAll(ids = Some(Seq(subscription1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(subscription1.id))
+    subscriptionsDao.findAll(ids = Some(Nil), limit = None) must be(Nil)
+    subscriptionsDao.findAll(ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+    subscriptionsDao.findAll(ids = Some(Seq(subscription1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(subscription1.id))
   }
 
   "findAll by identifier" in {
@@ -56,8 +56,8 @@ class SubscriptionsDaoSpec extends FlowPlaySpec with Helpers {
     val subscription = subscriptionsDao.upsert(systemUser, createSubscriptionForm(user = user))
     val identifier = userIdentifiersDao.latestForUser(systemUser, user).value
 
-    subscriptionsDao.findAll(identifier = Some(identifier)).map(_.id) must be(Seq(subscription.id))
-    subscriptionsDao.findAll(identifier = Some(createTestKey())) must be(Nil)
+    subscriptionsDao.findAll(identifier = Some(identifier), limit = None).map(_.id) must be(Seq(subscription.id))
+    subscriptionsDao.findAll(identifier = Some(createTestKey()), limit = None) must be(Nil)
   }
 
 }

@@ -34,11 +34,11 @@ class ShasDao @javax.inject.Inject() (
 
 
   def findByProjectIdAndBranch(auth: Authorization, projectId: String, branch: String): Option[Sha] = {
-    findAll(auth, projectId = Some(projectId), branch = Some(branch), limit = 1).headOption
+    findAll(auth, projectId = Some(projectId), branch = Some(branch), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Sha] = {
-    findAll(auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -48,7 +48,7 @@ class ShasDao @javax.inject.Inject() (
     branch: Option[String] = None,
     hash: Option[String] = None,
     orderBy: OrderBy = OrderBy("lower(shas.branch), shas.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Sha] = {
 

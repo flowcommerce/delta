@@ -99,12 +99,12 @@ class SubscriptionsDao @javax.inject.Inject() (
     findAll(
       userId = Some(userId),
       publication = Some(publication),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 
   def findById(id: String): Option[Subscription] = {
-    findAll(id = Some(id), limit = 1).headOption
+    findAll(id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -114,7 +114,7 @@ class SubscriptionsDao @javax.inject.Inject() (
     identifier: Option[String] = None,
     publication: Option[Publication] = None,
     orderBy: OrderBy = OrderBy("subscriptions.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Subscription] = {
     db.withConnection { implicit c =>

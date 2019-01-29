@@ -33,15 +33,15 @@ class ProjectsDao @javax.inject.Inject() (
   """)
   
   def findByOrganizationIdAndName(auth: Authorization, organizationId: String, name: String): Option[Project] = {
-    findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = 1).headOption
+    findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = Some(1)).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Project] = {
-    findAll(auth, id = Some(id), limit = 1).headOption
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findByBuildId(auth: Authorization, buildId: String): Option[Project] = {
-    findAll(auth, buildId = Some(buildId), limit = 1).headOption
+    findAll(auth, buildId = Some(buildId), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -53,7 +53,7 @@ class ProjectsDao @javax.inject.Inject() (
     name: Option[String] = None,
     minutesSinceLastEvent: Option[Long] = None,
     orderBy: OrderBy = OrderBy("lower(projects.name), projects.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Project] = {
 
@@ -199,9 +199,10 @@ case class ProjectsWriteDao @javax.inject.Inject() (
       projectsDao.findByOrganizationIdAndName(Authorization.All, form.organization, form.name) match {
         case None => Seq.empty
         case Some(p) => {
-          Some(p.id) == existing.map(_.id) match {
-            case true => Nil
-            case false => Seq("Project with this name already exists")
+          if (existing.map(_.id).contains(p.id)) {
+            Nil
+          } else {
+            Seq("Project with this name already exists")
           }
         }
       }
@@ -237,7 +238,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
             'updated_by_user_id -> createdBy.id
           ).execute()
 
-          form.config.map { cfg =>
+          form.config.foreach { cfg =>
             configsDao.upsertWithConnection(c, createdBy, id, cfg)
           }
 
@@ -248,7 +249,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
         mainActor ! MainActor.Messages.ProjectCreated(id)
 
-        buildsDao.findAll(Authorization.All, projectId = Some(id)).foreach { build =>
+        buildsDao.findAll(Authorization.All, projectId = Some(id), limit = None).foreach { build =>
           mainActor ! MainActor.Messages.BuildCreated(build.id)
         }
 
@@ -297,20 +298,18 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
   def delete(deletedBy: UserReference, project: Project): Unit = {
     Pager.create { offset =>
-      shasDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+      shasDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset, limit = Some(1000))
     }.foreach { sha =>
       shasWriteDao.delete(deletedBy, sha)
     }
 
     Pager.create { offset =>
-      tagsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
+      tagsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset, limit = Some(1000))
     }.foreach { tag =>
       tagsWriteDao.delete(deletedBy, tag)
     }
 
-    Pager.create { offset =>
-      buildsDao.findAll(Authorization.All, projectId = Some(project.id), offset = offset)
-    }.foreach { build =>
+    buildsDao.findAll(Authorization.All, projectId = Some(project.id), limit = None).foreach { build =>
       buildsWriteDao.delete(deletedBy, build)
     }
 

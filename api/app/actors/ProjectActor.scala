@@ -103,7 +103,7 @@ class ProjectActor @javax.inject.Inject() (
         eventsDao.findAll(
           projectId = Some(project.id),
           numberMinutesSinceCreation = Some(5),
-          limit = 1
+          limit = Some(1)
         ).headOption match {
           case Some(_) => // No-op as there is recent activity in the event log
           case None => mainActor ! MainActor.Messages.ProjectSync(project.id)

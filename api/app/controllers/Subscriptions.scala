@@ -35,7 +35,7 @@ class Subscriptions @javax.inject.Inject() (
             userId = userId,
             identifier = identifier,
             publication = publication,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

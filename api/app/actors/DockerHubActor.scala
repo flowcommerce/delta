@@ -70,7 +70,7 @@ class DockerHubActor @javax.inject.Inject() (
   private[this] val intervalSeconds = 30L
   private[this] val timeoutSeconds = 1500
 
-  val monitors = mutable.HashMap[String, Cancellable]()
+  private[this] val monitors = mutable.HashMap[String, Cancellable]()
 
   def receive = SafeReceive.withLogUnhandled {
     case DockerHubActor.Messages.Setup =>
@@ -194,12 +194,12 @@ class DockerHubActor @javax.inject.Inject() (
     val buildTags = createBuildTags(config.dockerfile)
 
     val vcsRepoName = io.flow.delta.api.lib.GithubUtil.parseUri(scmsUri) match {
-      case Left(errors) => {
-        logger.withKeyValue("scms_uri", scmsUri).withKeyValue("full_name", fullName).withKeyValue("errors", errors).warn(s"Error parsing VCS URI. defaulting vcsRepoName to full name")
+      case Left(error) => {
+        logger.withKeyValue("scms_uri", scmsUri).withKeyValue("full_name", fullName).withKeyValue("error", error).warn("Error parsing VCS URI. defaulting vcsRepoName to full name")
         fullName
       }
       case Right(repo) => {
-        repo.toString
+        repo.toString()
       }
     }
 

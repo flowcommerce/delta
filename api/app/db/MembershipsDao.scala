@@ -117,12 +117,12 @@ class MembershipsDao @javax.inject.Inject() (
       auth,
       organizationId = Some(organizationId),
       userId = Some(userId),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 
   def findById(auth: Authorization, id: String): Option[Membership] = {
-    findAll(auth, id = Some(id), limit = 1).headOption
+    findAll(auth, id = Some(id), limit = Some(1)).headOption
   }
 
   def findAll(
@@ -133,7 +133,7 @@ class MembershipsDao @javax.inject.Inject() (
     userId: Option[String] = None,
     role: Option[Role] = None,
     orderBy: OrderBy = OrderBy("memberships.created_at"),
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Seq[Membership] = {
     db.withConnection { implicit c =>

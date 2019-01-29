@@ -34,7 +34,7 @@ class Tags @javax.inject.Inject() (
             ids = optionals(id),
             projectId = project,
             name = name,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

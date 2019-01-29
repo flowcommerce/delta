@@ -77,13 +77,13 @@ class UsersDaoSpec extends FlowPlaySpec with Helpers {
       val user1 = createUser()
       val user2 = createUser()
 
-      usersDao.findAll(ids = Some(Seq(user1.id, user2.id))).map(_.id) must be(
+      usersDao.findAll(ids = Some(Seq(user1.id, user2.id)), limit = None).map(_.id) must be(
         Seq(user1.id, user2.id)
       )
 
-      usersDao.findAll(ids = Some(Nil)) must be(Nil)
-      usersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString))) must be(Nil)
-      usersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID.toString))).map(_.id) must be(Seq(user1.id))
+      usersDao.findAll(ids = Some(Nil), limit = None) must be(Nil)
+      usersDao.findAll(ids = Some(Seq(UUID.randomUUID.toString)), limit = None) must be(Nil)
+      usersDao.findAll(ids = Some(Seq(user1.id, UUID.randomUUID.toString)), limit = None).map(_.id) must be(Seq(user1.id))
     }
 
     "filter by email" in {
@@ -92,16 +92,16 @@ class UsersDaoSpec extends FlowPlaySpec with Helpers {
         sys.error("user must have email address")
       }
 
-      usersDao.findAll(id = Some(user.id), email = Some(email)).map(_.id) must be(Seq(user.id))
-      usersDao.findAll(id = Some(user.id), email = Some(createTestEmail())) must be(Nil)
+      usersDao.findAll(id = Some(user.id), email = Some(email), limit = None).map(_.id) must be(Seq(user.id))
+      usersDao.findAll(id = Some(user.id), email = Some(createTestEmail()), limit = None) must be(Nil)
     }
 
     "filter by identifier" in {
       val user = createUserReference()
       val identifier = userIdentifiersDao.latestForUser(systemUser, user).value
 
-      usersDao.findAll(identifier = Some(identifier)).map(_.id) must be(Seq(user.id))
-      usersDao.findAll(identifier = Some(createTestKey())) must be(Nil)
+      usersDao.findAll(identifier = Some(identifier), limit = None).map(_.id) must be(Seq(user.id))
+      usersDao.findAll(identifier = Some(createTestKey()), limit = None) must be(Nil)
     }
 
   }

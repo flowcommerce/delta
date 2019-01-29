@@ -20,7 +20,7 @@ private[db] case object Standards {
     id: Option[String] = None, // TODO: Remove
     ids: Option[Seq[String]],
     orderBy: Option[String],
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0
   ): Query = {
     query.
@@ -28,7 +28,7 @@ private[db] case object Standards {
       optionalIn(s"$tableName.id", ids).
       and(auth.sql).
       orderBy(orderBy).
-      limit(limit).
+      optionalLimit(limit).
       offset(offset)
   }
 

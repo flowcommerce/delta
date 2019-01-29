@@ -28,7 +28,7 @@ class Repositories @javax.inject.Inject() (
     name: Option[String] = None,  // Ex: user
     organizationId: Option[String] = None,
     existingProject: Option[Boolean] = None,
-    limit: Long = 25,
+    limit: Long,
     offset: Long = 0
   ) = Identified.async { request =>
     if (!existingProject.isEmpty && organizationId.isEmpty) {
@@ -41,7 +41,7 @@ class Repositories @javax.inject.Inject() (
       val org = organizationId.flatMap { organizationsDao.findById(auth, _)}
 
       // Set limit to 1 if we are guaranteed at most 1 record back
-      val actualLimit = if (offset == 0 && !name.isEmpty && !owner.isEmpty) { 1 } else { limit }
+      val actualLimit = if (offset == 0 && name.isDefined && owner.isDefined) { 1 } else { limit }
 
       github.repositories(request.user, offset, actualLimit) { r =>
         (name match {
@@ -56,8 +56,8 @@ class Repositories @javax.inject.Inject() (
           case None => true
           case Some(org) => {
             existingProject.isEmpty ||
-            existingProject == Some(true) && !projectsDao.findByOrganizationIdAndName(auth, org.id, r.name).isEmpty ||
-            existingProject == Some(false) && projectsDao.findByOrganizationIdAndName(auth, org.id, r.name).isEmpty
+            existingProject.contains(true) && projectsDao.findByOrganizationIdAndName(auth, org.id, r.name).isDefined ||
+            existingProject.contains(false) && projectsDao.findByOrganizationIdAndName(auth, org.id, r.name).isEmpty
           }
         })
       }.map { results =>

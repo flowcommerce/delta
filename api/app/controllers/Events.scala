@@ -34,7 +34,7 @@ class Events @javax.inject.Inject() (
             `type` = `type`,
             numberMinutesSinceCreation = numberMinutesSinceCreation,
             hasError = hasError,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

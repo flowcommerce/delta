@@ -32,14 +32,14 @@ class ImagesDao @javax.inject.Inject() (
   """)
 
   def findById(id: String): Option[Image] = {
-    findAll(ids = Some(Seq(id)), limit = 1).headOption
+    findAll(ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findByBuildIdAndVersion(buildId: String, version: String): Option[Image] = {
     findAll(
       buildId = Some(buildId),
       versions = Some(Seq(version)),
-      limit = 1
+      limit = Some(1)
     ).headOption
   }
 
@@ -49,7 +49,7 @@ class ImagesDao @javax.inject.Inject() (
    names: Option[Seq[String]] = None,
    versions: Option[Seq[String]] = None,
    orderBy: OrderBy = OrderBy("lower(images.name),-images.sort_key"),
-   limit: Long = 25,
+   limit: Option[Long],
    offset: Long = 0
   ): Seq[Image] = {
     db.withConnection { implicit c =>
@@ -59,7 +59,7 @@ class ImagesDao @javax.inject.Inject() (
         equals("images.build_id", buildId).
         optionalIn("images.version", versions).
         orderBy(orderBy.sql).
-        limit(limit).
+        optionalLimit(limit).
         offset(offset).
         as(
           io.flow.delta.v0.anorm.parsers.Image.parser().*

@@ -37,7 +37,7 @@ class Memberships @javax.inject.Inject() (
             organizationId = organization,
             userId = userId,
             role = role,
-            limit = limit,
+            limit = Some(limit),
             offset = offset,
             orderBy = orderBy
           )

@@ -76,18 +76,18 @@ class VariablesDao @javax.inject.Inject() (
   }
 
   def findById(auth: Authorization, id: String): Option[Variable] = {
-    findAll(auth = auth, ids = Some(Seq(id)), limit = 1).headOption
+    findAll(auth = auth, ids = Some(Seq(id)), limit = Some(1)).headOption
   }
 
   def findByOrganizationAndKey(auth: Authorization, key: String): Option[Variable] = {
-    findAll(auth = auth, key = Some(key), limit = 1).headOption
+    findAll(auth = auth, key = Some(key), limit = Some(1)).headOption
   }
 
   def findAll(
     auth: Authorization,
     key: Option[String] = None,
     ids: Option[Seq[String]] = None,
-    limit: Long = 25,
+    limit: Option[Long],
     offset: Long = 0,
     orderBy: OrderBy = OrderBy("-created_at", Some("variables"))
   ): Seq[Variable] = db.withConnection { implicit c =>
