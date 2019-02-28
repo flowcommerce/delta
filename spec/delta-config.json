@@ -99,7 +99,8 @@
         { "name": "dependencies", "type": "[string]", "minimum": 0, "description": "The names of other builds that this one is dependent on. If specified, we will ensure that we never scale this build to a tag that is ahead of the minimum version of the dependent application running in production.", "example": "www" },
         { "name": "version", "type": "string", "required": "false", "description": "The version of Delta to use for deployments. Defaults to 1.0 if not specified", "example": "1.0" },
         { "name": "healthcheck_url", "type": "string", "required": "false", "description": "The URL used for healthchecks by the ELB", "example": "/_internal_/healthcheck" },
-        { "name": "cross_zone_load_balancing", "type": "boolean", "required": false, "description": "Flag whether this build should enable CrossZoneLoadBalancing" }
+        { "name": "cross_zone_load_balancing", "type": "boolean", "required": false, "description": "Flag whether this build should enable CrossZoneLoadBalancing" },
+        { "name": "allow_downtime", "type": "boolean", "required": false, "description": "Allows Delta to optimize infrastructure for services that can accept downtime deployments. Defaults to false." }
       ]
     }
 

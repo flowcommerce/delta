@@ -281,11 +281,15 @@ class BuildActor @javax.inject.Inject() (
     // if cross_zone_load_balancing is pass in the .delta file, use that
     val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(false)
 
+    val asgMinSize = config.requiredInt("aws.asg.min.size")
+    val asgMaxSize = config.requiredInt("aws.asg.max.size")
+    val asgDesiredSize = config.requiredInt("aws.asg.desired.size")
+
     DefaultSettings(
       asgHealthCheckGracePeriod = config.requiredInt("aws.asg.healthcheck.grace.period"),
-      asgMinSize = config.requiredInt("aws.asg.min.size"),
-      asgMaxSize = config.requiredInt("aws.asg.max.size"),
-      asgDesiredSize = config.requiredInt("aws.asg.desired.size"),
+      asgMinSize = asgMinSize,
+      asgMaxSize = asgMaxSize,
+      asgDesiredSize = asgDesiredSize,
       elbSslCertificateId = config.requiredString("aws.elb.ssl.certificate.flow"),
       apibuilderSslCertificateId = config.requiredString("aws.elb.ssl.certificate.apibuilder"),
       elbSubnets = config.requiredString("aws.elb.subnets").split(","),

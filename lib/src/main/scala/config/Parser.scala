@@ -111,7 +111,7 @@ case class Parser() {
 
       Build(
         name = name.toString,
-        dockerfile = map.get("dockerfile").getOrElse(Defaults.Build.dockerfile),
+        dockerfile = map.getOrElse("dockerfile", Defaults.Build.dockerfile),
         initialNumberInstances = map.get("initial.number.instances").map(_.toLong).getOrElse(Defaults.Build.initialNumberInstances),
         instanceType = instanceType,
         memory = map.get("memory").map(_.toLong),
@@ -126,7 +126,8 @@ case class Parser() {
         version = map.get("version"),
         healthcheckUrl = map.get("healthcheck.url"),
         crossZoneLoadBalancing = map.get("cross.zone.load.balancing").map(_.toBoolean),
-        containerMemory = map.get("container.memory").map(_.toLong)
+        containerMemory = map.get("container.memory").map(_.toLong),
+        allowDowntime = Some(map.get("allow.downtime").map(_.toBoolean).getOrElse(true))
       )
     }
 
