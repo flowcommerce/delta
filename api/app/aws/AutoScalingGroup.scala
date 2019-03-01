@@ -149,6 +149,7 @@ class AutoScalingGroup @javax.inject.Inject() (
   def create(settings: Settings, name: String, launchConfigName: String, loadBalancerName: String): Unit = {
     try {
       logger.fingerprint("AutoScalingGroup").withKeyValue("launchConfigName", launchConfigName).withKeyValue("name", name).info(s"AWS AutoScalingGroup createAutoScalingGroup")
+
       client.createAutoScalingGroup(
         new CreateAutoScalingGroupRequest()
           .withAutoScalingGroupName(name)

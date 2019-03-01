@@ -3,7 +3,7 @@
  * Service version: 0.7.18
  * apibuilder 0.14.59 app.apibuilder.io/flow/delta/0.7.18/play_2_6_client
  */
-package io.flow.delta.v0.delta.v0.models {
+package io.flow.delta.v0.models {
 
   sealed trait ItemSummary extends _root_.scala.Product with _root_.scala.Serializable
 
@@ -44,38 +44,38 @@ package io.flow.delta.v0.delta.v0.models {
    */
   final case class Build(
     id: String,
-    project: io.flow.delta.v0.delta.v0.models.ProjectSummary,
-    status: io.flow.delta.v0.delta.v0.models.Status,
+    project: io.flow.delta.v0.models.ProjectSummary,
+    status: io.flow.delta.v0.models.Status,
     name: String
   )
 
   /**
    * Describes the last and desired states of a build
-   * 
+   *
    * @param name The build name
    * @param latestImage If available, the full name of the latest image for this build
    */
   final case class BuildState(
     name: String,
-    desired: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.State] = None,
-    last: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.State] = None,
+    desired: _root_.scala.Option[io.flow.delta.v0.models.State] = None,
+    last: _root_.scala.Option[io.flow.delta.v0.models.State] = None,
     latestImage: _root_.scala.Option[String] = None
   )
 
   /**
    * Summary of each build for the purposes of displaying on a dashboard
-   * 
+   *
    * @param name The build name
    */
   final case class DashboardBuild(
-    project: io.flow.delta.v0.delta.v0.models.ProjectSummary,
+    project: io.flow.delta.v0.models.ProjectSummary,
     name: String,
-    desired: io.flow.delta.v0.delta.v0.models.State,
-    last: io.flow.delta.v0.delta.v0.models.State
+    desired: io.flow.delta.v0.models.State,
+    last: io.flow.delta.v0.models.State
   )
 
   final case class Docker(
-    provider: io.flow.delta.v0.delta.v0.models.DockerProvider,
+    provider: io.flow.delta.v0.models.DockerProvider,
     organization: String
   )
 
@@ -85,18 +85,18 @@ package io.flow.delta.v0.delta.v0.models {
   )
 
   final case class EcsAmiRegions(
-    usEast1: io.flow.delta.v0.delta.v0.models.EcsAmiRegionImage
+    usEast1: io.flow.delta.v0.models.EcsAmiRegionImage
   )
 
   final case class EcsAmis(
-    Regions: io.flow.delta.v0.delta.v0.models.EcsAmiRegions
+    Regions: io.flow.delta.v0.models.EcsAmiRegions
   )
 
   final case class Event(
     id: String,
     createdAt: _root_.org.joda.time.DateTime,
-    project: io.flow.delta.v0.delta.v0.models.ProjectSummary,
-    `type`: io.flow.delta.v0.delta.v0.models.EventType,
+    project: io.flow.delta.v0.models.ProjectSummary,
+    `type`: io.flow.delta.v0.models.EventType,
     summary: String,
     error: _root_.scala.Option[String] = None
   )
@@ -110,7 +110,7 @@ package io.flow.delta.v0.delta.v0.models {
 
   final case class GithubUser(
     id: String,
-    user: io.flow.delta.v0.delta.v0.models.Reference,
+    user: io.flow.delta.v0.models.Reference,
     githubUserId: Long,
     login: String
   )
@@ -130,7 +130,7 @@ package io.flow.delta.v0.delta.v0.models {
 
   final case class Image(
     id: String,
-    build: io.flow.delta.v0.delta.v0.models.Build,
+    build: io.flow.delta.v0.models.Build,
     name: String,
     version: String
   )
@@ -143,34 +143,34 @@ package io.flow.delta.v0.delta.v0.models {
 
   /**
    * A denormalization of item content for search
-   * 
+   *
    * @param id Unique identifier for this item.
    */
   final case class Item(
     id: String,
-    organization: io.flow.delta.v0.delta.v0.models.OrganizationSummary,
-    visibility: io.flow.delta.v0.delta.v0.models.Visibility,
-    summary: io.flow.delta.v0.delta.v0.models.ItemSummary,
+    organization: io.flow.delta.v0.models.OrganizationSummary,
+    visibility: io.flow.delta.v0.models.Visibility,
+    summary: io.flow.delta.v0.models.ItemSummary,
     label: String,
     description: _root_.scala.Option[String] = None
   )
 
   /**
    * A user can belong to one or more organizations via memberships.
-   * 
+   *
    * @param id Unique identifier for this membership
    */
   final case class Membership(
     id: String,
-    user: io.flow.delta.v0.delta.v0.models.UserSummary,
-    organization: io.flow.delta.v0.delta.v0.models.OrganizationSummary,
-    role: io.flow.delta.v0.delta.v0.models.Role
+    user: io.flow.delta.v0.models.UserSummary,
+    organization: io.flow.delta.v0.models.OrganizationSummary,
+    role: io.flow.delta.v0.models.Role
   )
 
   final case class MembershipForm(
     userId: String,
     organization: String,
-    role: io.flow.delta.v0.delta.v0.models.Role = io.flow.delta.v0.delta.v0.models.Role.Member
+    role: io.flow.delta.v0.models.Role = io.flow.delta.v0.models.Role.Member
   )
 
   /**
@@ -180,15 +180,15 @@ package io.flow.delta.v0.delta.v0.models {
    */
   final case class Organization(
     id: String,
-    user: io.flow.delta.v0.delta.v0.models.UserSummary,
-    docker: io.flow.delta.v0.delta.v0.models.Docker,
-    travis: io.flow.delta.v0.delta.v0.models.Travis
+    user: io.flow.delta.v0.models.UserSummary,
+    docker: io.flow.delta.v0.models.Docker,
+    travis: io.flow.delta.v0.models.Travis
   )
 
   final case class OrganizationForm(
     id: String,
-    docker: io.flow.delta.v0.delta.v0.models.Docker,
-    travis: io.flow.delta.v0.delta.v0.models.Travis
+    docker: io.flow.delta.v0.models.Docker,
+    travis: io.flow.delta.v0.models.Travis
   )
 
   final case class OrganizationSummary(
@@ -200,10 +200,10 @@ package io.flow.delta.v0.delta.v0.models {
    */
   final case class Project(
     id: String,
-    organization: io.flow.delta.v0.delta.v0.models.OrganizationSummary,
-    user: io.flow.delta.v0.delta.v0.models.Reference,
-    visibility: io.flow.delta.v0.delta.v0.models.Visibility,
-    scms: io.flow.delta.v0.delta.v0.models.Scms,
+    organization: io.flow.delta.v0.models.OrganizationSummary,
+    user: io.flow.delta.v0.models.Reference,
+    visibility: io.flow.delta.v0.models.Visibility,
+    scms: io.flow.delta.v0.models.Scms,
     name: String,
     uri: String,
     config: io.flow.delta.config.v0.models.Config
@@ -215,15 +215,15 @@ package io.flow.delta.v0.delta.v0.models {
   final case class ProjectForm(
     organization: String,
     name: String,
-    visibility: io.flow.delta.v0.delta.v0.models.Visibility,
-    scms: io.flow.delta.v0.delta.v0.models.Scms,
+    visibility: io.flow.delta.v0.models.Visibility,
+    scms: io.flow.delta.v0.models.Scms,
     uri: String,
     config: _root_.scala.Option[io.flow.delta.config.v0.models.ConfigProject] = None
   )
 
   final case class ProjectSummary(
     id: String,
-    organization: io.flow.delta.v0.delta.v0.models.OrganizationSummary,
+    organization: io.flow.delta.v0.models.OrganizationSummary,
     name: String,
     uri: String
   ) extends ItemSummary
@@ -234,20 +234,20 @@ package io.flow.delta.v0.delta.v0.models {
 
   final case class Repository(
     name: String,
-    visibility: io.flow.delta.v0.delta.v0.models.Visibility,
+    visibility: io.flow.delta.v0.models.Visibility,
     uri: String
   )
 
   final case class Sha(
     id: String,
-    project: io.flow.delta.v0.delta.v0.models.ProjectSummary,
+    project: io.flow.delta.v0.models.ProjectSummary,
     createdAt: _root_.org.joda.time.DateTime,
     branch: String,
     hash: String
   )
 
   final case class SnsMessageAmi(
-    ECSAmis: Seq[io.flow.delta.v0.delta.v0.models.EcsAmis]
+    ECSAmis: Seq[io.flow.delta.v0.models.EcsAmis]
   )
 
   /**
@@ -256,32 +256,32 @@ package io.flow.delta.v0.delta.v0.models {
    */
   final case class State(
     timestamp: _root_.org.joda.time.DateTime,
-    versions: Seq[io.flow.delta.v0.delta.v0.models.Version]
+    versions: Seq[io.flow.delta.v0.models.Version]
   )
 
   final case class StateForm(
-    versions: Seq[io.flow.delta.v0.delta.v0.models.Version]
+    versions: Seq[io.flow.delta.v0.models.Version]
   )
 
   /**
    * Represents a user that is currently subscribed to a publication
-   * 
+   *
    * @param id Internal unique identifier for this subscription record
    */
   final case class Subscription(
     id: String,
-    user: io.flow.delta.v0.delta.v0.models.Reference,
-    publication: io.flow.delta.v0.delta.v0.models.Publication
+    user: io.flow.delta.v0.models.Reference,
+    publication: io.flow.delta.v0.models.Publication
   )
 
   final case class SubscriptionForm(
     userId: String,
-    publication: io.flow.delta.v0.delta.v0.models.Publication
+    publication: io.flow.delta.v0.models.Publication
   )
 
   final case class Tag(
     id: String,
-    project: io.flow.delta.v0.delta.v0.models.ProjectSummary,
+    project: io.flow.delta.v0.models.ProjectSummary,
     createdAt: _root_.org.joda.time.DateTime,
     name: String,
     hash: String
@@ -292,7 +292,7 @@ package io.flow.delta.v0.delta.v0.models {
    */
   final case class Token(
     id: String,
-    user: io.flow.delta.v0.delta.v0.models.Reference,
+    user: io.flow.delta.v0.models.Reference,
     masked: String,
     cleartext: _root_.scala.Option[String] = None,
     description: _root_.scala.Option[String] = None
@@ -314,7 +314,7 @@ package io.flow.delta.v0.delta.v0.models {
 
   final case class UserIdentifier(
     id: String,
-    user: io.flow.delta.v0.delta.v0.models.Reference,
+    user: io.flow.delta.v0.models.Reference,
     value: String
   )
 
@@ -334,7 +334,7 @@ package io.flow.delta.v0.delta.v0.models {
    */
   final case class Variable(
     id: String,
-    organization: io.flow.delta.v0.delta.v0.models.OrganizationSummary,
+    organization: io.flow.delta.v0.models.OrganizationSummary,
     key: String,
     value: String
   )
@@ -357,7 +357,7 @@ package io.flow.delta.v0.delta.v0.models {
    * Provides future compatibility in clients - in the future, when a type is added
    * to the union ItemSummary, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
-   * 
+   *
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
@@ -615,7 +615,7 @@ package io.flow.delta.v0.delta.v0.models {
 
 }
 
-package io.flow.delta.v0.delta.v0.models {
+package io.flow.delta.v0.models {
 
   package object json {
     import play.api.libs.json.__
@@ -624,7 +624,7 @@ package io.flow.delta.v0.delta.v0.models {
     import play.api.libs.functional.syntax._
     import io.flow.common.v0.models.json._
     import io.flow.delta.config.v0.models.json._
-    import io.flow.delta.v0.delta.v0.models.json._
+    import io.flow.delta.v0.models.json._
     import io.flow.error.v0.models.json._
     import io.flow.github.v0.models.json._
 
@@ -660,13 +660,13 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    implicit val jsonReadsDeltaDockerProvider = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.DockerProvider] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.DockerProvider] = {
+    implicit val jsonReadsDeltaDockerProvider = new play.api.libs.json.Reads[io.flow.delta.v0.models.DockerProvider] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.DockerProvider] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.DockerProvider(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.DockerProvider(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.DockerProvider(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.DockerProvider(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -674,29 +674,29 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaDockerProvider(obj: io.flow.delta.v0.delta.v0.models.DockerProvider) = {
+    def jsonWritesDeltaDockerProvider(obj: io.flow.delta.v0.models.DockerProvider) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectDockerProvider(obj: io.flow.delta.v0.delta.v0.models.DockerProvider) = {
+    def jsObjectDockerProvider(obj: io.flow.delta.v0.models.DockerProvider) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaDockerProvider: play.api.libs.json.Writes[DockerProvider] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.DockerProvider] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.DockerProvider) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.DockerProvider] {
+        def writes(obj: io.flow.delta.v0.models.DockerProvider) = {
           jsonWritesDeltaDockerProvider(obj)
         }
       }
     }
 
-    implicit val jsonReadsDeltaEventType = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.EventType] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.EventType] = {
+    implicit val jsonReadsDeltaEventType = new play.api.libs.json.Reads[io.flow.delta.v0.models.EventType] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.EventType] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.EventType(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.EventType(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.EventType(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.EventType(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -704,29 +704,29 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaEventType(obj: io.flow.delta.v0.delta.v0.models.EventType) = {
+    def jsonWritesDeltaEventType(obj: io.flow.delta.v0.models.EventType) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectEventType(obj: io.flow.delta.v0.delta.v0.models.EventType) = {
+    def jsObjectEventType(obj: io.flow.delta.v0.models.EventType) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaEventType: play.api.libs.json.Writes[EventType] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.EventType] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.EventType) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.EventType] {
+        def writes(obj: io.flow.delta.v0.models.EventType) = {
           jsonWritesDeltaEventType(obj)
         }
       }
     }
 
-    implicit val jsonReadsDeltaPublication = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.Publication] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.Publication] = {
+    implicit val jsonReadsDeltaPublication = new play.api.libs.json.Reads[io.flow.delta.v0.models.Publication] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.Publication] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Publication(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Publication(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Publication(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Publication(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -734,29 +734,29 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaPublication(obj: io.flow.delta.v0.delta.v0.models.Publication) = {
+    def jsonWritesDeltaPublication(obj: io.flow.delta.v0.models.Publication) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectPublication(obj: io.flow.delta.v0.delta.v0.models.Publication) = {
+    def jsObjectPublication(obj: io.flow.delta.v0.models.Publication) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaPublication: play.api.libs.json.Writes[Publication] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Publication] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Publication) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Publication] {
+        def writes(obj: io.flow.delta.v0.models.Publication) = {
           jsonWritesDeltaPublication(obj)
         }
       }
     }
 
-    implicit val jsonReadsDeltaRole = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.Role] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.Role] = {
+    implicit val jsonReadsDeltaRole = new play.api.libs.json.Reads[io.flow.delta.v0.models.Role] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.Role] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Role(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Role(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Role(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Role(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -764,29 +764,29 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaRole(obj: io.flow.delta.v0.delta.v0.models.Role) = {
+    def jsonWritesDeltaRole(obj: io.flow.delta.v0.models.Role) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectRole(obj: io.flow.delta.v0.delta.v0.models.Role) = {
+    def jsObjectRole(obj: io.flow.delta.v0.models.Role) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaRole: play.api.libs.json.Writes[Role] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Role] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Role) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Role] {
+        def writes(obj: io.flow.delta.v0.models.Role) = {
           jsonWritesDeltaRole(obj)
         }
       }
     }
 
-    implicit val jsonReadsDeltaScms = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.Scms] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.Scms] = {
+    implicit val jsonReadsDeltaScms = new play.api.libs.json.Reads[io.flow.delta.v0.models.Scms] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.Scms] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Scms(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Scms(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Scms(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Scms(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -794,29 +794,29 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaScms(obj: io.flow.delta.v0.delta.v0.models.Scms) = {
+    def jsonWritesDeltaScms(obj: io.flow.delta.v0.models.Scms) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectScms(obj: io.flow.delta.v0.delta.v0.models.Scms) = {
+    def jsObjectScms(obj: io.flow.delta.v0.models.Scms) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaScms: play.api.libs.json.Writes[Scms] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Scms] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Scms) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Scms] {
+        def writes(obj: io.flow.delta.v0.models.Scms) = {
           jsonWritesDeltaScms(obj)
         }
       }
     }
 
-    implicit val jsonReadsDeltaStatus = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.Status] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.Status] = {
+    implicit val jsonReadsDeltaStatus = new play.api.libs.json.Reads[io.flow.delta.v0.models.Status] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.Status] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Status(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Status(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Status(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Status(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -824,29 +824,29 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaStatus(obj: io.flow.delta.v0.delta.v0.models.Status) = {
+    def jsonWritesDeltaStatus(obj: io.flow.delta.v0.models.Status) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectStatus(obj: io.flow.delta.v0.delta.v0.models.Status) = {
+    def jsObjectStatus(obj: io.flow.delta.v0.models.Status) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaStatus: play.api.libs.json.Writes[Status] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Status] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Status) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Status] {
+        def writes(obj: io.flow.delta.v0.models.Status) = {
           jsonWritesDeltaStatus(obj)
         }
       }
     }
 
-    implicit val jsonReadsDeltaVisibility = new play.api.libs.json.Reads[io.flow.delta.v0.delta.v0.models.Visibility] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.delta.v0.models.Visibility] = {
+    implicit val jsonReadsDeltaVisibility = new play.api.libs.json.Reads[io.flow.delta.v0.models.Visibility] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[io.flow.delta.v0.models.Visibility] = {
         js match {
-          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Visibility(v.value))
+          case v: play.api.libs.json.JsString => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Visibility(v.value))
           case _ => {
             (js \ "value").validate[String] match {
-              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.Visibility(v))
+              case play.api.libs.json.JsSuccess(v, _) => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.Visibility(v))
               case err: play.api.libs.json.JsError => err
             }
           }
@@ -854,17 +854,17 @@ package io.flow.delta.v0.delta.v0.models {
       }
     }
 
-    def jsonWritesDeltaVisibility(obj: io.flow.delta.v0.delta.v0.models.Visibility) = {
+    def jsonWritesDeltaVisibility(obj: io.flow.delta.v0.models.Visibility) = {
       play.api.libs.json.JsString(obj.toString)
     }
 
-    def jsObjectVisibility(obj: io.flow.delta.v0.delta.v0.models.Visibility) = {
+    def jsObjectVisibility(obj: io.flow.delta.v0.models.Visibility) = {
       play.api.libs.json.Json.obj("value" -> play.api.libs.json.JsString(obj.toString))
     }
 
     implicit def jsonWritesDeltaVisibility: play.api.libs.json.Writes[Visibility] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Visibility] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Visibility) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Visibility] {
+        def writes(obj: io.flow.delta.v0.models.Visibility) = {
           jsonWritesDeltaVisibility(obj)
         }
       }
@@ -874,15 +874,15 @@ package io.flow.delta.v0.delta.v0.models {
       (__ \ "id").read[Long].map { x => new AwsActor(id = x) }
     }
 
-    def jsObjectAwsActor(obj: io.flow.delta.v0.delta.v0.models.AwsActor): play.api.libs.json.JsObject = {
+    def jsObjectAwsActor(obj: io.flow.delta.v0.models.AwsActor): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsNumber(obj.id)
       )
     }
 
     implicit def jsonWritesDeltaAwsActor: play.api.libs.json.Writes[AwsActor] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.AwsActor] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.AwsActor) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.AwsActor] {
+        def writes(obj: io.flow.delta.v0.models.AwsActor) = {
           jsObjectAwsActor(obj)
         }
       }
@@ -891,13 +891,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaBuild: play.api.libs.json.Reads[Build] = {
       for {
         id <- (__ \ "id").read[String]
-        project <- (__ \ "project").read[io.flow.delta.v0.delta.v0.models.ProjectSummary]
-        status <- (__ \ "status").read[io.flow.delta.v0.delta.v0.models.Status]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        status <- (__ \ "status").read[io.flow.delta.v0.models.Status]
         name <- (__ \ "name").read[String]
       } yield Build(id, project, status, name)
     }
 
-    def jsObjectBuild(obj: io.flow.delta.v0.delta.v0.models.Build): play.api.libs.json.JsObject = {
+    def jsObjectBuild(obj: io.flow.delta.v0.models.Build): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "project" -> jsObjectProjectSummary(obj.project),
@@ -907,8 +907,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaBuild: play.api.libs.json.Writes[Build] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Build] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Build) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Build] {
+        def writes(obj: io.flow.delta.v0.models.Build) = {
           jsObjectBuild(obj)
         }
       }
@@ -917,13 +917,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaBuildState: play.api.libs.json.Reads[BuildState] = {
       for {
         name <- (__ \ "name").read[String]
-        desired <- (__ \ "desired").readNullable[io.flow.delta.v0.delta.v0.models.State]
-        last <- (__ \ "last").readNullable[io.flow.delta.v0.delta.v0.models.State]
+        desired <- (__ \ "desired").readNullable[io.flow.delta.v0.models.State]
+        last <- (__ \ "last").readNullable[io.flow.delta.v0.models.State]
         latestImage <- (__ \ "latest_image").readNullable[String]
       } yield BuildState(name, desired, last, latestImage)
     }
 
-    def jsObjectBuildState(obj: io.flow.delta.v0.delta.v0.models.BuildState): play.api.libs.json.JsObject = {
+    def jsObjectBuildState(obj: io.flow.delta.v0.models.BuildState): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name)
       ) ++ (obj.desired match {
@@ -941,8 +941,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaBuildState: play.api.libs.json.Writes[BuildState] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.BuildState] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.BuildState) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.BuildState] {
+        def writes(obj: io.flow.delta.v0.models.BuildState) = {
           jsObjectBuildState(obj)
         }
       }
@@ -950,14 +950,14 @@ package io.flow.delta.v0.delta.v0.models {
 
     implicit def jsonReadsDeltaDashboardBuild: play.api.libs.json.Reads[DashboardBuild] = {
       for {
-        project <- (__ \ "project").read[io.flow.delta.v0.delta.v0.models.ProjectSummary]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
         name <- (__ \ "name").read[String]
-        desired <- (__ \ "desired").read[io.flow.delta.v0.delta.v0.models.State]
-        last <- (__ \ "last").read[io.flow.delta.v0.delta.v0.models.State]
+        desired <- (__ \ "desired").read[io.flow.delta.v0.models.State]
+        last <- (__ \ "last").read[io.flow.delta.v0.models.State]
       } yield DashboardBuild(project, name, desired, last)
     }
 
-    def jsObjectDashboardBuild(obj: io.flow.delta.v0.delta.v0.models.DashboardBuild): play.api.libs.json.JsObject = {
+    def jsObjectDashboardBuild(obj: io.flow.delta.v0.models.DashboardBuild): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "project" -> jsObjectProjectSummary(obj.project),
         "name" -> play.api.libs.json.JsString(obj.name),
@@ -967,8 +967,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaDashboardBuild: play.api.libs.json.Writes[DashboardBuild] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.DashboardBuild] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.DashboardBuild) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.DashboardBuild] {
+        def writes(obj: io.flow.delta.v0.models.DashboardBuild) = {
           jsObjectDashboardBuild(obj)
         }
       }
@@ -976,12 +976,12 @@ package io.flow.delta.v0.delta.v0.models {
 
     implicit def jsonReadsDeltaDocker: play.api.libs.json.Reads[Docker] = {
       for {
-        provider <- (__ \ "provider").read[io.flow.delta.v0.delta.v0.models.DockerProvider]
+        provider <- (__ \ "provider").read[io.flow.delta.v0.models.DockerProvider]
         organization <- (__ \ "organization").read[String]
       } yield Docker(provider, organization)
     }
 
-    def jsObjectDocker(obj: io.flow.delta.v0.delta.v0.models.Docker): play.api.libs.json.JsObject = {
+    def jsObjectDocker(obj: io.flow.delta.v0.models.Docker): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "provider" -> play.api.libs.json.JsString(obj.provider.toString),
         "organization" -> play.api.libs.json.JsString(obj.organization)
@@ -989,8 +989,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaDocker: play.api.libs.json.Writes[Docker] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Docker] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Docker) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Docker] {
+        def writes(obj: io.flow.delta.v0.models.Docker) = {
           jsObjectDocker(obj)
         }
       }
@@ -1003,7 +1003,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield EcsAmiRegionImage(Name, ImageId)
     }
 
-    def jsObjectEcsAmiRegionImage(obj: io.flow.delta.v0.delta.v0.models.EcsAmiRegionImage): play.api.libs.json.JsObject = {
+    def jsObjectEcsAmiRegionImage(obj: io.flow.delta.v0.models.EcsAmiRegionImage): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "Name" -> play.api.libs.json.JsString(obj.Name),
         "ImageId" -> play.api.libs.json.JsString(obj.ImageId)
@@ -1011,44 +1011,44 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaEcsAmiRegionImage: play.api.libs.json.Writes[EcsAmiRegionImage] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.EcsAmiRegionImage] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.EcsAmiRegionImage) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.EcsAmiRegionImage] {
+        def writes(obj: io.flow.delta.v0.models.EcsAmiRegionImage) = {
           jsObjectEcsAmiRegionImage(obj)
         }
       }
     }
 
     implicit def jsonReadsDeltaEcsAmiRegions: play.api.libs.json.Reads[EcsAmiRegions] = {
-      (__ \ "us-east-1").read[io.flow.delta.v0.delta.v0.models.EcsAmiRegionImage].map { x => new EcsAmiRegions(usEast1 = x) }
+      (__ \ "us-east-1").read[io.flow.delta.v0.models.EcsAmiRegionImage].map { x => new EcsAmiRegions(usEast1 = x) }
     }
 
-    def jsObjectEcsAmiRegions(obj: io.flow.delta.v0.delta.v0.models.EcsAmiRegions): play.api.libs.json.JsObject = {
+    def jsObjectEcsAmiRegions(obj: io.flow.delta.v0.models.EcsAmiRegions): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "us-east-1" -> jsObjectEcsAmiRegionImage(obj.usEast1)
       )
     }
 
     implicit def jsonWritesDeltaEcsAmiRegions: play.api.libs.json.Writes[EcsAmiRegions] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.EcsAmiRegions] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.EcsAmiRegions) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.EcsAmiRegions] {
+        def writes(obj: io.flow.delta.v0.models.EcsAmiRegions) = {
           jsObjectEcsAmiRegions(obj)
         }
       }
     }
 
     implicit def jsonReadsDeltaEcsAmis: play.api.libs.json.Reads[EcsAmis] = {
-      (__ \ "Regions").read[io.flow.delta.v0.delta.v0.models.EcsAmiRegions].map { x => new EcsAmis(Regions = x) }
+      (__ \ "Regions").read[io.flow.delta.v0.models.EcsAmiRegions].map { x => new EcsAmis(Regions = x) }
     }
 
-    def jsObjectEcsAmis(obj: io.flow.delta.v0.delta.v0.models.EcsAmis): play.api.libs.json.JsObject = {
+    def jsObjectEcsAmis(obj: io.flow.delta.v0.models.EcsAmis): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "Regions" -> jsObjectEcsAmiRegions(obj.Regions)
       )
     }
 
     implicit def jsonWritesDeltaEcsAmis: play.api.libs.json.Writes[EcsAmis] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.EcsAmis] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.EcsAmis) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.EcsAmis] {
+        def writes(obj: io.flow.delta.v0.models.EcsAmis) = {
           jsObjectEcsAmis(obj)
         }
       }
@@ -1058,14 +1058,14 @@ package io.flow.delta.v0.delta.v0.models {
       for {
         id <- (__ \ "id").read[String]
         createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
-        project <- (__ \ "project").read[io.flow.delta.v0.delta.v0.models.ProjectSummary]
-        `type` <- (__ \ "type").read[io.flow.delta.v0.delta.v0.models.EventType]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
+        `type` <- (__ \ "type").read[io.flow.delta.v0.models.EventType]
         summary <- (__ \ "summary").read[String]
         error <- (__ \ "error").readNullable[String]
       } yield Event(id, createdAt, project, `type`, summary, error)
     }
 
-    def jsObjectEvent(obj: io.flow.delta.v0.delta.v0.models.Event): play.api.libs.json.JsObject = {
+    def jsObjectEvent(obj: io.flow.delta.v0.models.Event): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "created_at" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.createdAt)),
@@ -1079,8 +1079,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaEvent: play.api.libs.json.Writes[Event] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Event] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Event) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Event] {
+        def writes(obj: io.flow.delta.v0.models.Event) = {
           jsObjectEvent(obj)
         }
       }
@@ -1090,15 +1090,15 @@ package io.flow.delta.v0.delta.v0.models {
       (__ \ "code").read[String].map { x => new GithubAuthenticationForm(code = x) }
     }
 
-    def jsObjectGithubAuthenticationForm(obj: io.flow.delta.v0.delta.v0.models.GithubAuthenticationForm): play.api.libs.json.JsObject = {
+    def jsObjectGithubAuthenticationForm(obj: io.flow.delta.v0.models.GithubAuthenticationForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "code" -> play.api.libs.json.JsString(obj.code)
       )
     }
 
     implicit def jsonWritesDeltaGithubAuthenticationForm: play.api.libs.json.Writes[GithubAuthenticationForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.GithubAuthenticationForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.GithubAuthenticationForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.GithubAuthenticationForm] {
+        def writes(obj: io.flow.delta.v0.models.GithubAuthenticationForm) = {
           jsObjectGithubAuthenticationForm(obj)
         }
       }
@@ -1107,13 +1107,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaGithubUser: play.api.libs.json.Reads[GithubUser] = {
       for {
         id <- (__ \ "id").read[String]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.Reference]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
         githubUserId <- (__ \ "github_user_id").read[Long]
         login <- (__ \ "login").read[String]
       } yield GithubUser(id, user, githubUserId, login)
     }
 
-    def jsObjectGithubUser(obj: io.flow.delta.v0.delta.v0.models.GithubUser): play.api.libs.json.JsObject = {
+    def jsObjectGithubUser(obj: io.flow.delta.v0.models.GithubUser): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "user" -> jsObjectReference(obj.user),
@@ -1123,8 +1123,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaGithubUser: play.api.libs.json.Writes[GithubUser] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.GithubUser] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.GithubUser) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.GithubUser] {
+        def writes(obj: io.flow.delta.v0.models.GithubUser) = {
           jsObjectGithubUser(obj)
         }
       }
@@ -1138,7 +1138,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield GithubUserForm(userId, githubUserId, login)
     }
 
-    def jsObjectGithubUserForm(obj: io.flow.delta.v0.delta.v0.models.GithubUserForm): play.api.libs.json.JsObject = {
+    def jsObjectGithubUserForm(obj: io.flow.delta.v0.models.GithubUserForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "user_id" -> play.api.libs.json.JsString(obj.userId),
         "github_user_id" -> play.api.libs.json.JsNumber(obj.githubUserId),
@@ -1147,8 +1147,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaGithubUserForm: play.api.libs.json.Writes[GithubUserForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.GithubUserForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.GithubUserForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.GithubUserForm] {
+        def writes(obj: io.flow.delta.v0.models.GithubUserForm) = {
           jsObjectGithubUserForm(obj)
         }
       }
@@ -1158,15 +1158,15 @@ package io.flow.delta.v0.delta.v0.models {
       (__ \ "id").read[Long].map { x => new GithubWebhook(id = x) }
     }
 
-    def jsObjectGithubWebhook(obj: io.flow.delta.v0.delta.v0.models.GithubWebhook): play.api.libs.json.JsObject = {
+    def jsObjectGithubWebhook(obj: io.flow.delta.v0.models.GithubWebhook): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsNumber(obj.id)
       )
     }
 
     implicit def jsonWritesDeltaGithubWebhook: play.api.libs.json.Writes[GithubWebhook] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.GithubWebhook] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.GithubWebhook) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.GithubWebhook] {
+        def writes(obj: io.flow.delta.v0.models.GithubWebhook) = {
           jsObjectGithubWebhook(obj)
         }
       }
@@ -1175,13 +1175,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaImage: play.api.libs.json.Reads[Image] = {
       for {
         id <- (__ \ "id").read[String]
-        build <- (__ \ "build").read[io.flow.delta.v0.delta.v0.models.Build]
+        build <- (__ \ "build").read[io.flow.delta.v0.models.Build]
         name <- (__ \ "name").read[String]
         version <- (__ \ "version").read[String]
       } yield Image(id, build, name, version)
     }
 
-    def jsObjectImage(obj: io.flow.delta.v0.delta.v0.models.Image): play.api.libs.json.JsObject = {
+    def jsObjectImage(obj: io.flow.delta.v0.models.Image): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "build" -> jsObjectBuild(obj.build),
@@ -1191,8 +1191,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaImage: play.api.libs.json.Writes[Image] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Image] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Image) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Image] {
+        def writes(obj: io.flow.delta.v0.models.Image) = {
           jsObjectImage(obj)
         }
       }
@@ -1206,7 +1206,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield ImageForm(buildId, name, version)
     }
 
-    def jsObjectImageForm(obj: io.flow.delta.v0.delta.v0.models.ImageForm): play.api.libs.json.JsObject = {
+    def jsObjectImageForm(obj: io.flow.delta.v0.models.ImageForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "build_id" -> play.api.libs.json.JsString(obj.buildId),
         "name" -> play.api.libs.json.JsString(obj.name),
@@ -1215,8 +1215,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaImageForm: play.api.libs.json.Writes[ImageForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.ImageForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.ImageForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.ImageForm] {
+        def writes(obj: io.flow.delta.v0.models.ImageForm) = {
           jsObjectImageForm(obj)
         }
       }
@@ -1225,15 +1225,15 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaItem: play.api.libs.json.Reads[Item] = {
       for {
         id <- (__ \ "id").read[String]
-        organization <- (__ \ "organization").read[io.flow.delta.v0.delta.v0.models.OrganizationSummary]
-        visibility <- (__ \ "visibility").read[io.flow.delta.v0.delta.v0.models.Visibility]
-        summary <- (__ \ "summary").read[io.flow.delta.v0.delta.v0.models.ItemSummary]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        summary <- (__ \ "summary").read[io.flow.delta.v0.models.ItemSummary]
         label <- (__ \ "label").read[String]
         description <- (__ \ "description").readNullable[String]
       } yield Item(id, organization, visibility, summary, label, description)
     }
 
-    def jsObjectItem(obj: io.flow.delta.v0.delta.v0.models.Item): play.api.libs.json.JsObject = {
+    def jsObjectItem(obj: io.flow.delta.v0.models.Item): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "organization" -> jsObjectOrganizationSummary(obj.organization),
@@ -1247,8 +1247,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaItem: play.api.libs.json.Writes[Item] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Item] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Item) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Item] {
+        def writes(obj: io.flow.delta.v0.models.Item) = {
           jsObjectItem(obj)
         }
       }
@@ -1257,13 +1257,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaMembership: play.api.libs.json.Reads[Membership] = {
       for {
         id <- (__ \ "id").read[String]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.UserSummary]
-        organization <- (__ \ "organization").read[io.flow.delta.v0.delta.v0.models.OrganizationSummary]
-        role <- (__ \ "role").read[io.flow.delta.v0.delta.v0.models.Role]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.UserSummary]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        role <- (__ \ "role").read[io.flow.delta.v0.models.Role]
       } yield Membership(id, user, organization, role)
     }
 
-    def jsObjectMembership(obj: io.flow.delta.v0.delta.v0.models.Membership): play.api.libs.json.JsObject = {
+    def jsObjectMembership(obj: io.flow.delta.v0.models.Membership): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "user" -> jsObjectUserSummary(obj.user),
@@ -1273,8 +1273,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaMembership: play.api.libs.json.Writes[Membership] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Membership] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Membership) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Membership] {
+        def writes(obj: io.flow.delta.v0.models.Membership) = {
           jsObjectMembership(obj)
         }
       }
@@ -1284,11 +1284,11 @@ package io.flow.delta.v0.delta.v0.models {
       for {
         userId <- (__ \ "user_id").read[String]
         organization <- (__ \ "organization").read[String]
-        role <- (__ \ "role").read[io.flow.delta.v0.delta.v0.models.Role]
+        role <- (__ \ "role").read[io.flow.delta.v0.models.Role]
       } yield MembershipForm(userId, organization, role)
     }
 
-    def jsObjectMembershipForm(obj: io.flow.delta.v0.delta.v0.models.MembershipForm): play.api.libs.json.JsObject = {
+    def jsObjectMembershipForm(obj: io.flow.delta.v0.models.MembershipForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "user_id" -> play.api.libs.json.JsString(obj.userId),
         "organization" -> play.api.libs.json.JsString(obj.organization),
@@ -1297,8 +1297,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaMembershipForm: play.api.libs.json.Writes[MembershipForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.MembershipForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.MembershipForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.MembershipForm] {
+        def writes(obj: io.flow.delta.v0.models.MembershipForm) = {
           jsObjectMembershipForm(obj)
         }
       }
@@ -1307,13 +1307,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaOrganization: play.api.libs.json.Reads[Organization] = {
       for {
         id <- (__ \ "id").read[String]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.UserSummary]
-        docker <- (__ \ "docker").read[io.flow.delta.v0.delta.v0.models.Docker]
-        travis <- (__ \ "travis").read[io.flow.delta.v0.delta.v0.models.Travis]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.UserSummary]
+        docker <- (__ \ "docker").read[io.flow.delta.v0.models.Docker]
+        travis <- (__ \ "travis").read[io.flow.delta.v0.models.Travis]
       } yield Organization(id, user, docker, travis)
     }
 
-    def jsObjectOrganization(obj: io.flow.delta.v0.delta.v0.models.Organization): play.api.libs.json.JsObject = {
+    def jsObjectOrganization(obj: io.flow.delta.v0.models.Organization): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "user" -> jsObjectUserSummary(obj.user),
@@ -1323,8 +1323,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaOrganization: play.api.libs.json.Writes[Organization] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Organization] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Organization) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Organization] {
+        def writes(obj: io.flow.delta.v0.models.Organization) = {
           jsObjectOrganization(obj)
         }
       }
@@ -1333,12 +1333,12 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaOrganizationForm: play.api.libs.json.Reads[OrganizationForm] = {
       for {
         id <- (__ \ "id").read[String]
-        docker <- (__ \ "docker").read[io.flow.delta.v0.delta.v0.models.Docker]
-        travis <- (__ \ "travis").read[io.flow.delta.v0.delta.v0.models.Travis]
+        docker <- (__ \ "docker").read[io.flow.delta.v0.models.Docker]
+        travis <- (__ \ "travis").read[io.flow.delta.v0.models.Travis]
       } yield OrganizationForm(id, docker, travis)
     }
 
-    def jsObjectOrganizationForm(obj: io.flow.delta.v0.delta.v0.models.OrganizationForm): play.api.libs.json.JsObject = {
+    def jsObjectOrganizationForm(obj: io.flow.delta.v0.models.OrganizationForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "docker" -> jsObjectDocker(obj.docker),
@@ -1347,8 +1347,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaOrganizationForm: play.api.libs.json.Writes[OrganizationForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.OrganizationForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.OrganizationForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.OrganizationForm] {
+        def writes(obj: io.flow.delta.v0.models.OrganizationForm) = {
           jsObjectOrganizationForm(obj)
         }
       }
@@ -1358,15 +1358,15 @@ package io.flow.delta.v0.delta.v0.models {
       (__ \ "id").read[String].map { x => new OrganizationSummary(id = x) }
     }
 
-    def jsObjectOrganizationSummary(obj: io.flow.delta.v0.delta.v0.models.OrganizationSummary): play.api.libs.json.JsObject = {
+    def jsObjectOrganizationSummary(obj: io.flow.delta.v0.models.OrganizationSummary): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id)
       )
     }
 
     implicit def jsonWritesDeltaOrganizationSummary: play.api.libs.json.Writes[OrganizationSummary] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.OrganizationSummary] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.OrganizationSummary) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.OrganizationSummary] {
+        def writes(obj: io.flow.delta.v0.models.OrganizationSummary) = {
           jsObjectOrganizationSummary(obj)
         }
       }
@@ -1375,17 +1375,17 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaProject: play.api.libs.json.Reads[Project] = {
       for {
         id <- (__ \ "id").read[String]
-        organization <- (__ \ "organization").read[io.flow.delta.v0.delta.v0.models.OrganizationSummary]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.Reference]
-        visibility <- (__ \ "visibility").read[io.flow.delta.v0.delta.v0.models.Visibility]
-        scms <- (__ \ "scms").read[io.flow.delta.v0.delta.v0.models.Scms]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        scms <- (__ \ "scms").read[io.flow.delta.v0.models.Scms]
         name <- (__ \ "name").read[String]
         uri <- (__ \ "uri").read[String]
         config <- (__ \ "config").read[io.flow.delta.config.v0.models.Config]
       } yield Project(id, organization, user, visibility, scms, name, uri, config)
     }
 
-    def jsObjectProject(obj: io.flow.delta.v0.delta.v0.models.Project): play.api.libs.json.JsObject = {
+    def jsObjectProject(obj: io.flow.delta.v0.models.Project): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "organization" -> jsObjectOrganizationSummary(obj.organization),
@@ -1399,8 +1399,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaProject: play.api.libs.json.Writes[Project] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Project] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Project) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Project] {
+        def writes(obj: io.flow.delta.v0.models.Project) = {
           jsObjectProject(obj)
         }
       }
@@ -1410,14 +1410,14 @@ package io.flow.delta.v0.delta.v0.models {
       for {
         organization <- (__ \ "organization").read[String]
         name <- (__ \ "name").read[String]
-        visibility <- (__ \ "visibility").read[io.flow.delta.v0.delta.v0.models.Visibility]
-        scms <- (__ \ "scms").read[io.flow.delta.v0.delta.v0.models.Scms]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
+        scms <- (__ \ "scms").read[io.flow.delta.v0.models.Scms]
         uri <- (__ \ "uri").read[String]
         config <- (__ \ "config").readNullable[io.flow.delta.config.v0.models.ConfigProject]
       } yield ProjectForm(organization, name, visibility, scms, uri, config)
     }
 
-    def jsObjectProjectForm(obj: io.flow.delta.v0.delta.v0.models.ProjectForm): play.api.libs.json.JsObject = {
+    def jsObjectProjectForm(obj: io.flow.delta.v0.models.ProjectForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "organization" -> play.api.libs.json.JsString(obj.organization),
         "name" -> play.api.libs.json.JsString(obj.name),
@@ -1431,8 +1431,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaProjectForm: play.api.libs.json.Writes[ProjectForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.ProjectForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.ProjectForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.ProjectForm] {
+        def writes(obj: io.flow.delta.v0.models.ProjectForm) = {
           jsObjectProjectForm(obj)
         }
       }
@@ -1441,13 +1441,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaProjectSummary: play.api.libs.json.Reads[ProjectSummary] = {
       for {
         id <- (__ \ "id").read[String]
-        organization <- (__ \ "organization").read[io.flow.delta.v0.delta.v0.models.OrganizationSummary]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
         name <- (__ \ "name").read[String]
         uri <- (__ \ "uri").read[String]
       } yield ProjectSummary(id, organization, name, uri)
     }
 
-    def jsObjectProjectSummary(obj: io.flow.delta.v0.delta.v0.models.ProjectSummary): play.api.libs.json.JsObject = {
+    def jsObjectProjectSummary(obj: io.flow.delta.v0.models.ProjectSummary): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "organization" -> jsObjectOrganizationSummary(obj.organization),
@@ -1460,15 +1460,15 @@ package io.flow.delta.v0.delta.v0.models {
       (__ \ "id").read[String].map { x => new Reference(id = x) }
     }
 
-    def jsObjectReference(obj: io.flow.delta.v0.delta.v0.models.Reference): play.api.libs.json.JsObject = {
+    def jsObjectReference(obj: io.flow.delta.v0.models.Reference): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id)
       )
     }
 
     implicit def jsonWritesDeltaReference: play.api.libs.json.Writes[Reference] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Reference] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Reference) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Reference] {
+        def writes(obj: io.flow.delta.v0.models.Reference) = {
           jsObjectReference(obj)
         }
       }
@@ -1477,12 +1477,12 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaRepository: play.api.libs.json.Reads[Repository] = {
       for {
         name <- (__ \ "name").read[String]
-        visibility <- (__ \ "visibility").read[io.flow.delta.v0.delta.v0.models.Visibility]
+        visibility <- (__ \ "visibility").read[io.flow.delta.v0.models.Visibility]
         uri <- (__ \ "uri").read[String]
       } yield Repository(name, visibility, uri)
     }
 
-    def jsObjectRepository(obj: io.flow.delta.v0.delta.v0.models.Repository): play.api.libs.json.JsObject = {
+    def jsObjectRepository(obj: io.flow.delta.v0.models.Repository): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "visibility" -> play.api.libs.json.JsString(obj.visibility.toString),
@@ -1491,8 +1491,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaRepository: play.api.libs.json.Writes[Repository] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Repository] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Repository) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Repository] {
+        def writes(obj: io.flow.delta.v0.models.Repository) = {
           jsObjectRepository(obj)
         }
       }
@@ -1501,14 +1501,14 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaSha: play.api.libs.json.Reads[Sha] = {
       for {
         id <- (__ \ "id").read[String]
-        project <- (__ \ "project").read[io.flow.delta.v0.delta.v0.models.ProjectSummary]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
         createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
         branch <- (__ \ "branch").read[String]
         hash <- (__ \ "hash").read[String]
       } yield Sha(id, project, createdAt, branch, hash)
     }
 
-    def jsObjectSha(obj: io.flow.delta.v0.delta.v0.models.Sha): play.api.libs.json.JsObject = {
+    def jsObjectSha(obj: io.flow.delta.v0.models.Sha): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "project" -> jsObjectProjectSummary(obj.project),
@@ -1519,26 +1519,26 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaSha: play.api.libs.json.Writes[Sha] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Sha] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Sha) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Sha] {
+        def writes(obj: io.flow.delta.v0.models.Sha) = {
           jsObjectSha(obj)
         }
       }
     }
 
     implicit def jsonReadsDeltaSnsMessageAmi: play.api.libs.json.Reads[SnsMessageAmi] = {
-      (__ \ "ECSAmis").read[Seq[io.flow.delta.v0.delta.v0.models.EcsAmis]].map { x => new SnsMessageAmi(ECSAmis = x) }
+      (__ \ "ECSAmis").read[Seq[io.flow.delta.v0.models.EcsAmis]].map { x => new SnsMessageAmi(ECSAmis = x) }
     }
 
-    def jsObjectSnsMessageAmi(obj: io.flow.delta.v0.delta.v0.models.SnsMessageAmi): play.api.libs.json.JsObject = {
+    def jsObjectSnsMessageAmi(obj: io.flow.delta.v0.models.SnsMessageAmi): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "ECSAmis" -> play.api.libs.json.Json.toJson(obj.ECSAmis)
       )
     }
 
     implicit def jsonWritesDeltaSnsMessageAmi: play.api.libs.json.Writes[SnsMessageAmi] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.SnsMessageAmi] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.SnsMessageAmi) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.SnsMessageAmi] {
+        def writes(obj: io.flow.delta.v0.models.SnsMessageAmi) = {
           jsObjectSnsMessageAmi(obj)
         }
       }
@@ -1547,11 +1547,11 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaState: play.api.libs.json.Reads[State] = {
       for {
         timestamp <- (__ \ "timestamp").read[_root_.org.joda.time.DateTime]
-        versions <- (__ \ "versions").read[Seq[io.flow.delta.v0.delta.v0.models.Version]]
+        versions <- (__ \ "versions").read[Seq[io.flow.delta.v0.models.Version]]
       } yield State(timestamp, versions)
     }
 
-    def jsObjectState(obj: io.flow.delta.v0.delta.v0.models.State): play.api.libs.json.JsObject = {
+    def jsObjectState(obj: io.flow.delta.v0.models.State): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "timestamp" -> play.api.libs.json.JsString(_root_.org.joda.time.format.ISODateTimeFormat.dateTime.print(obj.timestamp)),
         "versions" -> play.api.libs.json.Json.toJson(obj.versions)
@@ -1559,26 +1559,26 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaState: play.api.libs.json.Writes[State] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.State] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.State) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.State] {
+        def writes(obj: io.flow.delta.v0.models.State) = {
           jsObjectState(obj)
         }
       }
     }
 
     implicit def jsonReadsDeltaStateForm: play.api.libs.json.Reads[StateForm] = {
-      (__ \ "versions").read[Seq[io.flow.delta.v0.delta.v0.models.Version]].map { x => new StateForm(versions = x) }
+      (__ \ "versions").read[Seq[io.flow.delta.v0.models.Version]].map { x => new StateForm(versions = x) }
     }
 
-    def jsObjectStateForm(obj: io.flow.delta.v0.delta.v0.models.StateForm): play.api.libs.json.JsObject = {
+    def jsObjectStateForm(obj: io.flow.delta.v0.models.StateForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "versions" -> play.api.libs.json.Json.toJson(obj.versions)
       )
     }
 
     implicit def jsonWritesDeltaStateForm: play.api.libs.json.Writes[StateForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.StateForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.StateForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.StateForm] {
+        def writes(obj: io.flow.delta.v0.models.StateForm) = {
           jsObjectStateForm(obj)
         }
       }
@@ -1587,12 +1587,12 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaSubscription: play.api.libs.json.Reads[Subscription] = {
       for {
         id <- (__ \ "id").read[String]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.Reference]
-        publication <- (__ \ "publication").read[io.flow.delta.v0.delta.v0.models.Publication]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
+        publication <- (__ \ "publication").read[io.flow.delta.v0.models.Publication]
       } yield Subscription(id, user, publication)
     }
 
-    def jsObjectSubscription(obj: io.flow.delta.v0.delta.v0.models.Subscription): play.api.libs.json.JsObject = {
+    def jsObjectSubscription(obj: io.flow.delta.v0.models.Subscription): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "user" -> jsObjectReference(obj.user),
@@ -1601,8 +1601,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaSubscription: play.api.libs.json.Writes[Subscription] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Subscription] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Subscription) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Subscription] {
+        def writes(obj: io.flow.delta.v0.models.Subscription) = {
           jsObjectSubscription(obj)
         }
       }
@@ -1611,11 +1611,11 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaSubscriptionForm: play.api.libs.json.Reads[SubscriptionForm] = {
       for {
         userId <- (__ \ "user_id").read[String]
-        publication <- (__ \ "publication").read[io.flow.delta.v0.delta.v0.models.Publication]
+        publication <- (__ \ "publication").read[io.flow.delta.v0.models.Publication]
       } yield SubscriptionForm(userId, publication)
     }
 
-    def jsObjectSubscriptionForm(obj: io.flow.delta.v0.delta.v0.models.SubscriptionForm): play.api.libs.json.JsObject = {
+    def jsObjectSubscriptionForm(obj: io.flow.delta.v0.models.SubscriptionForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "user_id" -> play.api.libs.json.JsString(obj.userId),
         "publication" -> play.api.libs.json.JsString(obj.publication.toString)
@@ -1623,8 +1623,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaSubscriptionForm: play.api.libs.json.Writes[SubscriptionForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.SubscriptionForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.SubscriptionForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.SubscriptionForm] {
+        def writes(obj: io.flow.delta.v0.models.SubscriptionForm) = {
           jsObjectSubscriptionForm(obj)
         }
       }
@@ -1633,14 +1633,14 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaTag: play.api.libs.json.Reads[Tag] = {
       for {
         id <- (__ \ "id").read[String]
-        project <- (__ \ "project").read[io.flow.delta.v0.delta.v0.models.ProjectSummary]
+        project <- (__ \ "project").read[io.flow.delta.v0.models.ProjectSummary]
         createdAt <- (__ \ "created_at").read[_root_.org.joda.time.DateTime]
         name <- (__ \ "name").read[String]
         hash <- (__ \ "hash").read[String]
       } yield Tag(id, project, createdAt, name, hash)
     }
 
-    def jsObjectTag(obj: io.flow.delta.v0.delta.v0.models.Tag): play.api.libs.json.JsObject = {
+    def jsObjectTag(obj: io.flow.delta.v0.models.Tag): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "project" -> jsObjectProjectSummary(obj.project),
@@ -1651,8 +1651,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaTag: play.api.libs.json.Writes[Tag] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Tag] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Tag) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Tag] {
+        def writes(obj: io.flow.delta.v0.models.Tag) = {
           jsObjectTag(obj)
         }
       }
@@ -1661,14 +1661,14 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaToken: play.api.libs.json.Reads[Token] = {
       for {
         id <- (__ \ "id").read[String]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.Reference]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
         masked <- (__ \ "masked").read[String]
         cleartext <- (__ \ "cleartext").readNullable[String]
         description <- (__ \ "description").readNullable[String]
       } yield Token(id, user, masked, cleartext, description)
     }
 
-    def jsObjectToken(obj: io.flow.delta.v0.delta.v0.models.Token): play.api.libs.json.JsObject = {
+    def jsObjectToken(obj: io.flow.delta.v0.models.Token): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "user" -> jsObjectReference(obj.user),
@@ -1684,8 +1684,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaToken: play.api.libs.json.Writes[Token] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Token] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Token) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Token] {
+        def writes(obj: io.flow.delta.v0.models.Token) = {
           jsObjectToken(obj)
         }
       }
@@ -1698,7 +1698,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield TokenForm(userId, description)
     }
 
-    def jsObjectTokenForm(obj: io.flow.delta.v0.delta.v0.models.TokenForm): play.api.libs.json.JsObject = {
+    def jsObjectTokenForm(obj: io.flow.delta.v0.models.TokenForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "user_id" -> play.api.libs.json.JsString(obj.userId)
       ) ++ (obj.description match {
@@ -1708,8 +1708,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaTokenForm: play.api.libs.json.Writes[TokenForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.TokenForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.TokenForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.TokenForm] {
+        def writes(obj: io.flow.delta.v0.models.TokenForm) = {
           jsObjectTokenForm(obj)
         }
       }
@@ -1719,15 +1719,15 @@ package io.flow.delta.v0.delta.v0.models {
       (__ \ "organization").read[String].map { x => new Travis(organization = x) }
     }
 
-    def jsObjectTravis(obj: io.flow.delta.v0.delta.v0.models.Travis): play.api.libs.json.JsObject = {
+    def jsObjectTravis(obj: io.flow.delta.v0.models.Travis): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "organization" -> play.api.libs.json.JsString(obj.organization)
       )
     }
 
     implicit def jsonWritesDeltaTravis: play.api.libs.json.Writes[Travis] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Travis] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Travis) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Travis] {
+        def writes(obj: io.flow.delta.v0.models.Travis) = {
           jsObjectTravis(obj)
         }
       }
@@ -1740,7 +1740,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield UserForm(email, name)
     }
 
-    def jsObjectUserForm(obj: io.flow.delta.v0.delta.v0.models.UserForm): play.api.libs.json.JsObject = {
+    def jsObjectUserForm(obj: io.flow.delta.v0.models.UserForm): play.api.libs.json.JsObject = {
       (obj.email match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("email" -> play.api.libs.json.JsString(x))
@@ -1752,8 +1752,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaUserForm: play.api.libs.json.Writes[UserForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.UserForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.UserForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.UserForm] {
+        def writes(obj: io.flow.delta.v0.models.UserForm) = {
           jsObjectUserForm(obj)
         }
       }
@@ -1762,12 +1762,12 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaUserIdentifier: play.api.libs.json.Reads[UserIdentifier] = {
       for {
         id <- (__ \ "id").read[String]
-        user <- (__ \ "user").read[io.flow.delta.v0.delta.v0.models.Reference]
+        user <- (__ \ "user").read[io.flow.delta.v0.models.Reference]
         value <- (__ \ "value").read[String]
       } yield UserIdentifier(id, user, value)
     }
 
-    def jsObjectUserIdentifier(obj: io.flow.delta.v0.delta.v0.models.UserIdentifier): play.api.libs.json.JsObject = {
+    def jsObjectUserIdentifier(obj: io.flow.delta.v0.models.UserIdentifier): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "user" -> jsObjectReference(obj.user),
@@ -1776,8 +1776,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaUserIdentifier: play.api.libs.json.Writes[UserIdentifier] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.UserIdentifier] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.UserIdentifier) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.UserIdentifier] {
+        def writes(obj: io.flow.delta.v0.models.UserIdentifier) = {
           jsObjectUserIdentifier(obj)
         }
       }
@@ -1791,7 +1791,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield UserSummary(id, email, name)
     }
 
-    def jsObjectUserSummary(obj: io.flow.delta.v0.delta.v0.models.UserSummary): play.api.libs.json.JsObject = {
+    def jsObjectUserSummary(obj: io.flow.delta.v0.models.UserSummary): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "name" -> io.flow.common.v0.models.json.jsObjectName(obj.name)
@@ -1802,8 +1802,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaUserSummary: play.api.libs.json.Writes[UserSummary] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.UserSummary] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.UserSummary) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.UserSummary] {
+        def writes(obj: io.flow.delta.v0.models.UserSummary) = {
           jsObjectUserSummary(obj)
         }
       }
@@ -1816,7 +1816,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield UsernamePassword(username, password)
     }
 
-    def jsObjectUsernamePassword(obj: io.flow.delta.v0.delta.v0.models.UsernamePassword): play.api.libs.json.JsObject = {
+    def jsObjectUsernamePassword(obj: io.flow.delta.v0.models.UsernamePassword): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "username" -> play.api.libs.json.JsString(obj.username)
       ) ++ (obj.password match {
@@ -1826,8 +1826,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaUsernamePassword: play.api.libs.json.Writes[UsernamePassword] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.UsernamePassword] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.UsernamePassword) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.UsernamePassword] {
+        def writes(obj: io.flow.delta.v0.models.UsernamePassword) = {
           jsObjectUsernamePassword(obj)
         }
       }
@@ -1836,13 +1836,13 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaVariable: play.api.libs.json.Reads[Variable] = {
       for {
         id <- (__ \ "id").read[String]
-        organization <- (__ \ "organization").read[io.flow.delta.v0.delta.v0.models.OrganizationSummary]
+        organization <- (__ \ "organization").read[io.flow.delta.v0.models.OrganizationSummary]
         key <- (__ \ "key").read[String]
         value <- (__ \ "value").read[String]
       } yield Variable(id, organization, key, value)
     }
 
-    def jsObjectVariable(obj: io.flow.delta.v0.delta.v0.models.Variable): play.api.libs.json.JsObject = {
+    def jsObjectVariable(obj: io.flow.delta.v0.models.Variable): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "id" -> play.api.libs.json.JsString(obj.id),
         "organization" -> jsObjectOrganizationSummary(obj.organization),
@@ -1852,8 +1852,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaVariable: play.api.libs.json.Writes[Variable] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Variable] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Variable) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Variable] {
+        def writes(obj: io.flow.delta.v0.models.Variable) = {
           jsObjectVariable(obj)
         }
       }
@@ -1867,7 +1867,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield VariableForm(organization, key, value)
     }
 
-    def jsObjectVariableForm(obj: io.flow.delta.v0.delta.v0.models.VariableForm): play.api.libs.json.JsObject = {
+    def jsObjectVariableForm(obj: io.flow.delta.v0.models.VariableForm): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "organization" -> play.api.libs.json.JsString(obj.organization),
         "key" -> play.api.libs.json.JsString(obj.key),
@@ -1876,8 +1876,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaVariableForm: play.api.libs.json.Writes[VariableForm] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.VariableForm] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.VariableForm) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.VariableForm] {
+        def writes(obj: io.flow.delta.v0.models.VariableForm) = {
           jsObjectVariableForm(obj)
         }
       }
@@ -1890,7 +1890,7 @@ package io.flow.delta.v0.delta.v0.models {
       } yield Version(name, instances)
     }
 
-    def jsObjectVersion(obj: io.flow.delta.v0.delta.v0.models.Version): play.api.libs.json.JsObject = {
+    def jsObjectVersion(obj: io.flow.delta.v0.models.Version): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
         "name" -> play.api.libs.json.JsString(obj.name),
         "instances" -> play.api.libs.json.JsNumber(obj.instances)
@@ -1898,8 +1898,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaVersion: play.api.libs.json.Writes[Version] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.Version] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.Version) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.Version] {
+        def writes(obj: io.flow.delta.v0.models.Version) = {
           jsObjectVersion(obj)
         }
       }
@@ -1908,15 +1908,15 @@ package io.flow.delta.v0.delta.v0.models {
     implicit def jsonReadsDeltaItemSummary: play.api.libs.json.Reads[ItemSummary] = new play.api.libs.json.Reads[ItemSummary] {
       def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[ItemSummary] = {
         (js \ "discriminator").asOpt[String].getOrElse { sys.error("Union[ItemSummary] requires a discriminator named 'discriminator' - this field was not found in the Json Value") } match {
-          case "project_summary" => js.validate[io.flow.delta.v0.delta.v0.models.ProjectSummary]
-          case other => play.api.libs.json.JsSuccess(io.flow.delta.v0.delta.v0.models.ItemSummaryUndefinedType(other))
+          case "project_summary" => js.validate[io.flow.delta.v0.models.ProjectSummary]
+          case other => play.api.libs.json.JsSuccess(io.flow.delta.v0.models.ItemSummaryUndefinedType(other))
         }
       }
     }
 
-    def jsObjectItemSummary(obj: io.flow.delta.v0.delta.v0.models.ItemSummary): play.api.libs.json.JsObject = {
+    def jsObjectItemSummary(obj: io.flow.delta.v0.models.ItemSummary): play.api.libs.json.JsObject = {
       obj match {
-        case x: io.flow.delta.v0.delta.v0.models.ProjectSummary => jsObjectProjectSummary(x) ++ play.api.libs.json.Json.obj("discriminator" -> "project_summary")
+        case x: io.flow.delta.v0.models.ProjectSummary => jsObjectProjectSummary(x) ++ play.api.libs.json.Json.obj("discriminator" -> "project_summary")
         case other => {
           sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
         }
@@ -1924,8 +1924,8 @@ package io.flow.delta.v0.delta.v0.models {
     }
 
     implicit def jsonWritesDeltaItemSummary: play.api.libs.json.Writes[ItemSummary] = {
-      new play.api.libs.json.Writes[io.flow.delta.v0.delta.v0.models.ItemSummary] {
-        def writes(obj: io.flow.delta.v0.delta.v0.models.ItemSummary) = {
+      new play.api.libs.json.Writes[io.flow.delta.v0.models.ItemSummary] {
+        def writes(obj: io.flow.delta.v0.models.ItemSummary) = {
           jsObjectItemSummary(obj)
         }
       }
@@ -1933,7 +1933,7 @@ package io.flow.delta.v0.delta.v0.models {
   }
 }
 
-package io.flow.delta.v0.delta.v0 {
+package io.flow.delta.v0 {
 
   object Bindables {
 
@@ -1952,70 +1952,70 @@ package io.flow.delta.v0.delta.v0 {
     }
 
     object Models {
-      import io.flow.delta.v0.delta.v0.models._
+      import io.flow.delta.v0.models._
 
-      val dockerProviderConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.DockerProvider] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.DockerProvider] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.DockerProvider = io.flow.delta.v0.delta.v0.models.DockerProvider(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.DockerProvider): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.DockerProvider = io.flow.delta.v0.delta.v0.models.DockerProvider.DockerHub
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.DockerProvider] = io.flow.delta.v0.delta.v0.models.DockerProvider.all
+      val dockerProviderConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.DockerProvider] = new ApibuilderTypeConverter[io.flow.delta.v0.models.DockerProvider] {
+        override def convert(value: String): io.flow.delta.v0.models.DockerProvider = io.flow.delta.v0.models.DockerProvider(value)
+        override def convert(value: io.flow.delta.v0.models.DockerProvider): String = value.toString
+        override def example: io.flow.delta.v0.models.DockerProvider = io.flow.delta.v0.models.DockerProvider.DockerHub
+        override def validValues: Seq[io.flow.delta.v0.models.DockerProvider] = io.flow.delta.v0.models.DockerProvider.all
       }
-      implicit def pathBindableDockerProvider(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.DockerProvider] = ApibuilderPathBindable(dockerProviderConverter)
-      implicit def queryStringBindableDockerProvider(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.DockerProvider] = ApibuilderQueryStringBindable(dockerProviderConverter)
+      implicit def pathBindableDockerProvider(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.DockerProvider] = ApibuilderPathBindable(dockerProviderConverter)
+      implicit def queryStringBindableDockerProvider(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.DockerProvider] = ApibuilderQueryStringBindable(dockerProviderConverter)
 
-      val eventTypeConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.EventType] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.EventType] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.EventType = io.flow.delta.v0.delta.v0.models.EventType(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.EventType): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.EventType = io.flow.delta.v0.delta.v0.models.EventType.Change
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.EventType] = io.flow.delta.v0.delta.v0.models.EventType.all
+      val eventTypeConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.EventType] = new ApibuilderTypeConverter[io.flow.delta.v0.models.EventType] {
+        override def convert(value: String): io.flow.delta.v0.models.EventType = io.flow.delta.v0.models.EventType(value)
+        override def convert(value: io.flow.delta.v0.models.EventType): String = value.toString
+        override def example: io.flow.delta.v0.models.EventType = io.flow.delta.v0.models.EventType.Change
+        override def validValues: Seq[io.flow.delta.v0.models.EventType] = io.flow.delta.v0.models.EventType.all
       }
-      implicit def pathBindableEventType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.EventType] = ApibuilderPathBindable(eventTypeConverter)
-      implicit def queryStringBindableEventType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.EventType] = ApibuilderQueryStringBindable(eventTypeConverter)
+      implicit def pathBindableEventType(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.EventType] = ApibuilderPathBindable(eventTypeConverter)
+      implicit def queryStringBindableEventType(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.EventType] = ApibuilderQueryStringBindable(eventTypeConverter)
 
-      val publicationConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Publication] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Publication] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.Publication = io.flow.delta.v0.delta.v0.models.Publication(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.Publication): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.Publication = io.flow.delta.v0.delta.v0.models.Publication.Deployments
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.Publication] = io.flow.delta.v0.delta.v0.models.Publication.all
+      val publicationConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.Publication] = new ApibuilderTypeConverter[io.flow.delta.v0.models.Publication] {
+        override def convert(value: String): io.flow.delta.v0.models.Publication = io.flow.delta.v0.models.Publication(value)
+        override def convert(value: io.flow.delta.v0.models.Publication): String = value.toString
+        override def example: io.flow.delta.v0.models.Publication = io.flow.delta.v0.models.Publication.Deployments
+        override def validValues: Seq[io.flow.delta.v0.models.Publication] = io.flow.delta.v0.models.Publication.all
       }
-      implicit def pathBindablePublication(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.Publication] = ApibuilderPathBindable(publicationConverter)
-      implicit def queryStringBindablePublication(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.Publication] = ApibuilderQueryStringBindable(publicationConverter)
+      implicit def pathBindablePublication(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.Publication] = ApibuilderPathBindable(publicationConverter)
+      implicit def queryStringBindablePublication(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.Publication] = ApibuilderQueryStringBindable(publicationConverter)
 
-      val roleConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Role] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Role] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.Role = io.flow.delta.v0.delta.v0.models.Role(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.Role): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.Role = io.flow.delta.v0.delta.v0.models.Role.Member
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.Role] = io.flow.delta.v0.delta.v0.models.Role.all
+      val roleConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.Role] = new ApibuilderTypeConverter[io.flow.delta.v0.models.Role] {
+        override def convert(value: String): io.flow.delta.v0.models.Role = io.flow.delta.v0.models.Role(value)
+        override def convert(value: io.flow.delta.v0.models.Role): String = value.toString
+        override def example: io.flow.delta.v0.models.Role = io.flow.delta.v0.models.Role.Member
+        override def validValues: Seq[io.flow.delta.v0.models.Role] = io.flow.delta.v0.models.Role.all
       }
-      implicit def pathBindableRole(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.Role] = ApibuilderPathBindable(roleConverter)
-      implicit def queryStringBindableRole(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.Role] = ApibuilderQueryStringBindable(roleConverter)
+      implicit def pathBindableRole(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.Role] = ApibuilderPathBindable(roleConverter)
+      implicit def queryStringBindableRole(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.Role] = ApibuilderQueryStringBindable(roleConverter)
 
-      val scmsConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Scms] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Scms] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.Scms = io.flow.delta.v0.delta.v0.models.Scms(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.Scms): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.Scms = io.flow.delta.v0.delta.v0.models.Scms.Github
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.Scms] = io.flow.delta.v0.delta.v0.models.Scms.all
+      val scmsConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.Scms] = new ApibuilderTypeConverter[io.flow.delta.v0.models.Scms] {
+        override def convert(value: String): io.flow.delta.v0.models.Scms = io.flow.delta.v0.models.Scms(value)
+        override def convert(value: io.flow.delta.v0.models.Scms): String = value.toString
+        override def example: io.flow.delta.v0.models.Scms = io.flow.delta.v0.models.Scms.Github
+        override def validValues: Seq[io.flow.delta.v0.models.Scms] = io.flow.delta.v0.models.Scms.all
       }
-      implicit def pathBindableScms(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.Scms] = ApibuilderPathBindable(scmsConverter)
-      implicit def queryStringBindableScms(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.Scms] = ApibuilderQueryStringBindable(scmsConverter)
+      implicit def pathBindableScms(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.Scms] = ApibuilderPathBindable(scmsConverter)
+      implicit def queryStringBindableScms(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.Scms] = ApibuilderQueryStringBindable(scmsConverter)
 
-      val statusConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Status] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Status] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.Status = io.flow.delta.v0.delta.v0.models.Status(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.Status): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.Status = io.flow.delta.v0.delta.v0.models.Status.Enabled
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.Status] = io.flow.delta.v0.delta.v0.models.Status.all
+      val statusConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.Status] = new ApibuilderTypeConverter[io.flow.delta.v0.models.Status] {
+        override def convert(value: String): io.flow.delta.v0.models.Status = io.flow.delta.v0.models.Status(value)
+        override def convert(value: io.flow.delta.v0.models.Status): String = value.toString
+        override def example: io.flow.delta.v0.models.Status = io.flow.delta.v0.models.Status.Enabled
+        override def validValues: Seq[io.flow.delta.v0.models.Status] = io.flow.delta.v0.models.Status.all
       }
-      implicit def pathBindableStatus(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.Status] = ApibuilderPathBindable(statusConverter)
-      implicit def queryStringBindableStatus(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.Status] = ApibuilderQueryStringBindable(statusConverter)
+      implicit def pathBindableStatus(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.Status] = ApibuilderPathBindable(statusConverter)
+      implicit def queryStringBindableStatus(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.Status] = ApibuilderQueryStringBindable(statusConverter)
 
-      val visibilityConverter: ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Visibility] = new ApibuilderTypeConverter[io.flow.delta.v0.delta.v0.models.Visibility] {
-        override def convert(value: String): io.flow.delta.v0.delta.v0.models.Visibility = io.flow.delta.v0.delta.v0.models.Visibility(value)
-        override def convert(value: io.flow.delta.v0.delta.v0.models.Visibility): String = value.toString
-        override def example: io.flow.delta.v0.delta.v0.models.Visibility = io.flow.delta.v0.delta.v0.models.Visibility.Public
-        override def validValues: Seq[io.flow.delta.v0.delta.v0.models.Visibility] = io.flow.delta.v0.delta.v0.models.Visibility.all
+      val visibilityConverter: ApibuilderTypeConverter[io.flow.delta.v0.models.Visibility] = new ApibuilderTypeConverter[io.flow.delta.v0.models.Visibility] {
+        override def convert(value: String): io.flow.delta.v0.models.Visibility = io.flow.delta.v0.models.Visibility(value)
+        override def convert(value: io.flow.delta.v0.models.Visibility): String = value.toString
+        override def example: io.flow.delta.v0.models.Visibility = io.flow.delta.v0.models.Visibility.Public
+        override def validValues: Seq[io.flow.delta.v0.models.Visibility] = io.flow.delta.v0.models.Visibility.all
       }
-      implicit def pathBindableVisibility(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.delta.v0.models.Visibility] = ApibuilderPathBindable(visibilityConverter)
-      implicit def queryStringBindableVisibility(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.delta.v0.models.Visibility] = ApibuilderQueryStringBindable(visibilityConverter)
+      implicit def pathBindableVisibility(implicit stringBinder: QueryStringBindable[String]): PathBindable[io.flow.delta.v0.models.Visibility] = ApibuilderPathBindable(visibilityConverter)
+      implicit def queryStringBindableVisibility(implicit stringBinder: QueryStringBindable[String]): QueryStringBindable[io.flow.delta.v0.models.Visibility] = ApibuilderQueryStringBindable(visibilityConverter)
     }
 
     trait ApibuilderTypeConverter[T] {
@@ -2103,11 +2103,11 @@ package io.flow.delta.v0.delta.v0 {
 }
 
 
-package io.flow.delta.v0.delta.v0 {
+package io.flow.delta.v0 {
 
   object Constants {
 
-    val Namespace = "io.flow.delta.v0.delta.v0"
+    val Namespace = "io.flow.delta.v0"
     val UserAgent = "apibuilder 0.14.59 app.apibuilder.io/flow/delta/0.7.18/play_2_6_client"
     val Version = "0.7.18"
     val VersionMajor = 0
@@ -2117,18 +2117,18 @@ package io.flow.delta.v0.delta.v0 {
   class Client(
     ws: play.api.libs.ws.WSClient,
     val baseUrl: String,
-    auth: scala.Option[io.flow.delta.v0.delta.v0.Authorization] = None,
+    auth: scala.Option[io.flow.delta.v0.Authorization] = None,
     defaultHeaders: Seq[(String, String)] = Nil
   ) extends interfaces.Client {
     import io.flow.common.v0.models.json._
     import io.flow.delta.config.v0.models.json._
-    import io.flow.delta.v0.delta.v0.models.json._
+    import io.flow.delta.v0.models.json._
     import io.flow.error.v0.models.json._
     import io.flow.github.v0.models.json._
 
-    private[this] val logger = play.api.Logger("io.flow.delta.v0.delta.v0.Client")
+    private[this] val logger = play.api.Logger("io.flow.delta.v0.Client")
 
-    logger.info(s"Initializing io.flow.delta.v0.delta.v0.Client for url $baseUrl")
+    logger.info(s"Initializing io.flow.delta.v0.Client for url $baseUrl")
 
     def awsActors: AwsActors = AwsActors
 
@@ -2171,7 +2171,7 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("POST", s"/actors/aws/${play.utils.UriEncoding.encodePathSegment(buildId, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
       }
     }
@@ -2181,16 +2181,16 @@ package io.flow.delta.v0.delta.v0 {
         limit: Long = 25L,
         offset: Long = 0L,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.DashboardBuild]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.DashboardBuild]] = {
         val queryParameters = Seq(
           Some("limit" -> limit.toString),
           Some("offset" -> offset.toString)
         ).flatten
 
         _executeRequest("GET", s"/dashboard_builds", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.DashboardBuild]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.DashboardBuild]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.DashboardBuild]", r, _.validate[Seq[io.flow.delta.v0.models.DashboardBuild]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
     }
@@ -2199,14 +2199,14 @@ package io.flow.delta.v0.delta.v0 {
       override def get(
         id: _root_.scala.Option[Seq[String]] = None,
         projectId: _root_.scala.Option[String] = None,
-        `type`: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.EventType] = None,
+        `type`: _root_.scala.Option[io.flow.delta.v0.models.EventType] = None,
         numberMinutesSinceCreation: _root_.scala.Option[Long] = None,
         hasError: _root_.scala.Option[Boolean] = None,
         limit: Long = 25L,
         offset: Long = 0L,
         sort: String = "-events.created_at",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Event]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Event]] = {
         val queryParameters = Seq(
           projectId.map("project_id" -> _),
           `type`.map("type" -> _.toString),
@@ -2219,36 +2219,36 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/events", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Event]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Event]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Event]", r, _.validate[Seq[io.flow.delta.v0.models.Event]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Event] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Event] = {
         _executeRequest("GET", s"/events/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Event", r, _.validate[io.flow.delta.v0.delta.v0.models.Event])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Event", r, _.validate[io.flow.delta.v0.models.Event])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
     }
 
     object GithubUsers extends GithubUsers {
       override def postGithub(
-        githubAuthenticationForm: io.flow.delta.v0.delta.v0.models.GithubAuthenticationForm,
+        githubAuthenticationForm: io.flow.delta.v0.models.GithubAuthenticationForm,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.User] = {
         val payload = play.api.libs.json.Json.toJson(githubAuthenticationForm)
 
         _executeRequest("POST", s"/authentications/github", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.common.v0.models.User", r, _.validate[io.flow.common.v0.models.User])
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 422")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.common.v0.models.User", r, _.validate[io.flow.common.v0.models.User])
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 422")
         }
       }
     }
@@ -2260,7 +2260,7 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("POST", s"/webhooks/github/${play.utils.UriEncoding.encodePathSegment(projectId, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204")
         }
       }
     }
@@ -2274,7 +2274,7 @@ package io.flow.delta.v0.delta.v0 {
         offset: Long = 0L,
         sort: String = "lower(images.name),-images.sort_key",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Image]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Image]] = {
         val queryParameters = Seq(
           projectId.map("project_id" -> _),
           name.map("name" -> _),
@@ -2285,21 +2285,21 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/images", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Image]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Image]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Image]", r, _.validate[Seq[io.flow.delta.v0.models.Image]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Image] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Image] = {
         _executeRequest("GET", s"/images/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Image", r, _.validate[io.flow.delta.v0.delta.v0.models.Image])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Image", r, _.validate[io.flow.delta.v0.models.Image])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -2309,9 +2309,9 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/images/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2322,7 +2322,7 @@ package io.flow.delta.v0.delta.v0 {
         limit: Long = 25L,
         offset: Long = 0L,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Item]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Item]] = {
         val queryParameters = Seq(
           q.map("q" -> _),
           Some("limit" -> limit.toString),
@@ -2330,9 +2330,9 @@ package io.flow.delta.v0.delta.v0 {
         ).flatten
 
         _executeRequest("GET", s"/items", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Item]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Item]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Item]", r, _.validate[Seq[io.flow.delta.v0.models.Item]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
     }
@@ -2342,12 +2342,12 @@ package io.flow.delta.v0.delta.v0 {
         id: _root_.scala.Option[Seq[String]] = None,
         organization: _root_.scala.Option[String] = None,
         userId: _root_.scala.Option[String] = None,
-        role: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.Role] = None,
+        role: _root_.scala.Option[io.flow.delta.v0.models.Role] = None,
         limit: Long = 25L,
         offset: Long = 0L,
         sort: String = "-memberships.created_at",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Membership]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Membership]] = {
         val queryParameters = Seq(
           organization.map("organization" -> _),
           userId.map("user_id" -> _),
@@ -2359,36 +2359,36 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/memberships", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Membership]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Membership]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Membership]", r, _.validate[Seq[io.flow.delta.v0.models.Membership]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Membership] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Membership] = {
         _executeRequest("GET", s"/memberships/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Membership", r, _.validate[io.flow.delta.v0.delta.v0.models.Membership])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Membership", r, _.validate[io.flow.delta.v0.models.Membership])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def post(
-        membershipForm: io.flow.delta.v0.delta.v0.models.MembershipForm,
+        membershipForm: io.flow.delta.v0.models.MembershipForm,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Membership] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Membership] = {
         val payload = play.api.libs.json.Json.toJson(membershipForm)
 
         _executeRequest("POST", s"/memberships", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 201 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Membership", r, _.validate[io.flow.delta.v0.delta.v0.models.Membership])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 404, 422")
+          case r if r.status == 201 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Membership", r, _.validate[io.flow.delta.v0.models.Membership])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 404, 422")
         }
       }
 
@@ -2398,9 +2398,9 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/memberships/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2413,7 +2413,7 @@ package io.flow.delta.v0.delta.v0 {
         offset: Long = 0L,
         sort: String = "organizations.id",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Organization]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Organization]] = {
         val queryParameters = Seq(
           userId.map("user_id" -> _),
           Some("limit" -> limit.toString),
@@ -2423,50 +2423,50 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/organizations", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Organization]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Organization]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Organization]", r, _.validate[Seq[io.flow.delta.v0.models.Organization]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Organization] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Organization] = {
         _executeRequest("GET", s"/organizations/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Organization", r, _.validate[io.flow.delta.v0.delta.v0.models.Organization])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Organization", r, _.validate[io.flow.delta.v0.models.Organization])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def post(
-        organizationForm: io.flow.delta.v0.delta.v0.models.OrganizationForm,
+        organizationForm: io.flow.delta.v0.models.OrganizationForm,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Organization] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
         _executeRequest("POST", s"/organizations", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 201 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Organization", r, _.validate[io.flow.delta.v0.delta.v0.models.Organization])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
+          case r if r.status == 201 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Organization", r, _.validate[io.flow.delta.v0.models.Organization])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
       override def putById(
         id: String,
-        organizationForm: io.flow.delta.v0.delta.v0.models.OrganizationForm,
+        organizationForm: io.flow.delta.v0.models.OrganizationForm,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Organization] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Organization] = {
         val payload = play.api.libs.json.Json.toJson(organizationForm)
 
         _executeRequest("PUT", s"/organizations/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Organization", r, _.validate[io.flow.delta.v0.delta.v0.models.Organization])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Organization", r, _.validate[io.flow.delta.v0.models.Organization])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -2476,9 +2476,9 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/organizations/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2492,7 +2492,7 @@ package io.flow.delta.v0.delta.v0 {
         offset: Long = 0L,
         sort: String = "projects.id",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Project]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Project]] = {
         val queryParameters = Seq(
           organization.map("organization" -> _),
           name.map("name" -> _),
@@ -2503,35 +2503,35 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/projects", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Project]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Project]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Project]", r, _.validate[Seq[io.flow.delta.v0.models.Project]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Project] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Project] = {
         _executeRequest("GET", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Project", r, _.validate[io.flow.delta.v0.delta.v0.models.Project])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Project", r, _.validate[io.flow.delta.v0.models.Project])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def post(
-        projectForm: io.flow.delta.v0.delta.v0.models.ProjectForm,
+        projectForm: io.flow.delta.v0.models.ProjectForm,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Project] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Project] = {
         val payload = play.api.libs.json.Json.toJson(projectForm)
 
         _executeRequest("POST", s"/projects", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 201 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Project", r, _.validate[io.flow.delta.v0.delta.v0.models.Project])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
+          case r if r.status == 201 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Project", r, _.validate[io.flow.delta.v0.models.Project])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -2541,24 +2541,24 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("POST", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/events/pursue_desired_state", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
 
       override def putById(
         id: String,
-        projectForm: io.flow.delta.v0.delta.v0.models.ProjectForm,
+        projectForm: io.flow.delta.v0.models.ProjectForm,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Project] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Project] = {
         val payload = play.api.libs.json.Json.toJson(projectForm)
 
         _executeRequest("PUT", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Project", r, _.validate[io.flow.delta.v0.delta.v0.models.Project])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Project", r, _.validate[io.flow.delta.v0.models.Project])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -2568,21 +2568,21 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
 
       override def getBuildsAndStatesById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.BuildState]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.BuildState]] = {
         _executeRequest("GET", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/builds/states", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.BuildState]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.BuildState]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.BuildState]", r, _.validate[Seq[io.flow.delta.v0.models.BuildState]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -2590,12 +2590,12 @@ package io.flow.delta.v0.delta.v0 {
         id: String,
         buildName: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.State]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.State]] = {
         _executeRequest("GET", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/builds/${play.utils.UriEncoding.encodePathSegment(buildName, "UTF-8")}/states/desired", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.State]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.State]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.State]", r, _.validate[Seq[io.flow.delta.v0.models.State]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -2603,12 +2603,12 @@ package io.flow.delta.v0.delta.v0 {
         id: String,
         buildName: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.StateForm]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.StateForm]] = {
         _executeRequest("POST", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/builds/${play.utils.UriEncoding.encodePathSegment(buildName, "UTF-8")}/states/desired", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.StateForm]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.StateForm]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.StateForm]", r, _.validate[Seq[io.flow.delta.v0.models.StateForm]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -2616,12 +2616,12 @@ package io.flow.delta.v0.delta.v0 {
         id: String,
         buildName: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.State]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.State]] = {
         _executeRequest("GET", s"/projects/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/builds/${play.utils.UriEncoding.encodePathSegment(buildName, "UTF-8")}/states/last", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.State]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.State]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.State]", r, _.validate[Seq[io.flow.delta.v0.models.State]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
     }
@@ -2646,10 +2646,10 @@ package io.flow.delta.v0.delta.v0 {
         ).flatten
 
         _executeRequest("GET", s"/github", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.github.v0.models.Repository]", r, _.validate[Seq[io.flow.github.v0.models.Repository]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.github.v0.models.Repository]", r, _.validate[Seq[io.flow.github.v0.models.Repository]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -2659,10 +2659,10 @@ package io.flow.delta.v0.delta.v0 {
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.config.v0.models.Config] = {
         _executeRequest("GET", s"/github/${play.utils.UriEncoding.encodePathSegment(owner, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(repo, "UTF-8")}/config", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.config.v0.models.Config", r, _.validate[io.flow.delta.config.v0.models.Config])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.config.v0.models.Config", r, _.validate[io.flow.delta.config.v0.models.Config])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
     }
@@ -2677,7 +2677,7 @@ package io.flow.delta.v0.delta.v0 {
         offset: Long = 0L,
         sort: String = "-shas.created_at",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Sha]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Sha]] = {
         val queryParameters = Seq(
           projectId.map("project_id" -> _),
           branch.map("branch" -> _),
@@ -2689,21 +2689,21 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/shas", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Sha]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Sha]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Sha]", r, _.validate[Seq[io.flow.delta.v0.models.Sha]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Sha] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Sha] = {
         _executeRequest("GET", s"/shas/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Sha", r, _.validate[io.flow.delta.v0.delta.v0.models.Sha])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Sha", r, _.validate[io.flow.delta.v0.models.Sha])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -2713,9 +2713,9 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/shas/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2729,7 +2729,7 @@ package io.flow.delta.v0.delta.v0 {
 
         _executeRequest("POST", s"/sns_message_amis", body = Some(payload), requestHeaders = requestHeaders).map {
           case r if r.status == 200 => ()
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200")
         }
       }
     }
@@ -2739,12 +2739,12 @@ package io.flow.delta.v0.delta.v0 {
         id: _root_.scala.Option[Seq[String]] = None,
         userId: _root_.scala.Option[String] = None,
         identifier: _root_.scala.Option[String] = None,
-        publication: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.Publication] = None,
+        publication: _root_.scala.Option[io.flow.delta.v0.models.Publication] = None,
         limit: Long = 25L,
         offset: Long = 0L,
         sort: String = "-subscriptions.created_at",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Subscription]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Subscription]] = {
         val queryParameters = Seq(
           userId.map("user_id" -> _),
           identifier.map("identifier" -> _),
@@ -2756,29 +2756,29 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/subscriptions", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Subscription]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Subscription]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Subscription]", r, _.validate[Seq[io.flow.delta.v0.models.Subscription]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Subscription] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Subscription] = {
         _executeRequest("GET", s"/subscriptions/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Subscription", r, _.validate[io.flow.delta.v0.delta.v0.models.Subscription])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Subscription", r, _.validate[io.flow.delta.v0.models.Subscription])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def post(
-        subscriptionForm: io.flow.delta.v0.delta.v0.models.SubscriptionForm,
+        subscriptionForm: io.flow.delta.v0.models.SubscriptionForm,
         identifier: _root_.scala.Option[String] = None,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Subscription] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Subscription] = {
         val payload = play.api.libs.json.Json.toJson(subscriptionForm)
 
         val queryParameters = Seq(
@@ -2786,10 +2786,10 @@ package io.flow.delta.v0.delta.v0 {
         ).flatten
 
         _executeRequest("POST", s"/subscriptions", body = Some(payload), queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 201 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Subscription", r, _.validate[io.flow.delta.v0.delta.v0.models.Subscription])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
+          case r if r.status == 201 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Subscription", r, _.validate[io.flow.delta.v0.models.Subscription])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -2804,9 +2804,9 @@ package io.flow.delta.v0.delta.v0 {
 
         _executeRequest("DELETE", s"/subscriptions/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2820,7 +2820,7 @@ package io.flow.delta.v0.delta.v0 {
         offset: Long = 0L,
         sort: String = "-tags.sort_key",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Tag]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Tag]] = {
         val queryParameters = Seq(
           projectId.map("project_id" -> _),
           name.map("name" -> _),
@@ -2831,21 +2831,21 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/tags", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Tag]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Tag]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Tag]", r, _.validate[Seq[io.flow.delta.v0.models.Tag]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Tag] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Tag] = {
         _executeRequest("GET", s"/tags/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Tag", r, _.validate[io.flow.delta.v0.delta.v0.models.Tag])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Tag", r, _.validate[io.flow.delta.v0.models.Tag])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
@@ -2855,9 +2855,9 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/tags/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2870,7 +2870,7 @@ package io.flow.delta.v0.delta.v0 {
         offset: Long = 0L,
         sort: String = "-tokens.created_at",
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Token]] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Token]] = {
         val queryParameters = Seq(
           userId.map("user_id" -> _),
           Some("limit" -> limit.toString),
@@ -2880,35 +2880,35 @@ package io.flow.delta.v0.delta.v0 {
           id.getOrElse(Nil).map("id" -> _)
 
         _executeRequest("GET", s"/tokens", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.delta.v0.models.Token]", r, _.validate[Seq[io.flow.delta.v0.delta.v0.models.Token]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.delta.v0.models.Token]", r, _.validate[Seq[io.flow.delta.v0.models.Token]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401")
         }
       }
 
       override def getById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Token] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Token] = {
         _executeRequest("GET", s"/tokens/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Token", r, _.validate[io.flow.delta.v0.delta.v0.models.Token])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Token", r, _.validate[io.flow.delta.v0.models.Token])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def post(
-        tokenForm: io.flow.delta.v0.delta.v0.models.TokenForm,
+        tokenForm: io.flow.delta.v0.models.TokenForm,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Token] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Token] = {
         val payload = play.api.libs.json.Json.toJson(tokenForm)
 
         _executeRequest("POST", s"/tokens", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 201 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.Token", r, _.validate[io.flow.delta.v0.delta.v0.models.Token])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
+          case r if r.status == 201 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.Token", r, _.validate[io.flow.delta.v0.models.Token])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 401, 422")
         }
       }
 
@@ -2918,9 +2918,9 @@ package io.flow.delta.v0.delta.v0 {
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Unit] = {
         _executeRequest("DELETE", s"/tokens/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
           case r if r.status == 204 => ()
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 401, 404")
         }
       }
     }
@@ -2939,10 +2939,10 @@ package io.flow.delta.v0.delta.v0 {
         ).flatten
 
         _executeRequest("GET", s"/users", queryParameters = queryParameters, requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("Seq[io.flow.common.v0.models.User]", r, _.validate[Seq[io.flow.common.v0.models.User]])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("Seq[io.flow.common.v0.models.User]", r, _.validate[Seq[io.flow.common.v0.models.User]])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 422")
         }
       }
 
@@ -2951,35 +2951,35 @@ package io.flow.delta.v0.delta.v0 {
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.User] = {
         _executeRequest("GET", s"/users/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.common.v0.models.User", r, _.validate[io.flow.common.v0.models.User])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.common.v0.models.User", r, _.validate[io.flow.common.v0.models.User])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def getIdentifierById(
         id: String,
         requestHeaders: Seq[(String, String)] = Nil
-      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.UserIdentifier] = {
+      )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.UserIdentifier] = {
         _executeRequest("GET", s"/users/${play.utils.UriEncoding.encodePathSegment(id, "UTF-8")}/identifier", requestHeaders = requestHeaders).map {
-          case r if r.status == 200 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.delta.v0.delta.v0.models.UserIdentifier", r, _.validate[io.flow.delta.v0.delta.v0.models.UserIdentifier])
-          case r if r.status == 401 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r if r.status == 404 => throw io.flow.delta.v0.delta.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
+          case r if r.status == 200 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.delta.v0.models.UserIdentifier", r, _.validate[io.flow.delta.v0.models.UserIdentifier])
+          case r if r.status == 401 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r if r.status == 404 => throw io.flow.delta.v0.errors.UnitResponse(r.status)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 401, 404")
         }
       }
 
       override def post(
-        userForm: io.flow.delta.v0.delta.v0.models.UserForm,
+        userForm: io.flow.delta.v0.models.UserForm,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.User] = {
         val payload = play.api.libs.json.Json.toJson(userForm)
 
         _executeRequest("POST", s"/users", body = Some(payload), requestHeaders = requestHeaders).map {
-          case r if r.status == 201 => _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.common.v0.models.User", r, _.validate[io.flow.common.v0.models.User])
-          case r if r.status == 422 => throw io.flow.delta.v0.delta.v0.errors.GenericErrorResponse(r)
-          case r => throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 422")
+          case r if r.status == 201 => _root_.io.flow.delta.v0.Client.parseJson("io.flow.common.v0.models.User", r, _.validate[io.flow.common.v0.models.User])
+          case r if r.status == 422 => throw io.flow.delta.v0.errors.GenericErrorResponse(r)
+          case r => throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 201, 422")
         }
       }
     }
@@ -3070,7 +3070,7 @@ package io.flow.delta.v0.delta.v0 {
       f(play.api.libs.json.Json.parse(r.body)) match {
         case play.api.libs.json.JsSuccess(x, _) => x
         case play.api.libs.json.JsError(errors) => {
-          throw io.flow.delta.v0.delta.v0.errors.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
+          throw io.flow.delta.v0.errors.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
         }
       }
     }
@@ -3086,23 +3086,23 @@ package io.flow.delta.v0.delta.v0 {
 
     trait Client {
       def baseUrl: String
-      def awsActors: io.flow.delta.v0.delta.v0.AwsActors
-      def dashboardBuilds: io.flow.delta.v0.delta.v0.DashboardBuilds
-      def events: io.flow.delta.v0.delta.v0.Events
-      def githubUsers: io.flow.delta.v0.delta.v0.GithubUsers
-      def githubWebhooks: io.flow.delta.v0.delta.v0.GithubWebhooks
-      def images: io.flow.delta.v0.delta.v0.Images
-      def items: io.flow.delta.v0.delta.v0.Items
-      def memberships: io.flow.delta.v0.delta.v0.Memberships
-      def organizations: io.flow.delta.v0.delta.v0.Organizations
-      def projects: io.flow.delta.v0.delta.v0.Projects
-      def repositories: io.flow.delta.v0.delta.v0.Repositories
-      def shas: io.flow.delta.v0.delta.v0.Shas
-      def snsMessageAmis: io.flow.delta.v0.delta.v0.SnsMessageAmis
-      def subscriptions: io.flow.delta.v0.delta.v0.Subscriptions
-      def tags: io.flow.delta.v0.delta.v0.Tags
-      def tokens: io.flow.delta.v0.delta.v0.Tokens
-      def users: io.flow.delta.v0.delta.v0.Users
+      def awsActors: io.flow.delta.v0.AwsActors
+      def dashboardBuilds: io.flow.delta.v0.DashboardBuilds
+      def events: io.flow.delta.v0.Events
+      def githubUsers: io.flow.delta.v0.GithubUsers
+      def githubWebhooks: io.flow.delta.v0.GithubWebhooks
+      def images: io.flow.delta.v0.Images
+      def items: io.flow.delta.v0.Items
+      def memberships: io.flow.delta.v0.Memberships
+      def organizations: io.flow.delta.v0.Organizations
+      def projects: io.flow.delta.v0.Projects
+      def repositories: io.flow.delta.v0.Repositories
+      def shas: io.flow.delta.v0.Shas
+      def snsMessageAmis: io.flow.delta.v0.SnsMessageAmis
+      def subscriptions: io.flow.delta.v0.Subscriptions
+      def tags: io.flow.delta.v0.Tags
+      def tokens: io.flow.delta.v0.Tokens
+      def users: io.flow.delta.v0.Users
     }
 
   }
@@ -3126,7 +3126,7 @@ package io.flow.delta.v0.delta.v0 {
       limit: Long = 25L,
       offset: Long = 0L,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.DashboardBuild]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.DashboardBuild]]
   }
 
   trait Events {
@@ -3139,19 +3139,19 @@ package io.flow.delta.v0.delta.v0 {
     def get(
       id: _root_.scala.Option[Seq[String]] = None,
       projectId: _root_.scala.Option[String] = None,
-      `type`: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.EventType] = None,
+      `type`: _root_.scala.Option[io.flow.delta.v0.models.EventType] = None,
       numberMinutesSinceCreation: _root_.scala.Option[Long] = None,
       hasError: _root_.scala.Option[Boolean] = None,
       limit: Long = 25L,
       offset: Long = 0L,
       sort: String = "-events.created_at",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Event]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Event]]
 
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Event]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Event]
   }
 
   trait GithubUsers {
@@ -3159,7 +3159,7 @@ package io.flow.delta.v0.delta.v0 {
      * Used to authenticate a user via github
      */
     def postGithub(
-      githubAuthenticationForm: io.flow.delta.v0.delta.v0.models.GithubAuthenticationForm,
+      githubAuthenticationForm: io.flow.delta.v0.models.GithubAuthenticationForm,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.User]
   }
@@ -3190,12 +3190,12 @@ package io.flow.delta.v0.delta.v0 {
       offset: Long = 0L,
       sort: String = "lower(images.name),-images.sort_key",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Image]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Image]]
 
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Image]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Image]
 
     def deleteById(
       id: String,
@@ -3206,7 +3206,7 @@ package io.flow.delta.v0.delta.v0 {
   trait Items {
     /**
      * Returns a list of all matching items
-     * 
+     *
      * @param q Actual search query
      * @param limit The number of records to return
      * @param offset Used to paginate. First page of results is 0.
@@ -3216,13 +3216,13 @@ package io.flow.delta.v0.delta.v0 {
       limit: Long = 25L,
       offset: Long = 0L,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Item]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Item]]
   }
 
   trait Memberships {
     /**
      * Search all memberships. Results are always paginated.
-     * 
+     *
      * @param id Filter by any one of these ids
      * @param organization Filter to organization with this key. Case insensitive
      * @param limit The number of records to return
@@ -3232,22 +3232,22 @@ package io.flow.delta.v0.delta.v0 {
       id: _root_.scala.Option[Seq[String]] = None,
       organization: _root_.scala.Option[String] = None,
       userId: _root_.scala.Option[String] = None,
-      role: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.Role] = None,
+      role: _root_.scala.Option[io.flow.delta.v0.models.Role] = None,
       limit: Long = 25L,
       offset: Long = 0L,
       sort: String = "-memberships.created_at",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Membership]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Membership]]
 
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Membership]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Membership]
 
     def post(
-      membershipForm: io.flow.delta.v0.delta.v0.models.MembershipForm,
+      membershipForm: io.flow.delta.v0.models.MembershipForm,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Membership]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Membership]
 
     def deleteById(
       id: String,
@@ -3258,7 +3258,7 @@ package io.flow.delta.v0.delta.v0 {
   trait Organizations {
     /**
      * Search organizations. Results are paginated
-     * 
+     *
      * @param id Filter by any one of these ids
      * @param userId Find organizations that this user has access to
      * @param limit The number of records to return
@@ -3271,7 +3271,7 @@ package io.flow.delta.v0.delta.v0 {
       offset: Long = 0L,
       sort: String = "organizations.id",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Organization]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Organization]]
 
     /**
      * Returns information about the organization with this id.
@@ -3279,24 +3279,24 @@ package io.flow.delta.v0.delta.v0 {
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Organization]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Organization]
 
     /**
      * Create a new organization.
      */
     def post(
-      organizationForm: io.flow.delta.v0.delta.v0.models.OrganizationForm,
+      organizationForm: io.flow.delta.v0.models.OrganizationForm,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Organization]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Organization]
 
     /**
      * Update an existing organization.
      */
     def putById(
       id: String,
-      organizationForm: io.flow.delta.v0.delta.v0.models.OrganizationForm,
+      organizationForm: io.flow.delta.v0.models.OrganizationForm,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Organization]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Organization]
 
     def deleteById(
       id: String,
@@ -3307,7 +3307,7 @@ package io.flow.delta.v0.delta.v0 {
   trait Projects {
     /**
      * Search projects. Results are paginated
-     * 
+     *
      * @param id Filter by any one of these ids
      * @param organization Filter to resolvers belongs to the organization with this key
      * @param name Find project with this name. Case in-sensitive. Exact match
@@ -3322,7 +3322,7 @@ package io.flow.delta.v0.delta.v0 {
       offset: Long = 0L,
       sort: String = "projects.id",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Project]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Project]]
 
     /**
      * Returns information about the project with this id.
@@ -3330,15 +3330,15 @@ package io.flow.delta.v0.delta.v0 {
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Project]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Project]
 
     /**
      * Create a new project.
      */
     def post(
-      projectForm: io.flow.delta.v0.delta.v0.models.ProjectForm,
+      projectForm: io.flow.delta.v0.models.ProjectForm,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Project]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Project]
 
     /**
      * Triggers the pursue desired state event.
@@ -3353,9 +3353,9 @@ package io.flow.delta.v0.delta.v0 {
      */
     def putById(
       id: String,
-      projectForm: io.flow.delta.v0.delta.v0.models.ProjectForm,
+      projectForm: io.flow.delta.v0.models.ProjectForm,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Project]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Project]
 
     def deleteById(
       id: String,
@@ -3365,31 +3365,31 @@ package io.flow.delta.v0.delta.v0 {
     def getBuildsAndStatesById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.BuildState]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.BuildState]]
 
     def getBuildsAndStatesAndDesiredByIdAndBuildName(
       id: String,
       buildName: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.State]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.State]]
 
     def postBuildsAndStatesAndDesiredByIdAndBuildName(
       id: String,
       buildName: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.StateForm]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.StateForm]]
 
     def getBuildsAndStatesAndLastByIdAndBuildName(
       id: String,
       buildName: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.State]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.State]]
   }
 
   trait Repositories {
     /**
      * Returns a list of repositories from github
-     * 
+     *
      * @param owner Optionally filter by owner name. Case in-sensitive. Exact match
      * @param name Optionally filter by repo name. Case in-sensitive. Exact match
      * @param organizationId If specified, we enable additional filtering by this organization (see
@@ -3438,12 +3438,12 @@ package io.flow.delta.v0.delta.v0 {
       offset: Long = 0L,
       sort: String = "-shas.created_at",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Sha]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Sha]]
 
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Sha]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Sha]
 
     def deleteById(
       id: String,
@@ -3461,7 +3461,7 @@ package io.flow.delta.v0.delta.v0 {
   trait Subscriptions {
     /**
      * Search subscriptions. Always paginated.
-     * 
+     *
      * @param id Filter by any one of these ids
      * @param userId Find subscriptions for this user.
      * @param identifier Find subscriptions associated with this user identifier. Exact match
@@ -3473,12 +3473,12 @@ package io.flow.delta.v0.delta.v0 {
       id: _root_.scala.Option[Seq[String]] = None,
       userId: _root_.scala.Option[String] = None,
       identifier: _root_.scala.Option[String] = None,
-      publication: _root_.scala.Option[io.flow.delta.v0.delta.v0.models.Publication] = None,
+      publication: _root_.scala.Option[io.flow.delta.v0.models.Publication] = None,
       limit: Long = 25L,
       offset: Long = 0L,
       sort: String = "-subscriptions.created_at",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Subscription]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Subscription]]
 
     /**
      * Returns information about a specific subscription.
@@ -3486,18 +3486,18 @@ package io.flow.delta.v0.delta.v0 {
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Subscription]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Subscription]
 
     /**
      * Create a new subscription.
-     * 
+     *
      * @param identifier If a user identifier is provided, authentication is bypassed
      */
     def post(
-      subscriptionForm: io.flow.delta.v0.delta.v0.models.SubscriptionForm,
+      subscriptionForm: io.flow.delta.v0.models.SubscriptionForm,
       identifier: _root_.scala.Option[String] = None,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Subscription]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Subscription]
 
     /**
      * @param identifier If a user identifier is provided, authentication is bypassed
@@ -3525,12 +3525,12 @@ package io.flow.delta.v0.delta.v0 {
       offset: Long = 0L,
       sort: String = "-tags.sort_key",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Tag]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Tag]]
 
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Tag]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Tag]
 
     def deleteById(
       id: String,
@@ -3552,7 +3552,7 @@ package io.flow.delta.v0.delta.v0 {
       offset: Long = 0L,
       sort: String = "-tokens.created_at",
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.delta.v0.models.Token]]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[Seq[io.flow.delta.v0.models.Token]]
 
     /**
      * Used to fetch one token
@@ -3560,15 +3560,15 @@ package io.flow.delta.v0.delta.v0 {
     def getById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Token]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Token]
 
     /**
      * Create a new API token for this user
      */
     def post(
-      tokenForm: io.flow.delta.v0.delta.v0.models.TokenForm,
+      tokenForm: io.flow.delta.v0.models.TokenForm,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.Token]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.Token]
 
     def deleteById(
       id: String,
@@ -3580,7 +3580,7 @@ package io.flow.delta.v0.delta.v0 {
     /**
      * Search for a specific user. You must specify at least 1 parameter - either a id
      * or email - and will receive back either 0 or 1 users.
-     * 
+     *
      * @param id Find user with this id. Exact match
      * @param email Find user with this email address. Case in-sensitive. Exact match
      * @param identifier Find user associated with this randomly generated identifier. Exact match
@@ -3609,13 +3609,13 @@ package io.flow.delta.v0.delta.v0 {
     def getIdentifierById(
       id: String,
       requestHeaders: Seq[(String, String)] = Nil
-    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.delta.v0.models.UserIdentifier]
+    )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.delta.v0.models.UserIdentifier]
 
     /**
      * Create a new user.
      */
     def post(
-      userForm: io.flow.delta.v0.delta.v0.models.UserForm,
+      userForm: io.flow.delta.v0.models.UserForm,
       requestHeaders: Seq[(String, String)] = Nil
     )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.common.v0.models.User]
   }
@@ -3624,7 +3624,7 @@ package io.flow.delta.v0.delta.v0 {
 
     import io.flow.common.v0.models.json._
     import io.flow.delta.config.v0.models.json._
-    import io.flow.delta.v0.delta.v0.models.json._
+    import io.flow.delta.v0.models.json._
     import io.flow.error.v0.models.json._
     import io.flow.github.v0.models.json._
 
@@ -3632,7 +3632,7 @@ package io.flow.delta.v0.delta.v0 {
       response: play.api.libs.ws.WSResponse,
       message: Option[String] = None
     ) extends Exception(message.getOrElse(response.status + ": " + response.body)){
-      lazy val genericError = _root_.io.flow.delta.v0.delta.v0.Client.parseJson("io.flow.error.v0.models.GenericError", response, _.validate[io.flow.error.v0.models.GenericError])
+      lazy val genericError = _root_.io.flow.delta.v0.Client.parseJson("io.flow.error.v0.models.GenericError", response, _.validate[io.flow.error.v0.models.GenericError])
     }
 
     final case class UnitResponse(status: Int) extends Exception(s"HTTP $status")
