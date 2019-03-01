@@ -26,7 +26,7 @@ object Defaults {
     dependencies = Nil,
     version = None,
     healthcheckUrl = None,
-    allowDowntime = Some(false)
+    allowDowntime = None
   )
 
   val Config = models.ConfigProject(
