@@ -79,7 +79,7 @@ class ParserSpec extends PlaySpec {
             stages = BuildStage.all.filter { _ != BuildStage.Scale },
             dependencies = Seq("api"),
             remoteLogging = Some(true), // defaults to true
-            allowDowntime = Some(false) // defaults to false
+            allowDowntime = None
           )
         )
       )
