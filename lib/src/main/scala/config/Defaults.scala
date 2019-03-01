@@ -25,7 +25,8 @@ object Defaults {
     stages = models.BuildStage.all,
     dependencies = Nil,
     version = None,
-    healthcheckUrl = None
+    healthcheckUrl = None,
+    allowDowntime = Some(false)
   )
 
   val Config = models.ConfigProject(
