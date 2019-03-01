@@ -127,7 +127,7 @@ case class Parser() {
         healthcheckUrl = map.get("healthcheck.url"),
         crossZoneLoadBalancing = map.get("cross.zone.load.balancing").map(_.toBoolean),
         containerMemory = map.get("container.memory").map(_.toLong),
-        allowDowntime = Some(map.get("allow.downtime").map(_.toBoolean).getOrElse(true))
+        allowDowntime = Some(map.get("allow.downtime").map(_.toBoolean).getOrElse(false))
       )
     }
 
