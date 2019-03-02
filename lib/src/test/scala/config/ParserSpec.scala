@@ -78,7 +78,8 @@ class ParserSpec extends PlaySpec {
             portHost = 8000,
             stages = BuildStage.all.filter { _ != BuildStage.Scale },
             dependencies = Seq("api"),
-            remoteLogging = Some(true) // defaults to true
+            remoteLogging = Some(true), // defaults to true
+            allowDowntime = None
           )
         )
       )

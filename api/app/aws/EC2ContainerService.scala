@@ -189,7 +189,7 @@ case class EC2ContainerService @javax.inject.Inject() (
   ): Future[Unit] = {
     for {
       taskDef <- registerTaskDefinition(settings, org, build, cfg, imageVersion)
-      _ <- createOrUpdateService(settings, org, build, imageVersion, taskDef, desiredCount)
+      _ <- createOrUpdateService(settings, org, build, cfg, imageVersion, taskDef, desiredCount)
     } yield {
       // Nothing
     }
@@ -409,6 +409,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     settings: Settings,
     org: Organization,
     build: Build,
+    cfg: config.Build,
     imageVersion: String,
     taskDefinition: String,
     desiredCount: Long
@@ -430,7 +431,12 @@ case class EC2ContainerService @javax.inject.Inject() (
         withKeyValue("load_balancer_name", loadBalancerName)
 
       // allows ECS to deploy new task definitions
-      val (serviceDesiredCount,minimumHealthyPercent) = (desiredCount.toInt, 50)
+      val serviceDesiredCount = desiredCount.toInt
+      val minimumHealthyPercent = if (cfg.allowDowntime.getOrElse(false)) {
+        0
+      } else {
+        50
+      }
 
       log.info(s"AWS EC2ContainerService describeServices")
       val resp = client.describeServices(
