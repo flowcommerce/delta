@@ -10,6 +10,7 @@ cache:
 services:
   - docker
 before_script:
+  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker run -d -p 127.0.0.1:6099:5432 flowcommerce/delta-postgresql:latest
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean compile test doc
