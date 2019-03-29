@@ -71,6 +71,7 @@ lazy val api = project
       "io.flow" %% "lib-play-graphite-play26" % "0.0.71",
       "io.flow" %% "lib-log" % "0.0.55",
       "io.flow" %% "lib-akka" % "0.1.2",
+      "io.flow" %% "lib-usage" % "0.0.80",
       "com.github.ghik" %% "silencer-lib" % "1.3.0" % Provided,
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.3.0"),
     ),
