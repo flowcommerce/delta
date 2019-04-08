@@ -13,7 +13,7 @@ before_script:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
   - docker run -d -p 127.0.0.1:6099:5432 flowcommerce/delta-postgresql:latest
 script:
-  - sbt ++$TRAVIS_SCALA_VERSION clean compile flowLint test doc
+  - sbt ++$TRAVIS_SCALA_VERSION clean flowLint test doc
   # Tricks to avoid unnecessary cache updates
   - find $HOME/.sbt -name "*.lock" | xargs rm
   - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm
