@@ -1,7 +1,8 @@
 building docker images
 ======================
-go run ~/go/src/github.com/flowcommerce/tools/dev.go tag --label micro
-go run ~/go/src/github.com/flowcommerce/tools/dev.go build_docker_image
+
+    go run ~/go/src/github.com/flowcommerce/tools/dev.go tag --label micro
+    go run ~/go/src/github.com/flowcommerce/tools/dev.go build_docker_image
 
 api
 ===
@@ -28,7 +29,7 @@ These comments rely on the following command line tools:
 Database
 ========
 
-    See https://github.com/flowcommerce/delta-postgresql
+See https://github.com/flowcommerce/delta-postgresql
 
 Running locally
 ===============
@@ -50,14 +51,18 @@ Goto http://localhost:6090 in your browser
 Running with docker-compose
 ===========================
 
-Download development.txt from S3 and place it in the root delta folder. Then modify to add:
+Download `development.txt` from S3 and place it in the root delta folder. Then modify to add:
 
+```
 CONF_DB_DEFAULT_URL=jdbc:postgresql://db:5432/deltadb
 CONF_DELTA_API_HOST=http://api:9000
 CONF_DELTA_WWW_HOST=http://localhost:6090
+```
 
+```
 $ docker-compose build
 $ docker-compose up
+```
 
 Goto http://localhost:6090 in your browser
 
