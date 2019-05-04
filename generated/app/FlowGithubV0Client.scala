@@ -2120,10 +2120,11 @@ package io.flow.github.v0 {
         ref: String,
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.models.Ref] = {
-        _executeRequest("GET", s"/repos/${play.utils.UriEncoding.encodePathSegment(owner, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(repo, "UTF-8")}/git/refs/${play.utils.UriEncoding.encodePathSegment(ref, "UTF-8")}", requestHeaders = requestHeaders).map {
+        val finalPath = s"/repos/${play.utils.UriEncoding.encodePathSegment(owner, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(repo, "UTF-8")}/git/refs/${play.utils.UriEncoding.encodePathSegment(ref, "UTF-8")}"
+        _executeRequest("GET", finalPath, requestHeaders = requestHeaders).map {
           case r if r.status == 200 => _root_.io.flow.github.v0.Client.parseJson("io.flow.github.v0.models.Ref", r, _.validate[io.flow.github.v0.models.Ref])
           case r if r.status == 404 => throw io.flow.github.v0.errors.UnitResponse(r.status)
-          case r => throw io.flow.github.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404")
+          case r => throw io.flow.github.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 200, 404. path: >>>[$finalPath]<<<")
         }
       }
 
