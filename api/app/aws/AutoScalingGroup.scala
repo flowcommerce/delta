@@ -248,7 +248,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     val setupSumoCollector = Seq(
       """mkdir -p /etc/sumo""",
       s"""echo '{"api.version":"v1","sources":[{"sourceType":"DockerLog","name":"ecs_docker_logs","category":"${id}_docker_logs","uri":"unix:///var/run/docker.sock","allContainers":true,"collectEvents":false}]}' > /etc/sumo/sources.json""",
-      """curl -o /tmp/sumo.sh https://collectors.sumologic.com/rest/download/linux/64""",
+      """curl -o /tmp/sumo.sh https://collectors.sumologic.com/rest/download/linux/64?version=19.245-6""",
       """chmod +x /tmp/sumo.sh""",
       """export PRIVATE_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)""",
       s"""sh /tmp/sumo.sh -q -Vsumo.accessid="${sumoId}" -Vsumo.accesskey="${sumoKey}" -VsyncSources="/etc/sumo/sources.json" -Vcollector.name="${id}-""" + "$PRIVATE_IP\""
