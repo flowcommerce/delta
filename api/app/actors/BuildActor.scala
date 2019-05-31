@@ -278,8 +278,8 @@ class BuildActor @javax.inject.Inject() (
     val jvmMemory = bc.memory.map(_.toInt).getOrElse(instanceMemorySettings.jvm)
     val containerMemory = bc.containerMemory.map(_.toInt).getOrElse(instanceMemorySettings.container)
 
-    // if cross_zone_load_balancing is pass in the .delta file, use that
-    val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(false)
+    // if cross_zone_load_balancing is passed in the .delta file, use that
+    val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(true)
 
     val asgMinSize = config.requiredInt("aws.asg.min.size")
     val asgMaxSize = config.requiredInt("aws.asg.max.size")
