@@ -170,7 +170,10 @@ case class EC2ContainerService @javax.inject.Inject() (
     logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).info(s"AWS EC2ContainerService createCluster")
 
     try {
-      client.createCluster(new CreateClusterRequest().withClusterName(name))
+      val clusterDoesNotExist = client.describeClusters(new DescribeClustersRequest().withClusters(name)).getClusters.isEmpty
+      if (clusterDoesNotExist) {
+        client.createCluster(new CreateClusterRequest().withClusterName(name))
+      }
     } catch {
       case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).error(s"Error creating cluster", e)
     }
