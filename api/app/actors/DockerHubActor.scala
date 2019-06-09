@@ -18,7 +18,7 @@ import play.api.libs.ws.WSClient
 
 import scala.collection.mutable
 import scala.concurrent.duration._
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 
 object DockerHubActor {
 
@@ -45,7 +45,8 @@ object DockerHubActor {
 
 }
 
-class DockerHubActor @javax.inject.Inject() (
+//noinspection ActorMutableStateInspection
+class DockerHubActor @javax.inject.Inject()(
   @com.google.inject.assistedinject.Assisted buildId: String,
   override val buildsDao: BuildsDao,
   override val configsDao: ConfigsDao,
@@ -62,8 +63,8 @@ class DockerHubActor @javax.inject.Inject() (
   override val logger: RollbarLogger
 ) extends Actor with DataBuild {
 
-  private[this] implicit val ec = system.dispatchers.lookup("dockerhub-actor-context")
-  private[this] implicit val configuredRollbar = logger.fingerprint("DockerHubActor")
+  private[this] implicit val ec: ExecutionContext = system.dispatchers.lookup("dockerhub-actor-context")
+  private[this] implicit val configuredRollbar: RollbarLogger = logger.fingerprint("DockerHubActor")
 
   private[this] val client = new Client(ws = wSClient)
 
@@ -72,7 +73,7 @@ class DockerHubActor @javax.inject.Inject() (
 
   private[this] val monitors = mutable.HashMap[String, Cancellable]()
 
-  def receive = SafeReceive.withLogUnhandled {
+  def receive: Receive = SafeReceive.withLogUnhandled {
     case DockerHubActor.Messages.Setup =>
       setBuildId(buildId)
 
@@ -83,7 +84,7 @@ class DockerHubActor @javax.inject.Inject() (
       handleMonitorEvent(version, start)
   }
 
-  private def handleBuildEvent(version: String) = {
+  private def handleBuildEvent(version: String): Unit = {
     withOrganization { org =>
       withProject { project =>
         withEnabledBuild { build =>
@@ -98,54 +99,56 @@ class DockerHubActor @javax.inject.Inject() (
 
 
 
-  private def handleMonitorEvent(version: String, start: DateTime) = {
+  private def handleMonitorEvent(version: String, start: DateTime): Unit = {
     withEnabledBuild { build =>
       withOrganization { org =>
-        val imageFullName = BuildNames.dockerImageName(org.docker, build, requiredBuildConfig, version)
+        withBuildConfig { buildConfig =>
+          val imageFullName = BuildNames.dockerImageName(org.docker, build, buildConfig, version)
 
-        val dockerHost = DockerHost(requiredBuildConfig)
+          val dockerHost = DockerHost(buildConfig)
 
-        val result = dockerHost match {
-          case Ecr => monitorECRVersions(build)
-          case DockerHub => monitorDockerHubVersions(build)
-        }
-
-        val projectId = build.project.id
-
-        result match {
-          case SupervisorResult.Error(d, e) => {
-            eventLogProcessor.error(s"Error refreshing $dockerHost image $imageFullName: $d", e, log(projectId))
-          }
-          case _ =>
-        }
-
-
-        imagesDao.findByBuildIdAndVersion(build.id, version) match {
-          case Some(image) => {
-            eventLogProcessor.completed(s"Docker hub image $imageFullName is ready - id[${image.id}]", log = log(projectId))
-            // Don't fire an event; the ImagesDao will already have
-            // raised ImageCreated
+          val result = dockerHost match {
+            case Ecr => monitorECRVersions(build, buildConfig)
+            case DockerHub => monitorDockerHubVersions(build, buildConfig)
           }
 
-          case None => {
-            if (start.plusSeconds(timeoutSeconds).isBefore(new DateTime)) {
-              eventLogProcessor.error(s"Timeout after $timeoutSeconds seconds. Docker image $imageFullName was not built", log = log(projectId))
+          val projectId = build.project.id
 
-            } else {
-              eventLogProcessor.checkpoint(s"$dockerHost image $imageFullName is not ready. Will check again in $intervalSeconds seconds", log = log(projectId))
-              //cancel any pending waits and schedule a new, later wait for this version
-              val clog = logger.withKeyValue("build_id", build.id)
-                .withKeyValue("version", version)
-                .fingerprint("DockerHubActor.cancelSchedule")
-              monitors.get(version).foreach{
-                clog.info("Cancelling scheduled monitor message")
-                _.cancel()
+          result match {
+            case SupervisorResult.Error(d, e) => {
+              eventLogProcessor.error(s"Error refreshing $dockerHost image $imageFullName: $d", e, log(projectId))
+            }
+            case _ =>
+          }
+
+
+          imagesDao.findByBuildIdAndVersion(build.id, version) match {
+            case Some(image) => {
+              eventLogProcessor.completed(s"Docker hub image $imageFullName is ready - id[${image.id}]", log = log(projectId))
+              // Don't fire an event; the ImagesDao will already have
+              // raised ImageCreated
+            }
+
+            case None => {
+              if (start.plusSeconds(timeoutSeconds).isBefore(new DateTime)) {
+                eventLogProcessor.error(s"Timeout after $timeoutSeconds seconds. Docker image $imageFullName was not built", log = log(projectId))
+
+              } else {
+                eventLogProcessor.checkpoint(s"$dockerHost image $imageFullName is not ready. Will check again in $intervalSeconds seconds", log = log(projectId))
+                //cancel any pending waits and schedule a new, later wait for this version
+                val clog = logger.withKeyValue("build_id", build.id)
+                  .withKeyValue("version", version)
+                  .fingerprint("DockerHubActor.cancelSchedule")
+                monitors.get(version).foreach {
+                  clog.info("Cancelling scheduled monitor message")
+                  _.cancel()
+                }
+                val cancellable = system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
+                  clog.info("Sending new monitor message to self")
+                  self ! DockerHubActor.Messages.Monitor(version, start)
+                }
+                monitors += version -> cancellable
               }
-              val cancellable = system.scheduler.scheduleOnce(Duration(intervalSeconds, "seconds")) {
-                clog.info("Sending new monitor message to self")
-                self ! DockerHubActor.Messages.Monitor(version, start)
-              }
-              monitors += version -> cancellable
             }
           }
         }
@@ -153,13 +156,13 @@ class DockerHubActor @javax.inject.Inject() (
     }
   }
 
-  private def monitorECRVersions(build: Build): SupervisorResult = {
-    syncECRImages.run(build, requiredBuildConfig)
+  private def monitorECRVersions(build: Build, buildConfig: BuildConfig): SupervisorResult = {
+    syncECRImages.run(build, buildConfig)
   }
 
-  private def monitorDockerHubVersions(build: Build): SupervisorResult = {
+  private def monitorDockerHubVersions(build: Build, buildConfig: BuildConfig): SupervisorResult = {
     Await.result(
-      syncDockerImages.run(build, requiredBuildConfig),
+      syncDockerImages.run(build, buildConfig),
       Duration.Inf
     )
   }
@@ -189,9 +192,9 @@ class DockerHubActor @javax.inject.Inject() (
     }
   }
 
-  def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, config: BuildConfig): DockerBuildForm = {
-    val fullName = BuildNames.dockerImageName(docker, build, requiredBuildConfig)
-    val buildTags = createBuildTags(config.dockerfile)
+  def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, buildConfig: BuildConfig): DockerBuildForm = {
+    val fullName = BuildNames.dockerImageName(docker, build, buildConfig)
+    val buildTags = createBuildTags(buildConfig.dockerfile)
 
     val vcsRepoName = io.flow.delta.api.lib.GithubUtil.parseUri(scmsUri) match {
       case Left(error) => {

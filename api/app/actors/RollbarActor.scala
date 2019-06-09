@@ -15,7 +15,7 @@ import javax.inject.{Inject, Singleton}
 import play.api.{Application, Mode}
 import play.api.libs.ws.WSClient
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 object RollbarActor {
@@ -40,8 +40,8 @@ class RollbarActor @Inject()(
   val config: ApplicationConfig
 ) extends Actor with ActorLogging with Scheduler {
 
-  private implicit val ec = system.dispatchers.lookup("rollbar-actor-context")
-  private[this] implicit val configuredRollbar = logger.fingerprint("RollbarActor")
+  private implicit val ec: ExecutionContext = system.dispatchers.lookup("rollbar-actor-context")
+  private[this] implicit val configuredRollbar: RollbarLogger = logger.fingerprint("RollbarActor")
 
   private val rollbar = new Rollbar(ws)
 
@@ -64,7 +64,7 @@ class RollbarActor @Inject()(
 
   def receive = SafeReceive.withLogUnhandled {
 
-    case msg @ RollbarActor.Messages.Deployment(buildId, diffs) =>
+    case RollbarActor.Messages.Deployment(buildId, diffs) =>
       accessToken.foreach { _ =>
         buildsDao.findById(Authorization.All, buildId) match {
           case None => throw new IllegalArgumentException(buildId)
@@ -72,27 +72,39 @@ class RollbarActor @Inject()(
             diffs.headOption match { // do we ever have more than 1 statediff?
               case None => throw new IllegalArgumentException(diffs.toString)
               case Some(diff) =>
-
                 // log to determine whether we should only post when lastInstances == 0
-                configuredRollbar.withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).withKeyValue("diffs", diffs.map(_.toString)).warn(s"got deploy")
+                val log = configuredRollbar
+                  .withKeyValue("config", ConfigName)
+                  .withKeyValue("project", build.project.id)
+
+                log
+                  .withKeyValue("project_id", build.project.id)
+                  .withKeyValue("build_id", build.id)
+                  .withKeyValue("build_name", build.name)
+                  .withKeyValue("version", diff.versionName)
+                  .withKeyValue("desired_instances", diff.desiredInstances)
+                  .withKeyValue("last_instances", diff.lastInstances)
+                  .info("got deploy")
 
                 if (diff.desiredInstances > diff.lastInstances) { // scale up
                   tagsDao.findByProjectIdAndName(Authorization.All, build.project.id, diff.versionName) match {
-                    case None =>
-                    case Some(tag) =>
-
+                    case None => {
+                      log.warn("Could not find tag for project and version")
+                    }
+                    case Some(tag) => {
                       if (projectCache.containsKey(build.project.id)) {
                         rollbar.deploys.post(Deploy(
                           accessToken = projectCache.get(build.project.id).postAccessKey,
                           environment = FlowEnvironment.Current.toString,
                           revision = tag.hash
                         )) onComplete {
-                          case Success(_) => logger.info(s"success posting $msg")
-                          case Failure(e) => logger.error(s"failed to post deploy $msg", e)
+                          case Success(_) => log.info(s"Rollbar: success posting deploy")
+                          case Failure(e) => log.warn(s"Rollbar: Failed to post deploy", e)
                         }
                       } else {
-                        configuredRollbar.withKeyValue("config", ConfigName).withKeyValue("project", build.project.id).warn(s"no project or access key for project exist in rollbar")
+                        log.warn("Rollbar: no project or access key exists in rollbar - cannot post deploy")
                       }
+                    }
                   }
                 }
             }
