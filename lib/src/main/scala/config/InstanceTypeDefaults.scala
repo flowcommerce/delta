@@ -9,6 +9,10 @@ case class MemoryDefault(
   jvm: Int        // jvm xmx setting for app running inside container
 )
 
+case class EbsDefault(
+  ebs: Int
+)
+
 object InstanceTypeDefaults {
 
   // see for memory settings (in GB): https://aws.amazon.com/ec2/instance-types/
@@ -46,5 +50,11 @@ object InstanceTypeDefaults {
       case InstanceType.UNDEFINED(_) => MemoryDefault(1000, 750, 675)
     }
   }
+
+  def ebs(typ: InstanceType): EbsDefault =
+    EbsDefault(
+      // instance memory * 1.5 to allow heap dumps
+      ebs = math.max(10000, math.ceil(memory(typ).instance * 1.5).toInt)
+    )
 
 }

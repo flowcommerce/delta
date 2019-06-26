@@ -22,6 +22,7 @@ case class DefaultSettings(
   override val jvmMemory: Int, // in MB
   override val containerMemory: Int, // in MB
   override val instanceMemory: Int, // in MB
+  override val ebsMemory: Int, // in MB
   override val portContainer: Int,
   override val portHost: Int,
   override val version: String,
@@ -91,6 +92,8 @@ trait Settings {
   val containerMemory: Int
 
   val instanceMemory: Int
+
+  val ebsMemory: Int
 
   val portContainer: Int
 

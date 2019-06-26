@@ -267,6 +267,8 @@ class BuildActor @javax.inject.Inject() (
     val jvmMemory = bc.memory.map(_.toInt).getOrElse(instanceMemorySettings.jvm)
     val containerMemory = bc.containerMemory.map(_.toInt).getOrElse(instanceMemorySettings.container)
 
+    val ebs = InstanceTypeDefaults.ebs(instanceType)
+
     // if cross_zone_load_balancing is passed in the .delta file, use that
     val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(true)
 
@@ -294,6 +296,7 @@ class BuildActor @javax.inject.Inject() (
       jvmMemory = jvmMemory,
       containerMemory = containerMemory,
       instanceMemory = instanceMemorySettings.instance,
+      ebsMemory = ebs.ebs,
       portContainer = bc.portContainer,
       portHost = bc.portHost,
       version = bc.version.getOrElse("1.0"),  // default delta version
