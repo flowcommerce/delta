@@ -267,7 +267,7 @@ class BuildActor @javax.inject.Inject() (
     val jvmMemory = bc.memory.map(_.toInt).getOrElse(instanceMemorySettings.jvm)
     val containerMemory = bc.containerMemory.map(_.toInt).getOrElse(instanceMemorySettings.container)
 
-    val ebs = InstanceTypeDefaults.ebs(instanceType)
+    val ebs = InstanceTypeDefaults.ebs(jvmMemory)
 
     // if cross_zone_load_balancing is passed in the .delta file, use that
     val crossZoneLoadBalancing = bc.crossZoneLoadBalancing.getOrElse(true)

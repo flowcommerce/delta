@@ -51,10 +51,9 @@ object InstanceTypeDefaults {
     }
   }
 
-  def ebs(typ: InstanceType): EbsDefault =
+  def ebs(jvmMemoryMB: Int): EbsDefault =
     EbsDefault(
-      // instance memory * 1.5 to allow heap dumps
-      ebs = math.max(10000, math.ceil(memory(typ).instance * 1.5).toInt)
+      ebs = math.max(10000, math.ceil(jvmMemoryMB * 1.5).toInt)
     )
 
 }
