@@ -48,12 +48,12 @@ class AutoScalingGroup @javax.inject.Inject() (
   /**
   * Defined Values, probably make object vals somewhere?
   */
-  val launchConfigBlockDeviceMappings: util.List[BlockDeviceMapping] = Seq(
+  def launchConfigBlockDeviceMappings(settings: Settings): util.List[BlockDeviceMapping] = Seq(
     new BlockDeviceMapping()
       .withDeviceName("/dev/xvda")
       .withEbs(new Ebs()
         .withDeleteOnTermination(true)
-        .withVolumeSize(16)
+        .withVolumeSize(math.ceil(settings.ebsMemory / 1000D).toInt)
         .withVolumeType("gp2")
       ),
     new BlockDeviceMapping()
@@ -81,7 +81,7 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withLaunchConfigurationName(name)
           .withAssociatePublicIpAddress(false)
           .withIamInstanceProfile(settings.launchConfigIamInstanceProfile)
-          .withBlockDeviceMappings(launchConfigBlockDeviceMappings)
+          .withBlockDeviceMappings(launchConfigBlockDeviceMappings(settings))
           .withSecurityGroups(Seq(settings.lcSecurityGroup).asJava)
           .withKeyName(settings.ec2KeyName)
           .withImageId(settings.launchConfigImageId)
