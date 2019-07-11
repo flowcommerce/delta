@@ -2,10 +2,10 @@ package io.flow.delta.aws
 
 import java.util
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.ec2.{AmazonEC2, AmazonEC2ClientBuilder}
-import com.amazonaws.services.autoscaling.{AmazonAutoScaling, AmazonAutoScalingClientBuilder}
-import com.amazonaws.services.autoscaling.model._
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.services.ec2.Ec2AsyncClient
+import software.amazon.awssdk.services.autoscaling.AutoScalingAsyncClient
+import software.amazon.awssdk.services.autoscaling.model._
 import io.flow.log.RollbarLogger
 import io.flow.util.Config
 import sun.misc.BASE64Encoder
@@ -31,17 +31,15 @@ class AutoScalingGroup @javax.inject.Inject() (
   private[this] lazy val awsOpsworksLayerId = config.requiredString("aws.opsworks.layer.id")
   private[this] lazy val awsOpsworksSnsTopicArn = config.requiredString("aws.opsworks.sns.topic.arn")
 
-  lazy val ec2Client: AmazonEC2 = AmazonEC2ClientBuilder.
-    standard().
-    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
-    withClientConfiguration(configuration.aws).
-    build()
+  lazy val ec2Client: Ec2AsyncClient = Ec2AsyncClient.builder.
+    credentialsProvider(StaticCredentialsProvider.create(credentials.aws)).
+    overrideConfiguration(configuration.aws).
+    build
 
-  lazy val client: AmazonAutoScaling = AmazonAutoScalingClientBuilder.
-    standard().
-    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
-    withClientConfiguration(configuration.aws).
-    build()
+  lazy val client: AutoScalingAsyncClient = AutoScalingAsyncClient.builder.
+    credentialsProvider(StaticCredentialsProvider.create(credentials.aws)).
+    overrideConfiguration(configuration.aws).
+    build
 
   lazy val encoder = new BASE64Encoder()
 
@@ -49,21 +47,23 @@ class AutoScalingGroup @javax.inject.Inject() (
   * Defined Values, probably make object vals somewhere?
   */
   def launchConfigBlockDeviceMappings(settings: Settings): util.List[BlockDeviceMapping] = Seq(
-    new BlockDeviceMapping()
-      .withDeviceName("/dev/xvda")
-      .withEbs(new Ebs()
-        .withDeleteOnTermination(true)
-        .withVolumeSize(math.ceil(settings.ebsMemory / 1000D).toInt)
-        .withVolumeType("gp2")
-      ),
-    new BlockDeviceMapping()
-      .withDeviceName("/dev/xvdcz")
-      .withEbs(new Ebs()
-        .withDeleteOnTermination(true)
-        .withEncrypted(false)
-        .withVolumeSize(22)
-        .withVolumeType("gp2")
-      )
+    BlockDeviceMapping.builder
+      .deviceName("/dev/xvda")
+      .ebs(Ebs.builder
+        .deleteOnTermination(true)
+        .volumeSize(math.ceil(settings.ebsMemory / 1000D).toInt)
+        .volumeType("gp2")
+        .build
+      ).build,
+    BlockDeviceMapping.builder
+      .deviceName("/dev/xvdcz")
+      .ebs(Ebs.builder
+        .deleteOnTermination(true)
+        .encrypted(false)
+        .volumeSize(22)
+        .volumeType("gp2")
+        .build
+      ).build
   ).asJava
 
   def getLaunchConfigurationName(settings: Settings, id: String) =
@@ -77,17 +77,18 @@ class AutoScalingGroup @javax.inject.Inject() (
     try {
       logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).info(s"AWS AutoScalingGroup createLaunchConfiguration")
       client.createLaunchConfiguration(
-        new CreateLaunchConfigurationRequest()
-          .withLaunchConfigurationName(name)
-          .withAssociatePublicIpAddress(false)
-          .withIamInstanceProfile(settings.launchConfigIamInstanceProfile)
-          .withBlockDeviceMappings(launchConfigBlockDeviceMappings(settings))
-          .withSecurityGroups(Seq(settings.lcSecurityGroup).asJava)
-          .withKeyName(settings.ec2KeyName)
-          .withImageId(settings.launchConfigImageId)
-          .withInstanceType(settings.launchConfigInstanceType)
-          .withUserData(encoder.encode(lcUserData(id, settings).getBytes))
-      )
+        CreateLaunchConfigurationRequest.builder
+          .launchConfigurationName(name)
+          .associatePublicIpAddress(false)
+          .iamInstanceProfile(settings.launchConfigIamInstanceProfile)
+          .blockDeviceMappings(launchConfigBlockDeviceMappings(settings))
+          .securityGroups(Seq(settings.lcSecurityGroup).asJava)
+          .keyName(settings.ec2KeyName)
+          .imageId(settings.launchConfigImageId)
+          .instanceType(settings.launchConfigInstanceType)
+          .userData(encoder.encode(lcUserData(id, settings).getBytes))
+          .build
+      ).get
     } catch {
       case _: AlreadyExistsException => println(s"Launch Configuration '$name' already exists")
     }
@@ -101,10 +102,11 @@ class AutoScalingGroup @javax.inject.Inject() (
 
     try {
       client.deleteAutoScalingGroup(
-        new DeleteAutoScalingGroupRequest()
-          .withAutoScalingGroupName(name)
-          .withForceDelete(true)
-      )
+        DeleteAutoScalingGroupRequest.builder
+          .autoScalingGroupName(name)
+          .forceDelete(true)
+          .build
+      ).get
     } catch {
       case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).withKeyValue("name", name).error(s"Error deleting autoscaling group", e)
     }
@@ -117,7 +119,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).withKeyValue("name", name).info(s"AWS delete launch config")
 
     try {
-      client.deleteLaunchConfiguration(new DeleteLaunchConfigurationRequest().withLaunchConfigurationName(name))
+      client.deleteLaunchConfiguration(DeleteLaunchConfigurationRequest.builder.launchConfigurationName(name).build).get
     } catch {
       case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("id", id).withKeyValue("name", name).error(s"Error deleting launch configuration", e)
     }
@@ -129,15 +131,15 @@ class AutoScalingGroup @javax.inject.Inject() (
     val name = getAutoScalingGroupName(id)
 
     client.describeAutoScalingGroups(
-      new DescribeAutoScalingGroupsRequest()
-        .withAutoScalingGroupNames(Seq(name).asJava)
-    ).getAutoScalingGroups.asScala.headOption match {
+      DescribeAutoScalingGroupsRequest.builder
+        .autoScalingGroupNames(Seq(name).asJava).build
+    ).get.autoScalingGroups.asScala.headOption match {
       case None => {
         create(settings, name, launchConfigName, loadBalancerName)
       }
       case Some(asg) => {
-        if (asg.getLaunchConfigurationName != launchConfigName) {
-          val oldLaunchConfigurationName = asg.getLaunchConfigurationName
+        if (asg.launchConfigurationName != launchConfigName) {
+          val oldLaunchConfigurationName = asg.launchConfigurationName
           update(name, launchConfigName, oldLaunchConfigurationName)
         }
       }
@@ -151,37 +153,41 @@ class AutoScalingGroup @javax.inject.Inject() (
       logger.fingerprint("AutoScalingGroup").withKeyValue("launchConfigName", launchConfigName).withKeyValue("name", name).info(s"AWS AutoScalingGroup createAutoScalingGroup")
 
       client.createAutoScalingGroup(
-        new CreateAutoScalingGroupRequest()
-          .withAutoScalingGroupName(name)
-          .withLaunchConfigurationName(launchConfigName)
-          .withLoadBalancerNames(Seq(loadBalancerName).asJava)
-          .withVPCZoneIdentifier(settings.asgSubnets.mkString(","))
-          .withNewInstancesProtectedFromScaleIn(false)
-          .withHealthCheckType("EC2")
-          .withHealthCheckGracePeriod(settings.asgHealthCheckGracePeriod)
-          .withMinSize(settings.asgMinSize)
-          .withMaxSize(settings.asgMaxSize)
-          .withDesiredCapacity(settings.asgDesiredSize)
+        CreateAutoScalingGroupRequest.builder
+          .autoScalingGroupName(name)
+          .launchConfigurationName(launchConfigName)
+          .loadBalancerNames(Seq(loadBalancerName).asJava)
+          .vpcZoneIdentifier(settings.asgSubnets.mkString(","))
+          .newInstancesProtectedFromScaleIn(false)
+          .healthCheckType("EC2")
+          .healthCheckGracePeriod(settings.asgHealthCheckGracePeriod)
+          .minSize(settings.asgMinSize)
+          .maxSize(settings.asgMaxSize)
+          .desiredCapacity(settings.asgDesiredSize)
+          .build
       )
       // Add an opsworks_stack_id tag to the instance which is used by a lambda
       // function attached to SNS to deregister from Opsworks.
       client.createOrUpdateTags(
-        new CreateOrUpdateTagsRequest()
-          .withTags(
-            new Tag()
-              .withResourceId(name)
-              .withResourceType("auto-scaling-group")
-              .withKey("opsworks_stack_id")
-              .withValue(awsOpsworksStackId)
-              .withPropagateAtLaunch(true)
+        CreateOrUpdateTagsRequest.builder
+          .tags(
+            Tag.builder
+              .resourceId(name)
+              .resourceType("auto-scaling-group")
+              .key("opsworks_stack_id")
+              .value(awsOpsworksStackId)
+              .propagateAtLaunch(true)
+              .build
           )
+          .build
       )
       client.putNotificationConfiguration(
-        new PutNotificationConfigurationRequest()
-          .withAutoScalingGroupName(name)
-          .withTopicARN(awsOpsworksSnsTopicArn)
-          .withNotificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
-      )
+        PutNotificationConfigurationRequest.builder
+          .autoScalingGroupName(name)
+          .topicARN(awsOpsworksSnsTopicArn)
+          .notificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
+          .build
+      ).get
       ()
     } catch {
       case e: Throwable => logger.fingerprint("AutoScalingGroup").withKeyValue("launchConfigName", launchConfigName).withKeyValue("name", name).error(s"Error creating autoscaling group", e)
@@ -205,29 +211,33 @@ class AutoScalingGroup @javax.inject.Inject() (
   private[this] def updateGroupLaunchConfiguration(name: String, newlaunchConfigName: String): Unit = {
     // update the auto scaling group
     client.updateAutoScalingGroup(
-      new UpdateAutoScalingGroupRequest()
-        .withAutoScalingGroupName(name)
-        .withLaunchConfigurationName(newlaunchConfigName)
+      UpdateAutoScalingGroupRequest.builder
+        .autoScalingGroupName(name)
+        .launchConfigurationName(newlaunchConfigName)
+        .build
     )
     // Add an opsworks_stack_id tag to the instance which is used by a lambda
     // function attached to SNS to deregister from Opsworks.
     client.createOrUpdateTags(
-      new CreateOrUpdateTagsRequest()
-        .withTags(
-          new Tag()
-            .withResourceId(name)
-            .withResourceType("auto-scaling-group")
-            .withKey("opsworks_stack_id")
-            .withValue(awsOpsworksStackId)
-            .withPropagateAtLaunch(true)
+      CreateOrUpdateTagsRequest.builder
+        .tags(
+          Tag.builder
+            .resourceId(name)
+            .resourceType("auto-scaling-group")
+            .key("opsworks_stack_id")
+            .value(awsOpsworksStackId)
+            .propagateAtLaunch(true)
+            .build
         )
-    )
+        .build
+    ).get
     client.putNotificationConfiguration(
-      new PutNotificationConfigurationRequest()
-        .withAutoScalingGroupName(name)
-        .withTopicARN(awsOpsworksSnsTopicArn)
-        .withNotificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
-    )
+      PutNotificationConfigurationRequest.builder
+        .autoScalingGroupName(name)
+        .topicARN(awsOpsworksSnsTopicArn)
+        .notificationTypes(Seq("autoscaling:EC2_INSTANCE_TERMINATE").asJava)
+        .build
+    ).get
     ()
   }
 

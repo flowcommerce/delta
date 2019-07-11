@@ -1,9 +1,9 @@
 package io.flow.delta.aws
 
 import akka.actor.ActorSystem
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.ecs.AmazonECSClientBuilder
-import com.amazonaws.services.ecs.model._
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.services.ecs.EcsAsyncClient
+import software.amazon.awssdk.services.ecs.model._
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Organization, Version}
 import io.flow.delta.config.v0.{models => config}
@@ -35,11 +35,10 @@ case class EC2ContainerService @javax.inject.Inject() (
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
 
-  private[this] lazy val client = AmazonECSClientBuilder.
-    standard().
-    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
-    withClientConfiguration(configuration.aws).
-    build()
+  private[this] lazy val client: EcsAsyncClient = EcsAsyncClient.builder.
+    credentialsProvider(StaticCredentialsProvider.create(credentials.aws)).
+    overrideConfiguration(configuration.aws).
+    build
 
 
   def getBaseName(org: Organization, build: Build, imageVersion: Option[String] = None): String = {
@@ -71,9 +70,9 @@ case class EC2ContainerService @javax.inject.Inject() (
       val cluster = EC2ContainerService.getClusterName(projectId)
       logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"ensureContainerAgentHealth for cluster")
       try {
-        val containerInstanceArns = client.listContainerInstances(new ListContainerInstancesRequest().withCluster(cluster)).getContainerInstanceArns
-        val result = client.describeContainerInstances(new DescribeContainerInstancesRequest().withCluster(cluster).withContainerInstances(containerInstanceArns))
-        val badEc2Instances = result.getContainerInstances.asScala.filter(_.getAgentConnected == false).map(_.getEc2InstanceId)
+        val containerInstanceArns = client.listContainerInstances(ListContainerInstancesRequest.builder.cluster(cluster).build).get.containerInstanceArns
+        val result = client.describeContainerInstances(DescribeContainerInstancesRequest.builder.cluster(cluster).containerInstances(containerInstanceArns).build).get
+        val badEc2Instances = result.containerInstances.asScala.filter(_.agentConnected == false).map(_.ec2InstanceId)
         if (badEc2Instances.nonEmpty) {
           //ec2Client.terminateInstances(new TerminateInstancesRequest().withInstanceIds(badEc2Instances.asJava))
           logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).withKeyValue("instances", badEc2Instances).info(s"FlowDeltaError - ensureContainerAgentHealth cluster are unhealthy - please take a look")
@@ -98,18 +97,18 @@ case class EC2ContainerService @javax.inject.Inject() (
           case Nil => // do nothing
           case arns => {
             getServicesInfo(cluster, arns).foreach { service =>
-              service.getDeployments.asScala.headOption match {
+              service.deployments.asScala.headOption match {
                 case None => // do nothing
                 case Some(deployment) => {
                   // if there are no instances running, desired count is zero,
                   // and has been over 1 day since the last deployment of the service
                   // let's just delete the service
-                  val eventDateTime = new DateTime(deployment.getCreatedAt)
+                  val eventDateTime = new DateTime(deployment.createdAt)
                   val oneDayAgo = new DateTime().minusDays(1)
 
-                  if (service.getDesiredCount == 0 && service.getRunningCount == 0 && eventDateTime.isBefore(oneDayAgo)) {
-                    logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).withKeyValue("service",service.getServiceName).info(s"AWS EC2ContainerService deleteService")
-                    client.deleteService(new DeleteServiceRequest().withCluster(cluster).withService(service.getServiceName))
+                  if (service.desiredCount == 0 && service.runningCount == 0 && eventDateTime.isBefore(oneDayAgo)) {
+                    logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).withKeyValue("service",service.serviceName).info(s"AWS EC2ContainerService deleteService")
+                    client.deleteService(DeleteServiceRequest.builder.cluster(cluster).service(service.serviceName).build).get
                   }
                 }
               }
@@ -130,18 +129,19 @@ case class EC2ContainerService @javax.inject.Inject() (
         // find all the container instances for this cluster
         logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService listContainerInstances")
         val containerInstanceArns = client.listContainerInstances(
-          new ListContainerInstancesRequest()
-          .withCluster(cluster)
-        ).getContainerInstanceArns.asScala
+          ListContainerInstancesRequest.builder.
+            cluster(cluster).build
+        ).get.containerInstanceArns.asScala
 
         // call update for each container instance
         containerInstanceArns.map{ containerInstanceArn =>
           logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService updateContainerAgent")
           client.updateContainerAgent(
-            new UpdateContainerAgentRequest()
-            .withCluster(cluster)
-            .withContainerInstance(containerInstanceArn)
-          )
+            UpdateContainerAgentRequest.builder.
+              cluster(cluster).
+              containerInstance(containerInstanceArn).
+              build
+          ).get
 
           containerInstanceArn
         }
@@ -158,7 +158,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).info(s"AWS EC2ContainerService deleteCluster")
 
     try {
-      client.deleteCluster(new DeleteClusterRequest().withCluster(name))
+      client.deleteCluster(DeleteClusterRequest.builder.cluster(name).build).get
     } catch {
       case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).error(s"Error deleting cluster", e)
     }
@@ -170,9 +170,9 @@ case class EC2ContainerService @javax.inject.Inject() (
     logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).info(s"AWS EC2ContainerService createCluster")
 
     try {
-      val clusterDoesNotExist = client.describeClusters(new DescribeClustersRequest().withClusters(name)).getClusters.isEmpty
+      val clusterDoesNotExist = client.describeClusters(DescribeClustersRequest.builder.clusters(name).build).get.clusters.isEmpty
       if (clusterDoesNotExist) {
-        client.createCluster(new CreateClusterRequest().withClusterName(name))
+        client.createCluster(CreateClusterRequest.builder.clusterName(name).build).get
       }
     } catch {
       case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("cluster",name).withKeyValue("project", projectId).error(s"Error creating cluster", e)
@@ -237,26 +237,26 @@ case class EC2ContainerService @javax.inject.Inject() (
         case arns => {
           val versions = getServicesInfo(cluster, arns).flatMap { service =>
             // task ARNs running in the service
-            val taskArns = client.listTasks(new ListTasksRequest().withCluster(cluster).withServiceName(service.getServiceArn)).getTaskArns
+            val taskArns = client.listTasks(ListTasksRequest.builder.cluster(cluster).serviceName(service.serviceArn).build).get.taskArns
 
             // get the tasks using the ARNs
-            val tasks = client.describeTasks(new DescribeTasksRequest().withCluster(cluster).withTasks(taskArns)).getTasks.asScala.toSeq
+            val tasks = client.describeTasks(DescribeTasksRequest.builder.cluster(cluster).tasks(taskArns).build).get.tasks.asScala.toSeq
 
             // get the final list of versions we have online in the single service in the cluster
             // since multiple versions of the api can run on the same service in the same cluster
             tasks.groupBy { task =>
               // group by task definition's docker image version
               client.describeTaskDefinition(
-                new DescribeTaskDefinitionRequest().withTaskDefinition(task.getTaskDefinitionArn)
-              ).getTaskDefinition.getContainerDefinitions.asScala.head.getImage.split(":").last
+                DescribeTaskDefinitionRequest.builder.taskDefinition(task.taskDefinitionArn).build
+              ).get.taskDefinition.containerDefinitions.asScala.head.image.split(":").last
             }.map { case (version, tasks) =>
               // get the container instances for these tasks
-              val containerArns = tasks.map(_.getContainerInstanceArn).asJava
+              val containerArns = tasks.map(_.containerInstanceArn).asJava
 
               // get the container instances for these tasks given arns - and check first if they are healthy
               val serviceInstances = client.describeContainerInstances(
-                new DescribeContainerInstancesRequest().withCluster(cluster).withContainerInstances(containerArns)
-              ).getContainerInstances.asScala.map(_.getEc2InstanceId)
+                DescribeContainerInstancesRequest.builder.cluster(cluster).containerInstances(containerArns).build
+              ).get.containerInstances.asScala.map(_.ec2InstanceId)
 
               // healthy instances = count of service instances actually in the elb which are healthy
               val healthyInstances = serviceInstances.filter(elbHealthyInstances.contains)
@@ -278,13 +278,14 @@ case class EC2ContainerService @javax.inject.Inject() (
     while (hasMore) {
       logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("next_token", nextToken).info(s"AWS EC2ContainerService listServices")
       val result = client.listServices(
-        new ListServicesRequest()
-          .withCluster(cluster)
-          .withNextToken(nextToken)
-      )
-      serviceArns += result.getServiceArns.asScala.toList
+        ListServicesRequest.builder.
+          cluster(cluster).
+          nextToken(nextToken).
+          build
+      ).get
+      serviceArns += result.serviceArns.asScala.toList
 
-      Option(result.getNextToken) match {
+      Option(result.nextToken) match {
         case Some(token) => {
           nextToken = token
         }
@@ -306,8 +307,8 @@ case class EC2ContainerService @javax.inject.Inject() (
     while (!servicesToDescribe.isEmpty) {
       logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("services", servicesToDescribe).info(s"AWS EC2ContainerService getServicesInfo")
       services += client.describeServices(
-        new DescribeServicesRequest().withCluster(cluster).withServices(servicesToDescribe.asJava)
-      ).getServices().asScala.toList
+        DescribeServicesRequest.builder.cluster(cluster).services(servicesToDescribe.asJava).build
+      ).get.services.asScala.toList
 
       dropped += batchSize
       servicesToDescribe = serviceNames.drop(dropped).take(batchSize)
@@ -336,40 +337,45 @@ case class EC2ContainerService @javax.inject.Inject() (
     Future {
       // taskname = flowcommerce-token-0-1-51-task
       // only register a new task definition if the current task name does not already exist
-      val result = client.listTaskDefinitions(new ListTaskDefinitionsRequest().withFamilyPrefix(taskName))
-      if (result.getTaskDefinitionArns.isEmpty) {
+      val result = client.listTaskDefinitions(ListTaskDefinitionsRequest.builder.familyPrefix(taskName).build).get
+      if (result.taskDefinitionArns.isEmpty) {
         client.registerTaskDefinition(
-          new RegisterTaskDefinitionRequest()
-            .withFamily(taskName)
-            .withContainerDefinitions(
+          RegisterTaskDefinitionRequest.builder
+            .family(taskName)
+            .containerDefinitions(
               Seq(
-                new ContainerDefinition()
-                  .withName(containerName)
-                  .withImage(imageName + ":" + imageVersion)
-                  .withMemory(settings.containerMemory) // memory reserved for container should be the same as jvmMemorySetting
-                  .withUlimits(
+                ContainerDefinition.builder
+                  .name(containerName)
+                  .image(imageName + ":" + imageVersion)
+                  .memory(settings.containerMemory) // memory reserved for container should be the same as jvmMemorySetting
+                  .ulimits(
                     Seq(
-                      new Ulimit()
-                        .withName(UlimitName.Nofile)
-                        .withSoftLimit(1000000)
-                        .withHardLimit(1000000)
+                      Ulimit.builder
+                        .name(UlimitName.NOFILE)
+                        .softLimit(1000000)
+                        .hardLimit(1000000)
+                        .build
                     ).asJava
                   )
-                  .withPortMappings(
+                  .portMappings(
                     Seq(
-                      new PortMapping()
-                        .withContainerPort(settings.portContainer)
-                        .withHostPort(settings.portHost)
+                      PortMapping.builder
+                        .containerPort(settings.portContainer)
+                        .hostPort(settings.portHost)
+                        .build
                     ).asJava
                   )
-                  .withEnvironment(
-                    new KeyValuePair()
-                      .withName("JAVA_OPTS")
-                      .withValue(jvmMemorySetting)
+                  .environment(
+                    KeyValuePair.builder
+                      .name("JAVA_OPTS")
+                      .value(jvmMemorySetting)
+                      .build
                   )
-                  .withCommand(Seq("production").asJava)
+                  .command(Seq("production").asJava)
+                  .build
               ).asJava
             )
+            .build
         )
       }
 
@@ -392,19 +398,20 @@ case class EC2ContainerService @javax.inject.Inject() (
     Future {
       log.info(s"AWS EC2ContainerService describeTasks")
       val taskArns = client.listTasks(
-        new ListTasksRequest().withCluster(clusterName).withServiceName(serviceName)
-      ).getTaskArns
+        ListTasksRequest.builder.cluster(clusterName).serviceName(serviceName).build
+      ).get.taskArns
 
       val containerInstances = client.describeTasks(
-        new DescribeTasksRequest().withCluster(clusterName).withTasks(taskArns)
-      ).getTasks.asScala.map(_.getContainerInstanceArn).asJava
+        DescribeTasksRequest.builder.cluster(clusterName).tasks(taskArns).build
+      ).get.tasks.asScala.map(_.containerInstanceArn).asJava
 
       log.info(s"AWS EC2ContainerService describeContainerInstances")
       client.describeContainerInstances(
-        new DescribeContainerInstancesRequest()
-        .withCluster(clusterName)
-        .withContainerInstances(containerInstances)
-      ).getContainerInstances().asScala.map{containerInstance => containerInstance.getEc2InstanceId }
+        DescribeContainerInstancesRequest.builder
+        .cluster(clusterName)
+        .containerInstances(containerInstances)
+        .build
+      ).get.containerInstances.asScala.map{containerInstance => containerInstance.ec2InstanceId }
     }
   }
 
@@ -443,50 +450,55 @@ case class EC2ContainerService @javax.inject.Inject() (
 
       log.info(s"AWS EC2ContainerService describeServices")
       val resp = client.describeServices(
-        new DescribeServicesRequest()
-          .withCluster(clusterName)
-          .withServices(Seq(serviceName).asJava)
-      )
+        DescribeServicesRequest.builder
+          .cluster(clusterName)
+          .services(Seq(serviceName).asJava)
+          .build
+      ).get
 
-      if (!resp.getFailures().isEmpty() ||
-          (!resp.getServices().isEmpty() && resp.getServices().get(0).getStatus() == "INACTIVE")) {
+      if (!resp.failures().isEmpty() ||
+          (!resp.services().isEmpty() && resp.services().get(0).status == "INACTIVE")) {
         // If there are failures (because the service doesn't exist)
         // or the service exists but is INACTIVE, then create the service
         log.info(s"AWS EC2ContainerService createOrUpdateService")
         client.createService(
           // MaximumPercent is set to 200 to allow services with only 1 
           // instance to be deployed with ECS.
-          new CreateServiceRequest()
-            .withServiceName(serviceName)
-            .withCluster(clusterName)
-            .withDesiredCount(serviceDesiredCount)
-            .withRole(settings.serviceRole)
-            .withTaskDefinition(taskDefinition)
-            .withDeploymentConfiguration(
-            new DeploymentConfiguration()
-              .withMinimumHealthyPercent(minimumHealthyPercent)
-              .withMaximumPercent(200)
-          )
-            .withLoadBalancers(
+          CreateServiceRequest.builder
+            .serviceName(serviceName)
+            .cluster(clusterName)
+            .desiredCount(serviceDesiredCount)
+            .role(settings.serviceRole)
+            .taskDefinition(taskDefinition)
+            .deploymentConfiguration(
+              DeploymentConfiguration.builder
+                .minimumHealthyPercent(minimumHealthyPercent)
+                .maximumPercent(200)
+                .build
+            )
+            .loadBalancers(
             Seq(
-              new LoadBalancer()
-                .withContainerName(containerName)
-                .withLoadBalancerName(loadBalancerName)
-                .withContainerPort(settings.portContainer)
+              LoadBalancer.builder
+                .containerName(containerName)
+                .loadBalancerName(loadBalancerName)
+                .containerPort(settings.portContainer)
+                .build
             ).asJava
           )
-        )
+          .build
+        ).get
 
       } else {
         // Service exists in cluster, update service task definition
         log.info(s"AWS EC2ContainerService 1.1 createOrUpdateService")
         client.updateService(
-          new UpdateServiceRequest()
-            .withCluster(clusterName)
-            .withService(serviceName)
-            .withDesiredCount(serviceDesiredCount)
-            .withTaskDefinition(taskDefinition)
-        )
+          UpdateServiceRequest.builder
+            .cluster(clusterName)
+            .service(serviceName)
+            .desiredCount(serviceDesiredCount)
+            .taskDefinition(taskDefinition)
+            .build
+        ).get
       }
 
       serviceName
@@ -494,10 +506,10 @@ case class EC2ContainerService @javax.inject.Inject() (
   }
 
   def summary(service: Service): String = {
-    val status = service.getStatus
-    val running = service.getRunningCount
-    val desired = service.getDesiredCount
-    val pending = service.getPendingCount
+    val status = service.status
+    val running = service.runningCount
+    val desired = service.desiredCount
+    val pending = service.pendingCount
 
     s"status[$status] running[$running] desired[$desired] pending[$pending]"
   }

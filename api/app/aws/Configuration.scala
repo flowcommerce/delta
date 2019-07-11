@@ -1,17 +1,20 @@
 package io.flow.delta.aws
 
-import com.amazonaws.ClientConfiguration
-import com.amazonaws.retry.RetryPolicy
+import software.amazon.awssdk.core.retry.RetryPolicy
+import software.amazon.awssdk.core.retry.backoff.BackoffStrategy
+import software.amazon.awssdk.core.retry.conditions.RetryCondition
+import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration
 
 @javax.inject.Singleton
 class Configuration @javax.inject.Inject() () {
+  private val retryPolicy = RetryPolicy.builder
+    .retryCondition(RetryCondition.defaultRetryCondition)
+    .backoffStrategy(BackoffStrategy.defaultStrategy)
+    .numRetries(6)
+    .throttlingBackoffStrategy(BackoffStrategy.defaultThrottlingStrategy())
+    .build
 
-  val aws = new ClientConfiguration().withRetryPolicy(
-    new RetryPolicy(
-      null, // Retry condition on whether a specific request and exception should be retried. If null value is specified, the SDK' default retry condition is used.
-      null, // Back-off strategy for controlling how long the next retry should wait. If null value is specified, the SDK' default exponential back-off strategy is used.
-      6,    // Maximum number of retry attempts for failed requests
-      false // Whether this retry policy should honor the max error retry set by ClientConfiguration.setMaxErrorRetry(int)
-    )
-  )
+  val aws = ClientOverrideConfiguration.builder.
+    retryPolicy(retryPolicy).
+    build
 }

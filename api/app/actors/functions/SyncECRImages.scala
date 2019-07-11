@@ -1,7 +1,8 @@
 package actors.functions
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.ecr.model.DescribeImagesRequest
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.services.ecr.EcrAsyncClient
+import software.amazon.awssdk.services.ecr.model.DescribeImagesRequest
 import db.{ImagesDao, ImagesWriteDao, OrganizationsDao}
 import io.flow.delta.actors.SupervisorResult
 import io.flow.delta.aws.{Configuration, Credentials}
@@ -26,11 +27,11 @@ class SyncECRImages @Inject()(
   configuration: Configuration
 ) {
 
-  private[this] lazy val ecrclient = com.amazonaws.services.ecr.AmazonECRClient
-    .builder().
-    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
-    withClientConfiguration(configuration.aws).
-    build()
+  private[this] lazy val ecrclient: EcrAsyncClient = EcrAsyncClient.
+    builder.
+    credentialsProvider(StaticCredentialsProvider.create(credentials.aws)).
+    overrideConfiguration(configuration.aws).
+    build
 
   def run(build: Build, cfg: config.Build): SupervisorResult = {
     organizationsDao.findById(Authorization.All, build.project.organization.id) match {
@@ -52,12 +53,13 @@ class SyncECRImages @Inject()(
   ): SupervisorResult = {
     try {
       val descriedImages = ecrclient
-        .describeImages(new DescribeImagesRequest().withRepositoryName(BuildNames.projectName(build)))
-        .getImageDetails
+        .describeImages(DescribeImagesRequest.builder.repositoryName(BuildNames.projectName(build)).build)
+        .get
+        .imageDetails
         .asScala
 
       descriedImages.flatMap { di =>
-        val versionTags = di.getImageTags.asScala.filter(Semver.isSemver)
+        val versionTags = di.imageTags.asScala.filter(Semver.isSemver)
         versionTags.filter { vt =>
           upsertImage(docker, build, cfg, vt)
         }

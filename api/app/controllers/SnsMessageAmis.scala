@@ -3,6 +3,8 @@ package controllers
 import java.io.ByteArrayInputStream
 
 import javax.inject.Inject
+// We are still using AWS SDK v1 in this file.
+// the V2 SDK doesn't (yet) have anything equivalent to 'SnsMessageManager'
 import com.amazonaws.SdkClientException
 import com.amazonaws.regions.Regions
 import com.amazonaws.services.sns.message._
