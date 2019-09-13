@@ -258,6 +258,7 @@ class AutoScalingGroup @javax.inject.Inject() (
     val completeEcsAndAwsSetup = Seq(
       s"""echo '* soft nofile $nofileMax' >> /etc/security/limits.conf""",
       s"""echo '* hard nofile $nofileMax' >> /etc/security/limits.conf""",
+      """echo '{"log-driver":"json-file","log-opts":{"max-size":"10m","max-file":"10"}}' > /etc/docker/daemon.json""",
       """service docker restart""",
       """sed -i'' -e 's/.*requiretty.*//' /etc/sudoers""",
       """curl -o /tmp/get-pip.py https://bootstrap.pypa.io/get-pip.py""",
