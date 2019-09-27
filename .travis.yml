@@ -2,11 +2,12 @@ language: scala
 scala:
   - 2.12.10
 jdk:
-  - oraclejdk8
+  - openjdk8
 cache:
   directories:
     - $HOME/.ivy2/cache
-    - $HOME/.sbt/boot/
+    - $HOME/.sbt
+    - $HOME/.cache/coursier
 services:
   - docker
 before_script:
@@ -14,9 +15,10 @@ before_script:
   - docker run -d -p 127.0.0.1:6099:5432 flowcommerce/delta-postgresql:latest
 script:
   - sbt ++$TRAVIS_SCALA_VERSION clean flowLint test doc
-  # Tricks to avoid unnecessary cache updates
-  - find $HOME/.sbt -name "*.lock" | xargs rm -f
-  - find $HOME/.ivy2 -name "ivydata-*.properties" | xargs rm -f
 branches:
   only:
     - master
+before_cache:
+  - rm -fv $HOME/.ivy2/.sbt.ivy.lock
+  - find $HOME/.ivy2/cache -name "ivydata-*.properties" -print -delete
+  - find $HOME/.sbt        -name "*.lock"               -print -delete
