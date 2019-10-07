@@ -6,6 +6,7 @@ builds:
       port.container: 9000
       port.host: 6091
       version: 1.3
+      allow.downtime: true
   - www:
       dockerfile: www/Dockerfile
       instance.type: t3.small
