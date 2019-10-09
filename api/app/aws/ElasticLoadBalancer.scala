@@ -1,9 +1,9 @@
 package io.flow.delta.aws
 
 import akka.actor.ActorSystem
-import com.amazonaws.auth.AWSStaticCredentialsProvider
-import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingClientBuilder
-import com.amazonaws.services.elasticloadbalancing.model._
+import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
+import software.amazon.awssdk.services.elasticloadbalancing.ElasticLoadBalancingAsyncClient
+import software.amazon.awssdk.services.elasticloadbalancing.model._
 import io.flow.log.RollbarLogger
 
 import scala.collection.JavaConverters._
@@ -25,11 +25,10 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
 
   private[this] implicit val executionContext = system.dispatchers.lookup("ec2-context")
 
-  private[this] lazy val client = AmazonElasticLoadBalancingClientBuilder.
-    standard().
-    withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
-    withClientConfiguration(configuration.aws).
-    build()
+  private[this] lazy val client: ElasticLoadBalancingAsyncClient = ElasticLoadBalancingAsyncClient.builder.
+    credentialsProvider(StaticCredentialsProvider.create(credentials.aws)).
+    overrideConfiguration(configuration.aws).
+    build
 
 
   def getHealthyInstances(projectId: String): Seq[String] = {
@@ -37,8 +36,8 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
     logger.fingerprint(this.getClass.getName).withKeyValue("project", projectId).info(s"AWS ElasticLoadBalancer describeInstanceHealth")
 
     client.describeInstanceHealth(
-      new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancerName)
-    ).getInstanceStates.asScala.filter(_.getState == "InService").map(_.getInstanceId)
+      DescribeInstanceHealthRequest.builder.loadBalancerName(loadBalancerName).build
+    ).get.instanceStates.asScala.filter(_.state == "InService").map(_.instanceId)
   }
 
   def createLoadBalancerAndHealthCheck(settings: Settings, projectId: String): Future[String] = {
@@ -57,7 +56,7 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
     logger.fingerprint(this.getClass.getName).withKeyValue("project", projectId).info(s"AWS delete load balancer")
 
     try {
-      client.deleteLoadBalancer(new DeleteLoadBalancerRequest().withLoadBalancerName(name))
+      client.deleteLoadBalancer(DeleteLoadBalancerRequest.builder.loadBalancerName(name).build).get
     } catch {
       case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("project", projectId).withKeyValue("name", name).error(s"Error deleting load balancer", e)
     }
@@ -71,45 +70,51 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
       settings.elbSslCertificateId
     }
 
-    val https = new Listener()
-      .withProtocol("HTTPS") // incoming request should be over https
-      .withInstanceProtocol("HTTP") // elb will forward request to individual instance via http (no "s")
-      .withLoadBalancerPort(443)
-      .withInstancePort(externalPort.toInt)
-      .withSSLCertificateId(sslCertificate)
+    val https = Listener.builder
+      .protocol("HTTPS") // incoming request should be over https
+      .instanceProtocol("HTTP") // elb will forward request to individual instance via http (no "s")
+      .loadBalancerPort(443)
+      .instancePort(externalPort.toInt)
+      .sslCertificateId(sslCertificate)
+      .build
 
     val elbListeners = Seq(https)
 
     try {
       logger.fingerprint(this.getClass.getName).withKeyValue("name", name).info(s"AWS ElasticLoadBalancer createLoadBalancer")
       client.createLoadBalancer(
-        new CreateLoadBalancerRequest()
-          .withLoadBalancerName(name)
-          .withListeners(elbListeners.asJava)
-          .withSubnets(settings.elbSubnets.asJava)
-          .withSecurityGroups(Seq(settings.elbSecurityGroup).asJava)
-      )
+        CreateLoadBalancerRequest.builder
+          .loadBalancerName(name)
+          .listeners(elbListeners.asJavaCollection)
+          .subnets(settings.elbSubnets.asJava)
+          .securityGroups(Seq(settings.elbSecurityGroup).asJava)
+          .build
+      ).get
     } catch {
       case _: DuplicateLoadBalancerNameException => // no-op already exists
     }
 
     try {
       client.modifyLoadBalancerAttributes(
-        new ModifyLoadBalancerAttributesRequest()
-          .withLoadBalancerName(name)
-          .withLoadBalancerAttributes(
-            new LoadBalancerAttributes()
-              .withCrossZoneLoadBalancing(
-                new CrossZoneLoadBalancing()
-                  .withEnabled(settings.elbCrossZoneLoadBalancing)
+        ModifyLoadBalancerAttributesRequest.builder
+          .loadBalancerName(name)
+          .loadBalancerAttributes(
+            LoadBalancerAttributes.builder
+              .crossZoneLoadBalancing(
+                CrossZoneLoadBalancing.builder
+                  .enabled(settings.elbCrossZoneLoadBalancing)
+                  .build
               )
-              .withConnectionDraining(
-                new ConnectionDraining()
-                  .withEnabled(true)
-                  .withTimeout(60)
+              .connectionDraining(
+                ConnectionDraining.builder
+                  .enabled(true)
+                  .timeout(60)
+                  .build
               )
+              .build
           )
-      )
+          .build
+      ).get
       ()
     } catch {
       case e: Throwable => logger.fingerprint(this.getClass.getName).withKeyValue("name", name).error(s"Error setting ELB connection drain settings", e)
@@ -120,17 +125,19 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
     try {
       logger.fingerprint(this.getClass.getName).withKeyValue("name", name).info(s"AWS ElasticLoadBalancer configureHealthCheck")
       client.configureHealthCheck(
-        new ConfigureHealthCheckRequest()
-          .withLoadBalancerName(name)
-          .withHealthCheck(
-            new HealthCheck()
-              .withTarget(s"HTTP:$externalPort$healthcheckUrl")
-              .withTimeout(25)
-              .withInterval(30)
-              .withHealthyThreshold(2)
-              .withUnhealthyThreshold(4)
+        ConfigureHealthCheckRequest.builder
+          .loadBalancerName(name)
+          .healthCheck(
+            HealthCheck.builder
+              .target(s"HTTP:$externalPort$healthcheckUrl")
+              .timeout(25)
+              .interval(30)
+              .healthyThreshold(2)
+              .unhealthyThreshold(4)
+              .build
           )
-      )
+          .build
+      ).get
       ()
     } catch {
       case e: LoadBalancerNotFoundException => sys.error(s"Cannot find load balancer $name: $e")

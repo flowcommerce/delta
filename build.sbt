@@ -6,7 +6,8 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.12.10"
 
-val awsVersion = "1.11.475"
+val awsVersion = "2.8.7"
+val awsLegacyVersion = "1.11.475"
 
 lazy val generated = project
   .in(file("generated"))
@@ -59,12 +60,12 @@ lazy val api = project
       jdbc,
       "io.flow" %% "lib-postgresql-play-play26" % "0.2.89",
       "io.flow" %% "lib-event-play26" % "0.4.42",
-      "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-ecr" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
+      "software.amazon.awssdk" % "ec2" % awsVersion,
+      "software.amazon.awssdk" % "ecs" % awsVersion,
+      "software.amazon.awssdk" % "ecr" % awsVersion,
+      "software.amazon.awssdk" % "elasticloadbalancing" % awsVersion,
+      "software.amazon.awssdk" % "autoscaling" % awsVersion,
+      "com.amazonaws" % "aws-java-sdk-sns" % awsLegacyVersion,
       "com.sendgrid" %  "sendgrid-java" % "4.3.0",
       "org.postgresql" % "postgresql" % "42.2.5",
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
