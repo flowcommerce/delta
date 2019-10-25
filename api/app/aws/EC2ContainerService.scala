@@ -438,7 +438,13 @@ case class EC2ContainerService @javax.inject.Inject() (
       val minimumHealthyPercent = if (cfg.allowDowntime.getOrElse(false)) {
         0
       } else {
-        50
+        if (serviceDesiredCount >= 4) {
+          75 // take down one at a time, keep 3+ rurnning
+        } else if (serviceDesiredCount == 3) {
+          60 // take down one at a time, keep 2 running
+        } else {
+          50 // make sure at least 1 stays healthy while other deploys
+        }
       }
 
       log.info(s"AWS EC2ContainerService describeServices")
