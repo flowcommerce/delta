@@ -463,6 +463,10 @@ case class EC2ContainerService @javax.inject.Inject() (
           .withServices(Seq(serviceName).asJava)
       )
 
+      val deploymentConfiguration = new DeploymentConfiguration()
+        .withMinimumHealthyPercent(minimumHealthyPercent)
+        .withMaximumPercent(200)
+
       if (!resp.getFailures().isEmpty() ||
           (!resp.getServices().isEmpty() && resp.getServices().get(0).getStatus() == "INACTIVE")) {
         // If there are failures (because the service doesn't exist)
@@ -477,11 +481,7 @@ case class EC2ContainerService @javax.inject.Inject() (
             .withDesiredCount(desiredCount.toInt)
             .withRole(settings.serviceRole)
             .withTaskDefinition(taskDefinition)
-            .withDeploymentConfiguration(
-            new DeploymentConfiguration()
-              .withMinimumHealthyPercent(minimumHealthyPercent)
-              .withMaximumPercent(200)
-          )
+            .withDeploymentConfiguration(deploymentConfiguration)
             .withLoadBalancers(
             Seq(
               new LoadBalancer()
@@ -501,6 +501,7 @@ case class EC2ContainerService @javax.inject.Inject() (
             .withService(serviceName)
             .withDesiredCount(desiredCount.toInt)
             .withTaskDefinition(taskDefinition)
+            .withDeploymentConfiguration(deploymentConfiguration)
         )
       }
 
