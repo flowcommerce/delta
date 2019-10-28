@@ -481,7 +481,7 @@ case class EC2ContainerService @javax.inject.Inject() (
           new CreateServiceRequest()
             .withServiceName(serviceName)
             .withCluster(clusterName)
-            .withDesiredCount(serviceDesiredCount)
+            .withDesiredCount(desiredCount)
             .withRole(settings.serviceRole)
             .withTaskDefinition(taskDefinition)
             .withDeploymentConfiguration(
@@ -506,7 +506,7 @@ case class EC2ContainerService @javax.inject.Inject() (
           new UpdateServiceRequest()
             .withCluster(clusterName)
             .withService(serviceName)
-            .withDesiredCount(serviceDesiredCount)
+            .withDesiredCount(desiredCount)
             .withTaskDefinition(taskDefinition)
         )
       }
