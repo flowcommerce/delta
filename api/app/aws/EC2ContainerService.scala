@@ -434,11 +434,33 @@ case class EC2ContainerService @javax.inject.Inject() (
         withKeyValue("load_balancer_name", loadBalancerName)
 
       // allows ECS to deploy new task definitions
-      val serviceDesiredCount = desiredCount.toInt
       val minimumHealthyPercent = if (cfg.allowDowntime.getOrElse(false)) {
         0
       } else {
-        50
+        /**
+         * instance count: 1  - minHealthy: 0
+         * instance count: 2  - minHealthy: 50
+         * instance count: 3  - minHealthy: 66
+         * instance count: 4  - minHealthy: 75
+         * instance count: 5  - minHealthy: 80
+         * instance count: 6  - minHealthy: 83
+         * instance count: 7  - minHealthy: 85
+         * instance count: 8  - minHealthy: 87
+         * instance count: 9  - minHealthy: 88
+         * instance count: 10 - minHealthy: 90
+         * instance count: 11 - minHealthy: 90
+         * instance count: 12 - minHealthy: 91
+         * instance count: 13 - minHealthy: 92
+         * instance count: 14 - minHealthy: 92
+         * instance count: 15 - minHealthy: 93
+         * instance count: 16 - minHealthy: 93
+         * instance count: 17 - minHealthy: 94
+         * instance count: 18 - minHealthy: 94
+         * instance count: 19 - minHealthy: 94
+         * instance count: 20 - minHealthy: 95
+         */
+        val minHealthy = BigDecimal(1) - (BigDecimal(1) / BigDecimal(desiredCount))
+        (minHealthy * 100).toInt
       }
 
       log.info(s"AWS EC2ContainerService describeServices")
