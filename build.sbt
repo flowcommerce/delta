@@ -47,10 +47,7 @@ lazy val api = project
   .enablePlugins(JavaAppPackaging, JavaAgent)
   .settings(commonSettings: _*)
   .settings(
-    javaAgents += "org.aspectj" % "aspectjweaver" % "1.8.13",
-    javaOptions in Universal += "-Dorg.aspectj.tracing.factory=default",
-    javaOptions in Test += "-Dkamon.modules.kamon-system-metrics.auto-start=false",
-    javaOptions in Test += "-Dkamon.show-aspectj-missing-warning=no",
+    javaAgents += "io.kamon" % "kanela-agent" % "1.0.2",
     routesImport += "io.flow.delta.v0.Bindables.Core._",
     routesImport += "io.flow.delta.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
@@ -68,7 +65,7 @@ lazy val api = project
       "com.sendgrid" %  "sendgrid-java" % "4.3.0",
       "org.postgresql" % "postgresql" % "42.2.5",
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
-      "io.flow" %% "lib-play-graphite-play26" % "0.0.71",
+      "io.flow" %% "lib-play-graphite-play26" % "0.1.19",
       "io.flow" %% "lib-log" % "0.0.55",
       "io.flow" %% "lib-akka" % "0.1.2",
       "io.flow" %% "lib-usage" % "0.0.80",
