@@ -65,7 +65,7 @@ lazy val api = project
       "com.sendgrid" %  "sendgrid-java" % "4.3.0",
       "org.postgresql" % "postgresql" % "42.2.5",
       "com.typesafe.play" %% "play-json-joda" % "2.6.10",
-      "io.flow" %% "lib-play-graphite-play26" % "0.1.19",
+      "io.flow" %% "lib-play-graphite-play26" % "0.1.18",
       "io.flow" %% "lib-log" % "0.0.55",
       "io.flow" %% "lib-akka" % "0.1.2",
       "io.flow" %% "lib-usage" % "0.0.80",
