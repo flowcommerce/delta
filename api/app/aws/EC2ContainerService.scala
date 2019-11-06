@@ -438,21 +438,37 @@ case class EC2ContainerService @javax.inject.Inject() (
         0
       } else {
         /**
-         * desired: 1 - min healthy pct: 0
-         * desired: 2 - min healthy pct: 50
-         * desired: 3 - min healthy pct: 33
-         * desired: 4 - min healthy pct: 50
-         * desired: 5 - min healthy pct: 60
-         * desired: 6 - min healthy pct: 66
-         * desired: 7 - min healthy pct: 71
-         * desired: 8 - min healthy pct: 75
-         * desired: 9 - min healthy pct: 77
-         * desired: 10 - min healthy pct: 80
+         * desired: 1, min healthy pct: 0
+         * desired: 2, min healthy pct: 50
+         * desired: 3, min healthy pct: 33
+         * desired: 4, min healthy pct: 50
+         * desired: 5, min healthy pct: 60
+         * desired: 6, min healthy pct: 66
+         * desired: 7, min healthy pct: 71
+         * desired: 8, min healthy pct: 75
+         * desired: 9, min healthy pct: 77
+         * desired: 10, min healthy pct: 80
+         * desired: 11, min healthy pct: 72
+         * desired: 12, min healthy pct: 75
+         * desired: 13, min healthy pct: 76
+         * desired: 14, min healthy pct: 78
+         * desired: 15, min healthy pct: 80
+         * desired: 16, min healthy pct: 81
+         * desired: 17, min healthy pct: 82
+         * desired: 18, min healthy pct: 83
+         * desired: 19, min healthy pct: 84
+         * desired: 20, min healthy pct: 85
          */
-        if (desiredCount <= 2) {
-          ((BigDecimal(1) - (BigDecimal(1) / BigDecimal(desiredCount))) * 100).toInt
-        } else {
+
+        if (desiredCount > 10) {
+          // Take down 3 at a time
+          ((BigDecimal(1) - (BigDecimal(3) / BigDecimal(desiredCount))) * 100).toInt
+        } else if (desiredCount > 2) {
+          // Take down 2 at a time
           ((BigDecimal(1) - (BigDecimal(2) / BigDecimal(desiredCount))) * 100).toInt
+        } else {
+          // Take down 1 at a time
+          ((BigDecimal(1) - (BigDecimal(1) / BigDecimal(desiredCount))) * 100).toInt
         }
       }
 
