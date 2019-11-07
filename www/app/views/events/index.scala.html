@@ -13,7 +13,7 @@
   } else {
     <code class="text-muted">
       @events.items.map { e =>
-        @io.flow.play.util.DateHelper.consoleLongDateTime(e.createdAt) <a href="@routes.ProjectsController.show(e.project.id)">@e.project.id</a> @e.summary
+        @io.flow.util.DateHelper.consoleLongDateTime(TimeUtil.toZonedDateTime(e.createdAt)) <a href="@routes.ProjectsController.show(e.project.id)">@e.project.id</a> @e.summary
         <br/>
         @if(!e.error.isEmpty) {
           <p class="bg-danger">@e.error.get</p>
