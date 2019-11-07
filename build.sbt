@@ -123,8 +123,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play26" % "0.5.28",
-    "io.flow" %% "lib-test-utils" % "0.0.29" % Test
+    "io.flow" %% "lib-play-play26" % "0.5.84",
+    "io.flow" %% "lib-test-utils" % "0.0.72" % Test,
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
