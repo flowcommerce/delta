@@ -5,6 +5,10 @@ code:
       generators:
         anorm_2_6_parsers: api/app/generated
         play_2_x_json: generated/app
+    error:
+      version: latest
+      generators:
+        play_2_x_json: generated/app
     docker-registry:
       version: latest
       generators:
