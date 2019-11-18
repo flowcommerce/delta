@@ -34,6 +34,7 @@
         { "name": "m5.large" },
         { "name": "m5.xlarge" },
         { "name": "m5.2xlarge" },
+        { "name": "m5.4xlarge" },
         { "name": "c5.large" },
         { "name": "c5.xlarge" },
         { "name": "c5.2xlarge" },

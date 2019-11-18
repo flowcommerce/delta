@@ -26,6 +26,7 @@ object InstanceTypeDefaults {
       case InstanceType.M5Large => MemoryDefault(8000, 7500, 6500)
       case InstanceType.M5Xlarge => MemoryDefault(16000, 15500, 13000)
       case InstanceType.M52xlarge => MemoryDefault(32000, 31000, 27000)
+      case InstanceType.M54xlarge => MemoryDefault(64000, 62000, 57000)
 
       case InstanceType.C4Large => MemoryDefault(3750, 3250, 2800)
       case InstanceType.C4Xlarge => MemoryDefault(7500, 7000, 6500)
