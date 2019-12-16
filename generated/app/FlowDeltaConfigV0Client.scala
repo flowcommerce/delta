@@ -94,7 +94,7 @@ package io.flow.delta.config.v0.models {
    * Provides future compatibility in clients - in the future, when a type is added
    * to the union Config, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
-   * 
+   *
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
