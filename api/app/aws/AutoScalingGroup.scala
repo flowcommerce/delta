@@ -8,7 +8,7 @@ import com.amazonaws.services.autoscaling.{AmazonAutoScaling, AmazonAutoScalingC
 import com.amazonaws.services.autoscaling.model._
 import io.flow.log.RollbarLogger
 import io.flow.util.Config
-import sun.misc.BASE64Encoder
+import org.apache.commons.codec.binary.Base64
 
 import collection.JavaConverters._
 import scala.util.control.NonFatal
@@ -42,8 +42,6 @@ class AutoScalingGroup @javax.inject.Inject() (
     withCredentials(new AWSStaticCredentialsProvider(credentials.aws)).
     withClientConfiguration(configuration.aws).
     build()
-
-  lazy val encoder = new BASE64Encoder()
 
   /**
   * Defined Values, probably make object vals somewhere?
@@ -86,7 +84,9 @@ class AutoScalingGroup @javax.inject.Inject() (
           .withKeyName(settings.ec2KeyName)
           .withImageId(settings.launchConfigImageId)
           .withInstanceType(settings.launchConfigInstanceType)
-          .withUserData(encoder.encode(lcUserData(id, settings).getBytes))
+          .withUserData(
+            new String(Base64.encodeBase64(lcUserData(id, settings).getBytes))
+          )
       )
     } catch {
       case _: AlreadyExistsException => println(s"Launch Configuration '$name' already exists")

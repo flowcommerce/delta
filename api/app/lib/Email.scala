@@ -1,7 +1,7 @@
 package io.flow.delta.api.lib
 
 import io.flow.common.v0.models.Name
-import io.flow.play.util.DefaultConfig
+import io.flow.play.util.{DefaultConfig, Text}
 import io.flow.util.IdGenerator
 import java.nio.file.{Files, Path, Paths}
 import java.nio.charset.StandardCharsets
@@ -9,10 +9,13 @@ import java.nio.charset.StandardCharsets
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 import com.sendgrid._
+import com.sendgrid.helpers.mail.objects._
 
 class Email @javax.inject.Inject() (
-  config: DefaultConfig
+  config: DefaultConfig,
 ) {
+  // Sendgrid web API returns BadContent if subject too long
+  val MaxLengthForSubject: Int = 77
 
   private[this] val SubjectPrefix = config.requiredString("mail.subject.prefix")
 
@@ -20,13 +23,13 @@ class Email @javax.inject.Inject() (
     SubjectPrefix + " " + subject
   }
 
-  val fromEmail = config.requiredString("mail.default.from.email")
-  val fromName = Name(
+  val fromEmail: String = config.requiredString("mail.default.from.email")
+  val fromName: Name = Name(
     Some(config.requiredString("mail.default.from.name.first")),
     Some(config.requiredString("mail.default.from.name.last"))
   )
 
-  val localDeliveryDir = config.optionalString("mail.local.delivery.dir").map(Paths.get(_))
+  val localDeliveryDir: Option[Path] = config.optionalString("mail.local.delivery.dir").map(Paths.get(_))
 
   // Initialize sendgrid on startup to verify that all of our settings
   // are here. If using localDeliveryDir, set password to a test
@@ -43,16 +46,15 @@ class Email @javax.inject.Inject() (
     subject: String,
     body: String
   ): Unit = {
-    val prefixedSubject = subjectWithPrefix(subject)
-
-    val from = new com.sendgrid.Email(fromEmail)
+    val prefixedSubject = Text.truncate(subjectWithPrefix(subject), MaxLengthForSubject)
+    val from = new com.sendgrid.helpers.mail.objects.Email(fromEmail)
     val to = recipient.fullName() match {
-      case Some(fn) => new com.sendgrid.Email(recipient.email, fn)
-      case None => new com.sendgrid.Email(recipient.email)
+      case Some(fn) => new com.sendgrid.helpers.mail.objects.Email(recipient.email, fn)
+      case None => new com.sendgrid.helpers.mail.objects.Email(recipient.email)
     }
     val content = new Content("text/html", body)
 
-    val mail = new com.sendgrid.Mail(from, prefixedSubject, to, content)
+    val mail = new com.sendgrid.helpers.mail.Mail(from, prefixedSubject, to, content)
 
     localDeliveryDir match {
       case Some(dir) => {
@@ -67,8 +69,8 @@ class Email @javax.inject.Inject() (
         request.setBody(mail.build())
         val response = sendgrid.api(request)
         assert(
-          response.getStatusCode() == 202,
-          s"Error sending email. Expected statusCode[202] but got[${response.getStatusCode()}]"
+          response.getStatusCode == 202,
+          s"Error sending email. Expected statusCode[202] but got[${response.getStatusCode}]"
         )
       }
     }
