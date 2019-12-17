@@ -8,7 +8,7 @@ package io.flow.error.v0.models {
   /**
    * An error of some type has occurred. The most common error will be validation on
    * input. See messages for details.
-   * 
+   *
    * @param code Generic errors will always have a code set to 'generic_error'
    */
   final case class GenericError(
