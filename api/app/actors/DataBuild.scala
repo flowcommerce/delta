@@ -87,14 +87,6 @@ trait DataBuild extends DataProject with EventLog {
     }
   }
 
-  def findBuildByName(configs: Seq[BuildConfig], name: String) = {
-    configs.find {
-      case c: EcsBuildConfig => c.name == name
-      case c: K8sBuildConfig => c.name == name
-      case _: BuildConfigUndefinedType => false
-    }
-  }
-
   /**
     * Invokes the specified function w/ the current build config, but
     * only if we have an enabled configuration matching this build.
