@@ -6,7 +6,7 @@ import db.generated.AmiUpdatesDao
 import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.aws.{AutoScalingGroup, DefaultSettings, EC2ContainerService, ElasticLoadBalancer}
-import io.flow.delta.config.v0.models.BuildStage
+import io.flow.delta.config.v0.models.{BuildStage, EcsBuildConfig}
 import io.flow.delta.lib.config.InstanceTypeDefaults
 import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
 import io.flow.delta.v0.models.{Build, Organization, StateForm}
@@ -110,7 +110,7 @@ class EcsBuildActor @javax.inject.Inject() (
       withOrganization { org =>
         withEnabledBuild { build =>
           diffs.foreach { diff =>
-            scale(org, build, requiredBuildConfig, diff) // Should Await the Future?
+            scale(org, build, requiredEcsBuildConfig, diff) // Should Await the Future?
           }
         }
       }
@@ -134,7 +134,7 @@ class EcsBuildActor @javax.inject.Inject() (
   }
 
   private[this] def isScaleEnabled: Boolean = {
-    withBuildConfig { buildConfig =>
+    withEcsBuildConfig { buildConfig =>
       buildConfig.stages.contains(BuildStage.Scale)
     }.getOrElse(false)
   }
@@ -207,7 +207,7 @@ class EcsBuildActor @javax.inject.Inject() (
     }
   }
 
-  def scale(org: Organization, build: Build, cfg: BuildConfig, diff: StateDiff): Future[Unit] = {
+  def scale(org: Organization, build: Build, cfg: EcsBuildConfig, diff: StateDiff): Future[Unit] = {
     val imageVersion = diff.versionName
 
     // only need to run scale once with delta 1.1
@@ -257,7 +257,7 @@ class EcsBuildActor @javax.inject.Inject() (
     }
   }
 
-  private[this] def awsSettings(): DefaultSettings = withBuildConfig { bc =>
+  private[this] def awsSettings(): DefaultSettings = withEcsBuildConfig { bc =>
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
     val latestAmi = amiUpdatesDao.findAll(limit = Some(1), orderBy = OrderBy("-ami_updates.created_at")).head.id
