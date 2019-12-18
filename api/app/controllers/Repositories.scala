@@ -77,7 +77,7 @@ class Repositories @javax.inject.Inject() (
     github.dotDeltaFile(request.user, owner, repo).map { result =>
       Ok(
         Json.toJson(
-          result.map { parser.parse(_) }.getOrElse { Defaults.Config }
+          result.map { parser.parse(_) }.getOrElse { Defaults.EcsConfig }
         )
       )
     }

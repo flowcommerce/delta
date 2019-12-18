@@ -1,0 +1,6 @@
+# example of an application with cluster set to k8s
+
+builds:
+  - root:
+      cluster: k8s
+

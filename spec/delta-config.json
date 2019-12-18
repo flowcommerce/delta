@@ -8,6 +8,13 @@
         { "type": "config_project" },
         { "type": "config_error" }
       ]
+    },
+    "build_config": {
+      "discriminator": "discriminator",
+      "types": [
+        { "type": "ecs_build_config", "default": true, "discriminator": "ecs" },
+        { "type": "k8s_build_config", "discriminator": "k8s" }
+      ]
     }
   },
 
@@ -92,7 +99,7 @@
       ]
     },
 
-    "build": {
+    "ecs_build_config": {
       "fields": [
         { "name": "name", "type": "string", "example": "root, api, or www" },
         { "name": "cluster", "type": "cluster", "required": false },
@@ -110,6 +117,13 @@
         { "name": "healthcheck_url", "type": "string", "required": "false", "description": "The URL used for healthchecks by the ELB", "example": "/_internal_/healthcheck" },
         { "name": "cross_zone_load_balancing", "type": "boolean", "required": false, "description": "Flag whether this build should enable CrossZoneLoadBalancing" },
         { "name": "allow_downtime", "type": "boolean", "required": false, "description": "Allows Delta to optimize infrastructure for services that can accept downtime deployments. Defaults to false." }
+      ]
+    },
+
+    "k8s_build_config": {
+      "fields": [
+        { "name": "name", "type": "string", "example": "root, api, or www" },
+        { "name": "cluster", "type": "cluster" }
       ]
     }
 

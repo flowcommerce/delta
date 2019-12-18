@@ -1,6 +1,6 @@
 package io.flow.delta.lib
 
-import io.flow.delta.config.v0.models.Build
+import io.flow.delta.config.v0.models.{Build, EcsBuildConfig}
 
 sealed trait DockerHost
 object DockerHost {
@@ -8,7 +8,9 @@ object DockerHost {
   case object Ecr extends DockerHost
 
   def apply(build: Build): DockerHost = {
-    build.version.filterNot(_.startsWith("1")).fold(DockerHub: DockerHost)(_ => Ecr)
+    build match {
+      case b: EcsBuildConfig => b.version.filterNot(_.startsWith("1")).fold(DockerHub: DockerHost)(_ => Ecr)
+      case _ => DockerHub
+    }
   }
 }
-
