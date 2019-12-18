@@ -157,7 +157,7 @@
 </section>
 
 @{project.config match {
-  case cfg: io.flow.delta.config.v0.models.ConfigProject => configBuilds(cfg)
+  case cfg: io.flow.delta.config.v0.models.ConfigProject => configBuilds(lib.InternalConfigProject(cfg))
   case _ => ""
 }}
 

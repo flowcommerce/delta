@@ -1,8 +1,24 @@
-@(config: io.flow.delta.config.v0.models.ConfigProject)
+@(config: lib.InternalConfigProject)
 
 <section class="col-xs-12 col-md-6">
   <div class="table-responsive">
-    @config.builds.map { buildConfig =>
+    @config.k8sBuildConfigs.map { buildConfig =>
+      <h3 class="p2">
+        @if(buildConfig.name == io.flow.delta.lib.BuildNames.DefaultBuildName) { Build } else {
+          @buildConfig.name
+        }
+      </h3>
+      <table class="table table-striped">
+        <tbody>
+          <tr>
+            <td><strong>Cluster</strong></td>
+            <td>@buildConfig.cluster</td>
+          </tr>
+        </tbody>
+      </table>
+    }
+
+    @config.ecsBuildConfigs.map { buildConfig =>
 
       <h3 class="p2">
         @if(buildConfig.name == io.flow.delta.lib.BuildNames.DefaultBuildName) { Build } else { @buildConfig.name }
@@ -10,6 +26,10 @@
 
       <table class="table table-striped">
         <tbody>
+          <tr>
+            <td><strong>Cluster</strong></td>
+            <td>@buildConfig.cluster</td>
+          </tr>
           <tr>
             <td><strong>Dockerfile</strong></td>
             <td>@buildConfig.dockerfile</td>
