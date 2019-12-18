@@ -12,6 +12,7 @@ class SyncECRImagesSpec extends FlowPlaySpec with db.Helpers {
 
   val bConfig = config.Build(
     createTestId(),
+    cluster = None,
     createTestId(),
     1,
     InstanceType.M52xlarge,
