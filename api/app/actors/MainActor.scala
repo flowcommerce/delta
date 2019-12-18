@@ -274,12 +274,12 @@ class MainActor @javax.inject.Inject() (
 
   def upsertProjectActor(id: String): ActorRef = {
     this.synchronized {
-      projectActors.get(id).getOrElse {
+      projectActors.getOrElse(id, {
         val ref = injectedChild(projectFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! ProjectActor.Messages.Setup
         projectActors += (id -> ref)
         ref
-      }
+      })
     }
   }
 
@@ -296,12 +296,12 @@ class MainActor @javax.inject.Inject() (
 
   def upsertProjectSupervisorActor(id: String): ActorRef = {
     this.synchronized {
-      projectSupervisorActors.get(id).getOrElse {
+      projectSupervisorActors.getOrElse(id, {
         val ref = injectedChild(projectSupervisorActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! ProjectSupervisorActor.Messages.Data(id)
         projectSupervisorActors += (id -> ref)
         ref
-      }
+      })
     }
   }
 
