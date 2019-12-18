@@ -12,8 +12,8 @@
     "build_config": {
       "discriminator": "discriminator",
       "types": [
-        { "type": "ecs_build_config", "default": true, "discriminator": "ecs" },
-        { "type": "k8s_build_config", "discriminator": "k8s" }
+        { "type": "ecs_build_config", "default": true, "discriminator_value": "ecs" },
+        { "type": "k8s_build_config", "discriminator_value": "k8s" }
       ]
     }
   },
@@ -80,7 +80,7 @@
       "description": "Top level configuration for a project, including what builds and branches are covered and the current status (e.g. enabled, paused, etc.)",
       "fields": [
         { "name": "stages", "type": "[project_stage]", "minimum": 0 },
-        { "name": "builds", "type": "[build]", "minimum": 1 },
+        { "name": "builds", "type": "[build_config]", "minimum": 1 },
         { "name": "branches", "type": "[branch]", "minimum": 1 }
       ]
     },

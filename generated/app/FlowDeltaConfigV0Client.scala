@@ -5,27 +5,27 @@
  */
 package io.flow.delta.config.v0.models {
 
-  sealed trait Build extends _root_.scala.Product with _root_.scala.Serializable
+  sealed trait BuildConfig extends _root_.scala.Product with _root_.scala.Serializable
 
   /**
-   * Defines the valid discriminator values for the type Build
+   * Defines the valid discriminator values for the type BuildConfig
    */
-  sealed trait BuildDiscriminator extends _root_.scala.Product with _root_.scala.Serializable
+  sealed trait BuildConfigDiscriminator extends _root_.scala.Product with _root_.scala.Serializable
 
-  object BuildDiscriminator {
+  object BuildConfigDiscriminator {
 
-    case object EcsBuildConfig extends BuildDiscriminator { override def toString = "ecs_build_config" }
-    case object K8sBuildConfig extends BuildDiscriminator { override def toString = "k8s_build_config" }
+    case object EcsBuildConfig extends BuildConfigDiscriminator { override def toString = "ecs" }
+    case object K8sBuildConfig extends BuildConfigDiscriminator { override def toString = "k8s" }
 
-    final case class UNDEFINED(override val toString: String) extends BuildDiscriminator
+    final case class UNDEFINED(override val toString: String) extends BuildConfigDiscriminator
 
-    val all: scala.List[BuildDiscriminator] = scala.List(EcsBuildConfig, K8sBuildConfig)
+    val all: scala.List[BuildConfigDiscriminator] = scala.List(EcsBuildConfig, K8sBuildConfig)
 
-    private[this] val byName: Map[String, BuildDiscriminator] = all.map(x => x.toString.toLowerCase -> x).toMap
+    private[this] val byName: Map[String, BuildConfigDiscriminator] = all.map(x => x.toString.toLowerCase -> x).toMap
 
-    def apply(value: String): BuildDiscriminator = fromString(value).getOrElse(UNDEFINED(value))
+    def apply(value: String): BuildConfigDiscriminator = fromString(value).getOrElse(UNDEFINED(value))
 
-    def fromString(value: String): _root_.scala.Option[BuildDiscriminator] = byName.get(value.toLowerCase)
+    def fromString(value: String): _root_.scala.Option[BuildConfigDiscriminator] = byName.get(value.toLowerCase)
 
   }
 
@@ -74,7 +74,7 @@ package io.flow.delta.config.v0.models {
    */
   final case class ConfigProject(
     stages: Seq[io.flow.delta.config.v0.models.ProjectStage],
-    builds: Seq[io.flow.delta.config.v0.models.Build],
+    builds: Seq[io.flow.delta.config.v0.models.BuildConfig],
     branches: Seq[io.flow.delta.config.v0.models.Branch]
   ) extends Config
 
@@ -113,24 +113,24 @@ package io.flow.delta.config.v0.models {
     healthcheckUrl: _root_.scala.Option[String] = None,
     crossZoneLoadBalancing: _root_.scala.Option[Boolean] = None,
     allowDowntime: _root_.scala.Option[Boolean] = None
-  ) extends Build
+  ) extends BuildConfig
 
   final case class K8sBuildConfig(
     name: String,
     cluster: io.flow.delta.config.v0.models.Cluster
-  ) extends Build
+  ) extends BuildConfig
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
-   * to the union Build, it will need to be handled in the client code. This
+   * to the union BuildConfig, it will need to be handled in the client code. This
    * implementation will deserialize these future types as an instance of this class.
    *
    * @param description Information about the type that we received that is undefined in this version of
    *        the client.
    */
-  final case class BuildUndefinedType(
+  final case class BuildConfigUndefinedType(
     description: String
-  ) extends Build
+  ) extends BuildConfig
 
   /**
    * Provides future compatibility in clients - in the future, when a type is added
@@ -505,7 +505,7 @@ package io.flow.delta.config.v0.models {
     implicit def jsonReadsDeltaConfigConfigProject: play.api.libs.json.Reads[ConfigProject] = {
       for {
         stages <- (__ \ "stages").read[Seq[io.flow.delta.config.v0.models.ProjectStage]]
-        builds <- (__ \ "builds").read[Seq[io.flow.delta.config.v0.models.Build]]
+        builds <- (__ \ "builds").read[Seq[io.flow.delta.config.v0.models.BuildConfig]]
         branches <- (__ \ "branches").read[Seq[io.flow.delta.config.v0.models.Branch]]
       } yield ConfigProject(stages, builds, branches)
     }
@@ -597,30 +597,30 @@ package io.flow.delta.config.v0.models {
       )
     }
 
-    implicit def jsonReadsDeltaConfigBuild: play.api.libs.json.Reads[Build] = new play.api.libs.json.Reads[Build] {
-      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[Build] = {
-        (js \ "discriminator").asOpt[String].getOrElse("ecs_build_config") match {
-          case "ecs_build_config" => js.validate[io.flow.delta.config.v0.models.EcsBuildConfig]
-          case "k8s_build_config" => js.validate[io.flow.delta.config.v0.models.K8sBuildConfig]
-          case other => play.api.libs.json.JsSuccess(io.flow.delta.config.v0.models.BuildUndefinedType(other))
+    implicit def jsonReadsDeltaConfigBuildConfig: play.api.libs.json.Reads[BuildConfig] = new play.api.libs.json.Reads[BuildConfig] {
+      def reads(js: play.api.libs.json.JsValue): play.api.libs.json.JsResult[BuildConfig] = {
+        (js \ "discriminator").asOpt[String].getOrElse("ecs") match {
+          case "ecs" => js.validate[io.flow.delta.config.v0.models.EcsBuildConfig]
+          case "k8s" => js.validate[io.flow.delta.config.v0.models.K8sBuildConfig]
+          case other => play.api.libs.json.JsSuccess(io.flow.delta.config.v0.models.BuildConfigUndefinedType(other))
         }
       }
     }
 
-    def jsObjectBuild(obj: io.flow.delta.config.v0.models.Build): play.api.libs.json.JsObject = {
+    def jsObjectBuildConfig(obj: io.flow.delta.config.v0.models.BuildConfig): play.api.libs.json.JsObject = {
       obj match {
-        case x: io.flow.delta.config.v0.models.EcsBuildConfig => jsObjectEcsBuildConfig(x) ++ play.api.libs.json.Json.obj("discriminator" -> "ecs_build_config")
-        case x: io.flow.delta.config.v0.models.K8sBuildConfig => jsObjectK8sBuildConfig(x) ++ play.api.libs.json.Json.obj("discriminator" -> "k8s_build_config")
+        case x: io.flow.delta.config.v0.models.EcsBuildConfig => jsObjectEcsBuildConfig(x) ++ play.api.libs.json.Json.obj("discriminator" -> "ecs")
+        case x: io.flow.delta.config.v0.models.K8sBuildConfig => jsObjectK8sBuildConfig(x) ++ play.api.libs.json.Json.obj("discriminator" -> "k8s")
         case other => {
           sys.error(s"The type[${other.getClass.getName}] has no JSON writer")
         }
       }
     }
 
-    implicit def jsonWritesDeltaConfigBuild: play.api.libs.json.Writes[Build] = {
-      new play.api.libs.json.Writes[io.flow.delta.config.v0.models.Build] {
-        def writes(obj: io.flow.delta.config.v0.models.Build) = {
-          jsObjectBuild(obj)
+    implicit def jsonWritesDeltaConfigBuildConfig: play.api.libs.json.Writes[BuildConfig] = {
+      new play.api.libs.json.Writes[io.flow.delta.config.v0.models.BuildConfig] {
+        def writes(obj: io.flow.delta.config.v0.models.BuildConfig) = {
+          jsObjectBuildConfig(obj)
         }
       }
     }

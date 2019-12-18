@@ -197,10 +197,11 @@ case class Parser() {
   }
 
   def areAllBuildsKubernetes(builds: Seq[models.Build]): Boolean = {
-    builds.map {
+    val all = builds.map {
       case _: K8sBuildConfig => Cluster.K8s
       case _: EcsBuildConfig | models.BuildUndefinedType(_) => Cluster.Ecs
-    }.forall(_ == Cluster.K8s)
+    }
+    all.nonEmpty && all.forall(_ == Cluster.K8s)
   }
 
   private[this] def toEcsProjectStages(disable: Seq[String], enable: Seq[String]): Seq[ProjectStage] = {

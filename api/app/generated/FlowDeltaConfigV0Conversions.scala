@@ -71,8 +71,8 @@ package io.flow.delta.config.v0.anorm.conversions {
     implicit val columnToMapDeltaConfigEcsBuildConfig: Column[Map[String, _root_.io.flow.delta.config.v0.models.EcsBuildConfig]] = Util.parser { _.as[Map[String, _root_.io.flow.delta.config.v0.models.EcsBuildConfig]] }
     implicit val columnToSeqDeltaConfigK8sBuildConfig: Column[Seq[_root_.io.flow.delta.config.v0.models.K8sBuildConfig]] = Util.parser { _.as[Seq[_root_.io.flow.delta.config.v0.models.K8sBuildConfig]] }
     implicit val columnToMapDeltaConfigK8sBuildConfig: Column[Map[String, _root_.io.flow.delta.config.v0.models.K8sBuildConfig]] = Util.parser { _.as[Map[String, _root_.io.flow.delta.config.v0.models.K8sBuildConfig]] }
-    implicit val columnToSeqDeltaConfigBuild: Column[Seq[_root_.io.flow.delta.config.v0.models.Build]] = Util.parser { _.as[Seq[_root_.io.flow.delta.config.v0.models.Build]] }
-    implicit val columnToMapDeltaConfigBuild: Column[Map[String, _root_.io.flow.delta.config.v0.models.Build]] = Util.parser { _.as[Map[String, _root_.io.flow.delta.config.v0.models.Build]] }
+    implicit val columnToSeqDeltaConfigBuildConfig: Column[Seq[_root_.io.flow.delta.config.v0.models.BuildConfig]] = Util.parser { _.as[Seq[_root_.io.flow.delta.config.v0.models.BuildConfig]] }
+    implicit val columnToMapDeltaConfigBuildConfig: Column[Map[String, _root_.io.flow.delta.config.v0.models.BuildConfig]] = Util.parser { _.as[Map[String, _root_.io.flow.delta.config.v0.models.BuildConfig]] }
     implicit val columnToSeqDeltaConfigConfig: Column[Seq[_root_.io.flow.delta.config.v0.models.Config]] = Util.parser { _.as[Seq[_root_.io.flow.delta.config.v0.models.Config]] }
     implicit val columnToMapDeltaConfigConfig: Column[Map[String, _root_.io.flow.delta.config.v0.models.Config]] = Util.parser { _.as[Map[String, _root_.io.flow.delta.config.v0.models.Config]] }
   }
