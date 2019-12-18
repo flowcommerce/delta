@@ -63,7 +63,7 @@ object MainActor {
 class MainActor @javax.inject.Inject() (
   logger: RollbarLogger,
   config: Config,
-  buildFactory: BuildActor.Factory,
+  ecsBuildFactory: EcsBuildActor.Factory,
   dockerHubFactory: DockerHubActor.Factory,
   dockerHubTokenFactory: DockerHubTokenActor.Factory,
   projectFactory: ProjectActor.Factory,
@@ -86,7 +86,7 @@ class MainActor @javax.inject.Inject() (
   private[this] val searchActor = system.actorOf(Props[SearchActor](new SearchActor(logger, projectsDao, itemsDao)), name = s"$name:SearchActor")
   private[this] val dockerHubTokenActor = injectedChild(dockerHubTokenFactory(), name = s"main:DockerHubActor")
 
-  private[this] val buildActors = scala.collection.mutable.Map[String, ActorRef]()
+  private[this] val ecsBuildActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val buildSupervisorActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val dockerHubActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val projectActors = scala.collection.mutable.Map[String, ActorRef]()
@@ -168,8 +168,8 @@ class MainActor @javax.inject.Inject() (
         upsertBuildSupervisorActor(id) ! BuildSupervisorActor.Messages.PursueDesiredState
 
       case MainActor.Messages.BuildDeleted(id) =>
-        (buildActors -= id).foreach { case (_, actor) =>
-          actor ! BuildActor.Messages.Delete
+        (ecsBuildActors -= id).foreach { case (_, actor) =>
+          actor ! EcsBuildActor.Messages.Delete
           actor ! PoisonPill
         }
 
@@ -210,7 +210,7 @@ class MainActor @javax.inject.Inject() (
 
       case MainActor.Messages.Scale(buildId, diffs) =>
         rollbarActor ! RollbarActor.Messages.Deployment(buildId, diffs)
-        upsertBuildActor(buildId) ! BuildActor.Messages.Scale(diffs)
+        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.Scale(diffs)
 
       case MainActor.Messages.ShaUpserted(projectId, _) =>
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.PursueDesiredState
@@ -228,7 +228,7 @@ class MainActor @javax.inject.Inject() (
         upsertDockerHubActor(buildId) ! DockerHubActor.Messages.Build(version)
 
       case MainActor.Messages.CheckLastState(buildId) =>
-        upsertBuildActor(buildId) ! BuildActor.Messages.CheckLastState
+        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.CheckLastState
 
       case MainActor.Messages.BuildDesiredStateUpdated(buildId) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
@@ -237,38 +237,38 @@ class MainActor @javax.inject.Inject() (
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
 
       case MainActor.Messages.ConfigureAWS(buildId) =>
-        upsertBuildActor(buildId) ! BuildActor.Messages.ConfigureAWS
+        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.ConfigureAWS
 
       case MainActor.Messages.RemoveOldServices(buildId) =>
-        upsertBuildActor(buildId) ! BuildActor.Messages.RemoveOldServices
+        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.RemoveOldServices
 
       case MainActor.Messages.UpdateContainerAgent(buildId) =>
-        upsertBuildActor(buildId) ! BuildActor.Messages.UpdateContainerAgent
+        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.UpdateContainerAgent
 
       case MainActor.Messages.EnsureContainerAgentHealth(buildId) =>
-        upsertBuildActor(buildId) ! BuildActor.Messages.EnsureContainerAgentHealth
+        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.EnsureContainerAgentHealth
     }
   }
 
   def upsertDockerHubActor(buildId: String): ActorRef = {
     this.synchronized {
-      dockerHubActors.lift(buildId).getOrElse {
+      dockerHubActors.getOrElse(buildId, {
         val ref = injectedChild(dockerHubFactory(buildId), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! DockerHubActor.Messages.Setup
         dockerHubActors += (buildId -> ref)
         ref
-      }
+      })
     }
   }
 
   def upsertUserActor(id: String): ActorRef = {
     this.synchronized {
-      userActors.get(id).getOrElse {
+      userActors.getOrElse(id, {
         val ref = injectedChild(userActorFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! UserActor.Messages.Data(id)
         userActors += (id -> ref)
         ref
-     }
+      })
     }
   }
 
@@ -283,14 +283,14 @@ class MainActor @javax.inject.Inject() (
     }
   }
 
-  def upsertBuildActor(id: String): ActorRef = {
+  def upsertEcsBuildActor(id: String): ActorRef = {
     this.synchronized {
-      buildActors.get(id).getOrElse {
-        val ref = injectedChild(buildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
-        ref ! BuildActor.Messages.Setup
-        buildActors += (id -> ref)
+      ecsBuildActors.getOrElse(id, {
+        val ref = injectedChild(ecsBuildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
+        ref ! EcsBuildActor.Messages.Setup
+        ecsBuildActors += (id -> ref)
         ref
-      }
+      })
     }
   }
 
