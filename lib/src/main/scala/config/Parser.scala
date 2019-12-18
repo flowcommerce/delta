@@ -1,7 +1,7 @@
 package io.flow.delta.lib.config
 
 import io.flow.delta.config.v0.models
-import io.flow.delta.config.v0.models.{Branch, Build, BuildStage, Cluster, Config, ConfigError, ConfigProject, EcsBuildConfig, InstanceType, K8sBuildConfig, ProjectStage}
+import io.flow.delta.config.v0.models.{Branch, BuildConfig, BuildConfigUndefinedType, BuildStage, Cluster, Config, ConfigError, ConfigProject, EcsBuildConfig, InstanceType, K8sBuildConfig, ProjectStage}
 import org.yaml.snakeyaml.Yaml
 
 import scala.collection.JavaConverters._
@@ -36,7 +36,7 @@ case class Parser() {
           }
 
           val builds = obj.get("builds").map(toBuild).getOrElse {
-            Seq(Defaults.EcsBuild)
+            Seq(Defaults.EcsBuildConfig)
           }
 
           val config = ConfigProject(
@@ -75,17 +75,17 @@ case class Parser() {
 
   private[this] def ensureBuild(config: ConfigProject): ConfigProject = {
     config.builds.toList match {
-      case Nil => config.copy(builds = Seq(Defaults.EcsBuild))
+      case Nil => config.copy(builds = Seq(Defaults.EcsBuildConfig))
       case _ => config
     }
   }
 
-  def toBuild(obj: Object): Seq[Build] = {
+  def toBuild(obj: Object): Seq[BuildConfig] = {
     obj match {
       case ar: java.util.ArrayList[_] => {
         ar.asScala.map {
           case name: java.lang.String => {
-            Defaults.EcsBuild.copy(name = name)
+            Defaults.EcsBuildConfig.copy(name = name)
           }
 
           case map: java.util.HashMap[_, _] => {
@@ -95,7 +95,7 @@ case class Parser() {
       }
 
       case _ => {
-        Seq(Defaults.EcsBuild)
+        Seq(Defaults.EcsBuildConfig)
       }
     }
   }
@@ -109,7 +109,7 @@ case class Parser() {
     }
   }
 
-  def mapToBuild(data: Map[String, Any]): models.Build = {
+  def mapToBuild(data: Map[String, Any]): BuildConfig = {
     val all = data.map { case (name, attributes) =>
       val map = toMapString(attributes)
       cluster(map) match {
@@ -137,7 +137,7 @@ case class Parser() {
     val obj = toMap(attributes)
 
     val instanceType = map.get("instance.type") match {
-      case None => Defaults.EcsBuild.instanceType
+      case None => Defaults.EcsBuildConfig.instanceType
       case Some(typ) => InstanceType.fromString(typ).getOrElse {
         sys.error(s"Invalid instance type[$typ]. Must be one of: " + InstanceType.all.map(_.toString).mkString(", "))
       }
@@ -146,12 +146,12 @@ case class Parser() {
     models.EcsBuildConfig(
       name = name.toString,
       cluster = Some(Cluster.Ecs),
-      dockerfile = map.getOrElse("dockerfile", Defaults.EcsBuild.dockerfile),
-      initialNumberInstances = map.get("initial.number.instances").map(_.toLong).getOrElse(Defaults.EcsBuild.initialNumberInstances),
+      dockerfile = map.getOrElse("dockerfile", Defaults.EcsBuildConfig.dockerfile),
+      initialNumberInstances = map.get("initial.number.instances").map(_.toLong).getOrElse(Defaults.EcsBuildConfig.initialNumberInstances),
       instanceType = instanceType,
       memory = map.get("memory").map(_.toLong),
-      portContainer = map.get("port.container").map(_.toInt).getOrElse(Defaults.EcsBuild.portContainer),
-      portHost = map.get("port.host").map(_.toInt).getOrElse(Defaults.EcsBuild.portHost),
+      portContainer = map.get("port.container").map(_.toInt).getOrElse(Defaults.EcsBuildConfig.portContainer),
+      portHost = map.get("port.host").map(_.toInt).getOrElse(Defaults.EcsBuildConfig.portHost),
       remoteLogging = Some(map.get("remote.logging").forall(_.toBoolean)),
       stages = toBuildStages(
         disable = obj.get("disable").map(toStringArray).getOrElse(Nil),
@@ -188,7 +188,7 @@ case class Parser() {
     }
   }
 
-  private[this] def toProjectStages(builds: Seq[models.Build], disable: Seq[String], enable: Seq[String]): Seq[ProjectStage] = {
+  private[this] def toProjectStages(builds: Seq[BuildConfig], disable: Seq[String], enable: Seq[String]): Seq[ProjectStage] = {
     if (areAllBuildsKubernetes(builds)) {
       Nil
     } else {
@@ -196,10 +196,10 @@ case class Parser() {
     }
   }
 
-  def areAllBuildsKubernetes(builds: Seq[models.Build]): Boolean = {
+  def areAllBuildsKubernetes(builds: Seq[BuildConfig]): Boolean = {
     val all = builds.map {
       case _: K8sBuildConfig => Cluster.K8s
-      case _: EcsBuildConfig | models.BuildUndefinedType(_) => Cluster.Ecs
+      case _: EcsBuildConfig | BuildConfigUndefinedType(_) => Cluster.Ecs
     }
     all.nonEmpty && all.forall(_ == Cluster.K8s)
   }

@@ -10,12 +10,12 @@ object Defaults {
     name = "master"
   )
 
-  val K8sBuild = models.K8sBuildConfig(
+  val K8sBuildConfig: models.K8sBuildConfig = models.K8sBuildConfig(
     name = BuildNames.DefaultBuildName,
     cluster = Cluster.K8s,
   )
 
-  val EcsBuild = models.EcsBuildConfig(
+  val EcsBuildConfig: models.EcsBuildConfig = models.EcsBuildConfig(
     name = BuildNames.DefaultBuildName,
     cluster = Some(Cluster.Ecs),
     dockerfile = "./Dockerfile",
@@ -35,13 +35,13 @@ object Defaults {
   val EcsConfig = models.ConfigProject(
     stages = models.ProjectStage.all,
     branches = Seq(Branch),
-    builds = Seq(EcsBuild)
+    builds = Seq(EcsBuildConfig)
   )
 
   val K8sConfig = models.ConfigProject(
     stages = Nil,
     branches = Seq(Branch),
-    builds = Seq(K8sBuild)
+    builds = Seq(K8sBuildConfig)
   )
 
 }
