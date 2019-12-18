@@ -1,6 +1,6 @@
 package k8s
 
-import java.io.InputStreamReader
+import java.io.FileReader
 
 import com.google.inject.{Inject, Singleton}
 import io.flow.delta.aws.Util
@@ -18,7 +18,7 @@ class KubernetesService @Inject()(configuration: play.api.Configuration) {
 
   private val kubeConfigPath = configuration.get[String]("kube.config.path");
 
-  private val kubeConfig = KubeConfig.loadKubeConfig(new InputStreamReader(this.getClass.getResourceAsStream(kubeConfigPath)))
+  private val kubeConfig = KubeConfig.loadKubeConfig(new FileReader(kubeConfigPath))
 
   private val client = ClientBuilder.kubeconfig(kubeConfig).build();
 
@@ -27,6 +27,14 @@ class KubernetesService @Inject()(configuration: play.api.Configuration) {
   private val apps = new AppsV1Api()
 
   private val ProductionNamespace = "production"
+
+  // TODO: remove once IAM roles are setup properly working :-D
+  apps
+    .listNamespacedDeployment("production", true, null, null, null, null, null, null, null, false)
+    .getItems
+    .asScala
+    .map(_.getMetadata.getName)
+    .foreach(println)
 
   def getDeploymentVersion(serviceName: String): Seq[Version] = {
     apps
