@@ -4,7 +4,7 @@ import javax.inject.{Inject, Singleton}
 import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
-import io.flow.delta.config.v0.models.{Build => BuildConfig}
+import io.flow.delta.config.v0.models.BuildConfig
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.util.IdGenerator
@@ -32,7 +32,7 @@ class BuildsDao @Inject()(
   def findAllByProjectId(auth: Authorization, projectId: String): Seq[Build] = {
     findAll(auth, projectId = Some(projectId), limit = None)
   }
-  
+
   def findByProjectIdAndName(auth: Authorization, projectId: String, name: String): Option[Build] = {
     findAll(auth, projectId = Some(projectId), name = Some(name), limit = Some(1)).headOption
   }

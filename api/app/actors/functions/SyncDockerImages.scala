@@ -4,10 +4,9 @@ import javax.inject.Inject
 
 import db.{ImagesDao, ImagesWriteDao, OrganizationsDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, DockerHubToken, SupervisorResult}
-import io.flow.delta.config.v0.models.BuildStage
+import io.flow.delta.config.v0.models.{BuildConfig, BuildStage}
 import io.flow.delta.lib.{BuildNames, Semver}
 import io.flow.delta.v0.models.{Build, Docker, ImageForm}
-import io.flow.delta.config.v0.{models => config}
 import io.flow.docker.registry.v0.Client
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
@@ -22,7 +21,7 @@ object SyncDockerImages extends BuildSupervisorFunction {
 
   override def run(
     build: Build,
-    cfg: config.Build
+    cfg: BuildConfig,
   ) (
     implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = {
@@ -44,7 +43,7 @@ class SyncDockerImages @Inject()(
 ) {
   private[this] val client = new Client(ws = wSClient)
 
-  def run(build: Build, cfg: config.Build)(
+  def run(build: Build, cfg: BuildConfig)(
     implicit ec: ExecutionContext
   ): Future[SupervisorResult] = {
     organizationsDao.findById(Authorization.All, build.project.organization.id) match {
@@ -62,7 +61,7 @@ class SyncDockerImages @Inject()(
   def syncImages(
     docker: Docker,
     build: Build,
-    cfg: config.Build
+    cfg: BuildConfig,
   ) (
     implicit ec: ExecutionContext
   ): Future[SupervisorResult] = {
@@ -100,7 +99,7 @@ class SyncDockerImages @Inject()(
     }
   }
 
-  private[this] def upsertImage(docker: Docker, build: Build, cfg: config.Build, version: String): Boolean = {
+  private[this] def upsertImage(docker: Docker, build: Build, cfg: BuildConfig, version: String): Boolean = {
     imagesDao.findByBuildIdAndVersion(build.id, version) match {
       case Some(_) => {
         // Already know about this tag
@@ -122,5 +121,5 @@ class SyncDockerImages @Inject()(
       }
     }
   }
-  
+
 }
