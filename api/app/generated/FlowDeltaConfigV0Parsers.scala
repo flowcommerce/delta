@@ -166,19 +166,16 @@ package io.flow.delta.config.v0.anorm.parsers {
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.config.v0.models.ConfigProject] = parser(prefixOpt = Some(s"$prefix$sep"))
 
     def parser(
-      cluster: String = "cluster",
       stages: String = "stages",
       builds: String = "builds",
       branches: String = "branches",
       prefixOpt: Option[String] = None
     ): RowParser[io.flow.delta.config.v0.models.ConfigProject] = {
-      io.flow.delta.config.v0.anorm.parsers.Cluster.parser(prefixOpt.getOrElse("") + cluster).? ~
       SqlParser.get[Seq[io.flow.delta.config.v0.models.ProjectStage]](prefixOpt.getOrElse("") + stages) ~
       SqlParser.get[Seq[io.flow.delta.config.v0.models.Build]](prefixOpt.getOrElse("") + builds) ~
       SqlParser.get[Seq[io.flow.delta.config.v0.models.Branch]](prefixOpt.getOrElse("") + branches) map {
-        case cluster ~ stages ~ builds ~ branches => {
+        case stages ~ builds ~ branches => {
           io.flow.delta.config.v0.models.ConfigProject(
-            cluster = cluster,
             stages = stages,
             builds = builds,
             branches = branches

@@ -72,7 +72,6 @@
     "config_project": {
       "description": "Top level configuration for a project, including what builds and branches are covered and the current status (e.g. enabled, paused, etc.)",
       "fields": [
-        { "name": "cluster", "type": "cluster", "required": false },
         { "name": "stages", "type": "[project_stage]", "minimum": 0 },
         { "name": "builds", "type": "[build]", "minimum": 1 },
         { "name": "branches", "type": "[branch]", "minimum": 1 }
