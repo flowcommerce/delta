@@ -13,7 +13,7 @@ import play.api.libs.json.Json
 
 trait DataProject {
 
-  val   logger: RollbarLogger
+  val logger: RollbarLogger
 
   def configsDao: ConfigsDao
   def organizationsDao: OrganizationsDao
