@@ -6,7 +6,7 @@ import db.generated.AmiUpdatesDao
 import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
 import io.flow.delta.aws.{AutoScalingGroup, DefaultSettings, EC2ContainerService, ElasticLoadBalancer}
-import io.flow.delta.config.v0.models.{BuildStage, EcsBuildConfig}
+import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.lib.config.InstanceTypeDefaults
 import io.flow.delta.lib.{BuildNames, StateFormatter, Text}
 import io.flow.delta.v0.models.{Build, Organization, StateForm}

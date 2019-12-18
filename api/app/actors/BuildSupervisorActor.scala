@@ -56,7 +56,7 @@ class BuildSupervisorActor @Inject()(
 
     case BuildSupervisorActor.Messages.PursueDesiredState =>
       withEnabledBuild { build =>
-        withBuildConfig { buildConfig =>
+        withEcsBuildConfig { buildConfig =>
           eventLogProcessor.runSync("PursueDesiredState", log = log(build.project.id)) {
             run(build, buildConfig.stages, BuildSupervisorActor.Functions)
           } // Should Await the Future?
@@ -105,7 +105,7 @@ class BuildSupervisorActor @Inject()(
       }
       case Some(f) => {
         val projectId = build.project.id
-        
+
         stages.contains(f.stage) match {
           case false => {
             eventLogProcessor.skipped(s"Stage ${f.stage} is disabled", log = log(projectId))
