@@ -84,6 +84,7 @@ package io.flow.delta.config.v0.anorm.parsers {
 
     def parser(
       name: String = "name",
+      cluster: String = "cluster",
       dockerfile: String = "dockerfile",
       initialNumberInstances: String = "initial_number_instances",
       instanceType: String = "instance_type",
@@ -101,6 +102,7 @@ package io.flow.delta.config.v0.anorm.parsers {
       prefixOpt: Option[String] = None
     ): RowParser[io.flow.delta.config.v0.models.Build] = {
       SqlParser.str(prefixOpt.getOrElse("") + name) ~
+      io.flow.delta.config.v0.anorm.parsers.Cluster.parser(prefixOpt.getOrElse("") + cluster).? ~
       SqlParser.str(prefixOpt.getOrElse("") + dockerfile) ~
       SqlParser.long(prefixOpt.getOrElse("") + initialNumberInstances) ~
       io.flow.delta.config.v0.anorm.parsers.InstanceType.parser(prefixOpt.getOrElse("") + instanceType) ~
@@ -115,9 +117,10 @@ package io.flow.delta.config.v0.anorm.parsers {
       SqlParser.str(prefixOpt.getOrElse("") + healthcheckUrl).? ~
       SqlParser.bool(prefixOpt.getOrElse("") + crossZoneLoadBalancing).? ~
       SqlParser.bool(prefixOpt.getOrElse("") + allowDowntime).? map {
-        case name ~ dockerfile ~ initialNumberInstances ~ instanceType ~ memory ~ containerMemory ~ portContainer ~ portHost ~ remoteLogging ~ stages ~ dependencies ~ version ~ healthcheckUrl ~ crossZoneLoadBalancing ~ allowDowntime => {
+        case name ~ cluster ~ dockerfile ~ initialNumberInstances ~ instanceType ~ memory ~ containerMemory ~ portContainer ~ portHost ~ remoteLogging ~ stages ~ dependencies ~ version ~ healthcheckUrl ~ crossZoneLoadBalancing ~ allowDowntime => {
           io.flow.delta.config.v0.models.Build(
             name = name,
+            cluster = cluster,
             dockerfile = dockerfile,
             initialNumberInstances = initialNumberInstances,
             instanceType = instanceType,
@@ -163,19 +166,16 @@ package io.flow.delta.config.v0.anorm.parsers {
     def parserWithPrefix(prefix: String, sep: String = "_"): RowParser[io.flow.delta.config.v0.models.ConfigProject] = parser(prefixOpt = Some(s"$prefix$sep"))
 
     def parser(
-      cluster: String = "cluster",
       stages: String = "stages",
       builds: String = "builds",
       branches: String = "branches",
       prefixOpt: Option[String] = None
     ): RowParser[io.flow.delta.config.v0.models.ConfigProject] = {
-      io.flow.delta.config.v0.anorm.parsers.Cluster.parser(prefixOpt.getOrElse("") + cluster).? ~
       SqlParser.get[Seq[io.flow.delta.config.v0.models.ProjectStage]](prefixOpt.getOrElse("") + stages) ~
       SqlParser.get[Seq[io.flow.delta.config.v0.models.Build]](prefixOpt.getOrElse("") + builds) ~
       SqlParser.get[Seq[io.flow.delta.config.v0.models.Branch]](prefixOpt.getOrElse("") + branches) map {
-        case cluster ~ stages ~ builds ~ branches => {
+        case stages ~ builds ~ branches => {
           io.flow.delta.config.v0.models.ConfigProject(
-            cluster = cluster,
             stages = stages,
             builds = builds,
             branches = branches

@@ -57,6 +57,7 @@ package io.flow.delta.config.v0.models {
    */
   final case class Build(
     name: String,
+    cluster: _root_.scala.Option[io.flow.delta.config.v0.models.Cluster] = None,
     dockerfile: String,
     initialNumberInstances: Long,
     instanceType: io.flow.delta.config.v0.models.InstanceType,
@@ -85,7 +86,6 @@ package io.flow.delta.config.v0.models {
    * covered and the current status (e.g. enabled, paused, etc.)
    */
   final case class ConfigProject(
-    cluster: _root_.scala.Option[io.flow.delta.config.v0.models.Cluster] = None,
     stages: Seq[io.flow.delta.config.v0.models.ProjectStage],
     builds: Seq[io.flow.delta.config.v0.models.Build],
     branches: Seq[io.flow.delta.config.v0.models.Branch]
@@ -454,6 +454,7 @@ package io.flow.delta.config.v0.models {
     implicit def jsonReadsDeltaConfigBuild: play.api.libs.json.Reads[Build] = {
       for {
         name <- (__ \ "name").read[String]
+        cluster <- (__ \ "cluster").readNullable[io.flow.delta.config.v0.models.Cluster]
         dockerfile <- (__ \ "dockerfile").read[String]
         initialNumberInstances <- (__ \ "initial_number_instances").read[Long]
         instanceType <- (__ \ "instance_type").read[io.flow.delta.config.v0.models.InstanceType]
@@ -468,7 +469,7 @@ package io.flow.delta.config.v0.models {
         healthcheckUrl <- (__ \ "healthcheck_url").readNullable[String]
         crossZoneLoadBalancing <- (__ \ "cross_zone_load_balancing").readNullable[Boolean]
         allowDowntime <- (__ \ "allow_downtime").readNullable[Boolean]
-      } yield Build(name, dockerfile, initialNumberInstances, instanceType, memory, containerMemory, portContainer, portHost, remoteLogging, stages, dependencies, version, healthcheckUrl, crossZoneLoadBalancing, allowDowntime)
+      } yield Build(name, cluster, dockerfile, initialNumberInstances, instanceType, memory, containerMemory, portContainer, portHost, remoteLogging, stages, dependencies, version, healthcheckUrl, crossZoneLoadBalancing, allowDowntime)
     }
 
     def jsObjectBuild(obj: io.flow.delta.config.v0.models.Build): play.api.libs.json.JsObject = {
@@ -481,7 +482,11 @@ package io.flow.delta.config.v0.models {
         "port_host" -> play.api.libs.json.JsNumber(obj.portHost),
         "stages" -> play.api.libs.json.Json.toJson(obj.stages),
         "dependencies" -> play.api.libs.json.Json.toJson(obj.dependencies)
-      ) ++ (obj.memory match {
+      ) ++ (obj.cluster match {
+        case None => play.api.libs.json.Json.obj()
+        case Some(x) => play.api.libs.json.Json.obj("cluster" -> play.api.libs.json.JsString(x.toString))
+      }) ++
+      (obj.memory match {
         case None => play.api.libs.json.Json.obj()
         case Some(x) => play.api.libs.json.Json.obj("memory" -> play.api.libs.json.JsNumber(x))
       }) ++
@@ -531,11 +536,10 @@ package io.flow.delta.config.v0.models {
 
     implicit def jsonReadsDeltaConfigConfigProject: play.api.libs.json.Reads[ConfigProject] = {
       for {
-        cluster <- (__ \ "cluster").readNullable[io.flow.delta.config.v0.models.Cluster]
         stages <- (__ \ "stages").read[Seq[io.flow.delta.config.v0.models.ProjectStage]]
         builds <- (__ \ "builds").read[Seq[io.flow.delta.config.v0.models.Build]]
         branches <- (__ \ "branches").read[Seq[io.flow.delta.config.v0.models.Branch]]
-      } yield ConfigProject(cluster, stages, builds, branches)
+      } yield ConfigProject(stages, builds, branches)
     }
 
     def jsObjectConfigProject(obj: io.flow.delta.config.v0.models.ConfigProject): play.api.libs.json.JsObject = {
@@ -543,10 +547,7 @@ package io.flow.delta.config.v0.models {
         "stages" -> play.api.libs.json.Json.toJson(obj.stages),
         "builds" -> play.api.libs.json.Json.toJson(obj.builds),
         "branches" -> play.api.libs.json.Json.toJson(obj.branches)
-      ) ++ (obj.cluster match {
-        case None => play.api.libs.json.Json.obj()
-        case Some(x) => play.api.libs.json.Json.obj("cluster" -> play.api.libs.json.JsString(x.toString))
-      })
+      )
     }
 
     implicit def jsonReadsDeltaConfigConfig: play.api.libs.json.Reads[Config] = new play.api.libs.json.Reads[Config] {
