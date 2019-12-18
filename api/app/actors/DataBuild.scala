@@ -5,6 +5,7 @@ import io.flow.delta.config.v0.models._
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
+import lib.BuildConfigUtil
 
 trait DataBuild extends DataProject with EventLog {
 
@@ -79,7 +80,7 @@ trait DataBuild extends DataProject with EventLog {
 
       case Some(build) => {
         withConfig { config =>
-          findBuildByName(config.builds, build.name).getOrElse {
+          BuildConfigUtil.findBuildByName(config.builds, build.name).getOrElse {
             sys.error(s"Build[${build.id}] does not have a configuration matching name[${build.name}]")
           }
         }

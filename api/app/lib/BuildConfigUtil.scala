@@ -4,6 +4,14 @@ import io.flow.delta.config.v0.models.{BuildConfig, BuildConfigUndefinedType, Ec
 
 object BuildConfigUtil {
 
+  def getName(config: BuildConfig): String = {
+    config match {
+      case c: EcsBuildConfig => c.name
+      case c: K8sBuildConfig => c.name
+      case BuildConfigUndefinedType(other) => sys.error(s"Invalid config type: $other")
+    }
+  }
+
   def findBuildByName(configs: Seq[BuildConfig], name: String): Option[BuildConfig] = {
     configs.find {
       case c: EcsBuildConfig => c.name == name
