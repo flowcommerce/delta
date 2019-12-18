@@ -17,7 +17,7 @@ import io.flow.postgresql.OrderBy
 import scala.concurrent.Future
 import scala.concurrent.duration._
 
-object BuildActor {
+object EcsBuildActor {
 
   val CheckLastStateIntervalSeconds = 45L
   val ScaleIntervalSeconds = 5
@@ -48,7 +48,7 @@ object BuildActor {
 
 }
 
-class BuildActor @javax.inject.Inject() (
+class EcsBuildActor @javax.inject.Inject() (
   asg: AutoScalingGroup,
   override val buildsDao: BuildsDao,
   override val configsDao: ConfigsDao,
@@ -67,46 +67,46 @@ class BuildActor @javax.inject.Inject() (
 ) extends Actor with DataBuild {
 
   private[this] implicit val ec = system.dispatchers.lookup("build-actor-context")
-  private[this] implicit val configuredRollbar = logger.fingerprint("BuildActor")
+  private[this] implicit val configuredRollbar = logger.fingerprint("EcsBuildActor")
 
   def receive = SafeReceive.withLogUnhandled {
 
-    case BuildActor.Messages.Setup =>
+    case EcsBuildActor.Messages.Setup =>
       handleReceiveSetupEvent()
 
-    case BuildActor.Messages.Delete =>
+    case EcsBuildActor.Messages.Delete =>
       withBuild { build =>
         //removeAwsResources(build)
-        logger.withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Called BuildActor.Messages.Delete for build")
+        logger.withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Called EcsBuildActor.Messages.Delete for build")
       }
 
-    case BuildActor.Messages.CheckLastState =>
+    case EcsBuildActor.Messages.CheckLastState =>
       withEnabledBuild { build =>
         captureLastState(build) // Should Await the Future?
       }
 
-    case BuildActor.Messages.EnsureContainerAgentHealth =>
+    case EcsBuildActor.Messages.EnsureContainerAgentHealth =>
       withEnabledBuild { build =>
         ensureContainerAgentHealth(build) // Should Await the Future?
       }
 
-    case BuildActor.Messages.UpdateContainerAgent =>
+    case EcsBuildActor.Messages.UpdateContainerAgent =>
       withEnabledBuild { build =>
         updateContainerAgent(build) // Should Await the Future?
       }
 
-    case BuildActor.Messages.RemoveOldServices =>
+    case EcsBuildActor.Messages.RemoveOldServices =>
       withEnabledBuild { build =>
         removeOldServices(build) // Should Await the Future?
       }
 
     // Configure EC2 LC, ELB, ASG for a build (id: user, fulfillment, splashpage, etc)
-    case BuildActor.Messages.ConfigureAWS =>
+    case EcsBuildActor.Messages.ConfigureAWS =>
       withEnabledBuild { build =>
         configureAWS(build) // Should Await the Future?
       }
 
-    case BuildActor.Messages.Scale(diffs) =>
+    case EcsBuildActor.Messages.Scale(diffs) =>
       withOrganization { org =>
         withEnabledBuild { build =>
           diffs.foreach { diff =>
@@ -120,13 +120,13 @@ class BuildActor @javax.inject.Inject() (
     setBuildId(buildId)
 
     if (isScaleEnabled) {
-      self ! BuildActor.Messages.ConfigureAWS
+      self ! EcsBuildActor.Messages.ConfigureAWS
 
       system.scheduler.schedule(
         Duration(1L, "second"),
-        Duration(BuildActor.CheckLastStateIntervalSeconds, "seconds")
+        Duration(EcsBuildActor.CheckLastStateIntervalSeconds, "seconds")
       ) {
-        self ! BuildActor.Messages.CheckLastState
+        self ! EcsBuildActor.Messages.CheckLastState
       }
 
       ()
@@ -212,7 +212,7 @@ class BuildActor @javax.inject.Inject() (
 
     // only need to run scale once with delta 1.1
     if (diff.lastInstances == 0) {
-      self ! BuildActor.Messages.ConfigureAWS
+      self ! EcsBuildActor.Messages.ConfigureAWS
       eventLogProcessor.runAsync(s"Bring up ${Text.pluralize(diff.desiredInstances, "instance", "instances")} of ${diff.versionName}", log = log(build.project.id)) {
         ecs.scale(awsSettings, org, build, cfg, imageVersion, diff.desiredInstances)
       }

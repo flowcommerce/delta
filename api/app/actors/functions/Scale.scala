@@ -2,7 +2,7 @@ package io.flow.delta.actors.functions
 
 import javax.inject.Inject
 import db.{BuildDesiredStatesDao, InternalBuildLastStatesDao}
-import io.flow.delta.actors.{BuildActor, BuildSupervisorFunction, MainActor, SupervisorResult}
+import io.flow.delta.actors.{BuildSupervisorFunction, EcsBuildActor, MainActor, SupervisorResult}
 import io.flow.delta.config.v0.models.BuildStage
 import io.flow.delta.v0.models.Build
 import io.flow.postgresql.Authorization
@@ -34,12 +34,12 @@ object Scale extends BuildSupervisorFunction {
   * scale down only initiated after Scale Up is complete.
   */
 class Scale @Inject()(
-                       buildDesiredStatesDao: BuildDesiredStatesDao,
-                       buildLastStatesDao: InternalBuildLastStatesDao,
-                       @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef
+  buildDesiredStatesDao: BuildDesiredStatesDao,
+  buildLastStatesDao: InternalBuildLastStatesDao,
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
 ) {
 
-  private[this] val SecondsUntilStale = (BuildActor.CheckLastStateIntervalSeconds * 2.5).toInt
+  private[this] val SecondsUntilStale = (EcsBuildActor.CheckLastStateIntervalSeconds * 2.5).toInt
 
   def run(
     build: Build
@@ -75,6 +75,6 @@ class Scale @Inject()(
     val now = new DateTime()
     ts.isAfter(now.minusMinutes(SecondsUntilStale))
   }
-  
+
 }
 
