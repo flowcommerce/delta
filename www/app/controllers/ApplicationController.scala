@@ -1,5 +1,6 @@
 package controllers
 
+import io.flow.delta.config.v0.models.Cluster
 import io.flow.delta.v0.models.Version
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.www.lib.DeltaClientProvider
@@ -22,6 +23,8 @@ case class BuildView(dashboardBuild: io.flow.delta.v0.models.DashboardBuild) {
 
   private[this] val lastInstances = formatInstances(dashboardBuild.last.versions)
   private[this] val desiredInstances = formatInstances(dashboardBuild.desired.versions)
+
+  val cluster: Cluster = dashboardBuild.cluster
 
   val status: Option[String] = {
     lastNames == desiredNames match {
