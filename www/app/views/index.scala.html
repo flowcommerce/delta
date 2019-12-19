@@ -14,6 +14,7 @@
       <tr>
         <thead>
           <th>Build</th>
+          <th>Cluster</th>
           <th>Desired state last set</th>
           <th>State</th>
         </thead>
@@ -22,13 +23,14 @@
       @dashboardBuilds.items.map { buildView =>
         <tr@buildView.status.map { v =>  class='@v' }.getOrElse("")>
           <td><a href="@routes.ProjectsController.show(buildView.dashboardBuild.project.id)">@{buildView.dashboardBuild.project.organization.id}/@io.flow.delta.lib.BuildNames.projectName(buildView.dashboardBuild)</a></td>
+          <td>@buildView.cluster</td>
           <td>@io.flow.delta.lib.Text.since(buildView.dashboardBuild.desired.timestamp)</td>
           <td>@buildView.label</td>
         </tr>
       }
     </table>
   </div>
-    
+
     @if(dashboardBuilds.hasPrevious || dashboardBuilds.hasNext) {
       <ul class="pager">
         @if(dashboardBuilds.hasPrevious) {
