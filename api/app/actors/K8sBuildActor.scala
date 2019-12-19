@@ -7,8 +7,6 @@ import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm}
 import io.flow.log.RollbarLogger
 import k8s.KubernetesService
-
-import scala.concurrent.Future
 import scala.concurrent.duration._
 
 object K8sBuildActor {
@@ -49,9 +47,7 @@ class K8sBuildActor @javax.inject.Inject() (
 
     case K8sBuildActor.Messages.CheckLastState =>
       withEnabledBuild { build =>
-        await {
-          captureLastState(build)
-        }
+        captureLastState(build)
       }
   }
 
@@ -67,14 +63,14 @@ class K8sBuildActor @javax.inject.Inject() (
     ()
   }
 
-  def captureLastState(build: Build): Future[String] = {
+  private[this] def captureLastState(build: Build): String = {
     val versions = kubernetesService.getDeployedVersions(build.name)
     buildLastStatesDao.upsert(
       usersDao.systemUser,
       build,
       StateForm(versions = versions)
     )
-    Future.successful(StateFormatter.label(versions))
+    StateFormatter.label(versions)
   }
 
 }
