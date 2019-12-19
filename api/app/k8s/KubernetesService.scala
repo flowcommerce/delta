@@ -12,9 +12,19 @@ import io.kubernetes.client.util.{ClientBuilder, KubeConfig}
 
 import scala.collection.JavaConverters._
 
+trait KubernetesService {
+
+  def getDeployedVersions(serviceName: String): Seq[Version]
+}
+
+class DummyK8sService extends KubernetesService {
+
+  override def getDeployedVersions(serviceName: String): Seq[Version] = Seq.empty
+
+}
 
 @Singleton
-class KubernetesService @Inject()(configuration: play.api.Configuration) {
+class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) {
 
   private val kubeConfigPath = configuration.get[String]("kube.config.path");
 
