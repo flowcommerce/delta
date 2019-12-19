@@ -190,7 +190,7 @@ case class Parser() {
 
   private[this] def toProjectStages(builds: Seq[BuildConfig], disable: Seq[String], enable: Seq[String]): Seq[ProjectStage] = {
     if (areAllBuildsKubernetes(builds)) {
-      Nil
+      Seq(models.ProjectStage.SyncShas, models.ProjectStage.SyncTags)
     } else {
       toEcsProjectStages(disable: Seq[String], enable: Seq[String])
     }

@@ -39,7 +39,7 @@ object Defaults {
   )
 
   val K8sConfig = models.ConfigProject(
-    stages = Nil,
+    stages = Seq(models.ProjectStage.SyncShas, models.ProjectStage.SyncTags),
     branches = Seq(Branch),
     builds = Seq(K8sBuildConfig)
   )
