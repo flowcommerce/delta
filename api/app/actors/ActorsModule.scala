@@ -7,6 +7,7 @@ import play.api.libs.concurrent.AkkaGuiceSupport
 class ActorsModule extends AbstractModule with AkkaGuiceSupport {
   override def configure(): Unit = {
     bindActorFactory[EcsBuildActor, EcsBuildActor.Factory]
+    bindActorFactory[K8sBuildActor, K8sBuildActor.Factory]
     bindActorFactory[DockerHubActor, DockerHubActor.Factory]
     bindActorFactory[ProjectActor, ProjectActor.Factory]
     bindActorFactory[DockerHubTokenActor, DockerHubTokenActor.Factory]
