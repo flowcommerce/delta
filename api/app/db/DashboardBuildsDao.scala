@@ -51,17 +51,19 @@ class DashboardBuildsDao @Inject()(
   }
 
   private[this] val parser: RowParser[DashboardBuild] = {
+    SqlParser.str("id") ~
     io.flow.delta.v0.anorm.parsers.ProjectSummary.parserWithPrefix("project") ~
     SqlParser.str("name") ~
     io.flow.delta.v0.anorm.parsers.State.parserWithPrefix("last").? ~
     io.flow.delta.v0.anorm.parsers.State.parserWithPrefix("desired").? ~
     SqlParser.str("config_data").? map {
-      case projectSummary ~ name ~ lastState ~ desiredState ~ configData => {
+      case id ~ projectSummary ~ name ~ lastState ~ desiredState ~ configData => {
         lazy val defaultState = State(
           timestamp = DateTime.now,
           versions = Nil,
         )
         DashboardBuild(
+          id = id,
           project = projectSummary,
           name = name,
           cluster = configData.flatMap { c =>

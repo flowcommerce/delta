@@ -381,6 +381,7 @@
     "dashboard_build": {
       "description": "Summary of each build for the purposes of displaying on a dashboard",
       "fields": [
+        { "name": "id", "type": "string", "description": "The build id" },
         { "name": "project", "type": "project_summary" },
         { "name": "name", "type": "string", "description": "The build name" },
         { "name": "cluster", "type": "io.flow.delta.config.v0.enums.cluster" },
