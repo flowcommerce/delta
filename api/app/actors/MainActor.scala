@@ -5,12 +5,13 @@ import java.util.UUID
 import actors.RollbarActor
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import com.typesafe.config.Config
-import db.{BuildsDao, ConfigsDao, ItemsDao, ProjectsDao}
+import db.{BuildsDao, ConfigsDao, DashboardBuildsDao, ItemsDao, ProjectsDao}
 import io.flow.akka.SafeReceive
 import io.flow.akka.recurring.{ScheduleConfig, Scheduler}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.StateDiff
 import io.flow.delta.config.v0.models.{Cluster, ConfigError, ConfigProject, ConfigUndefinedType}
+import io.flow.delta.v0.models.DashboardBuild
 import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
@@ -75,6 +76,7 @@ class MainActor @javax.inject.Inject() (
   buildSupervisorActorFactory: BuildSupervisorActor.Factory,
   system: ActorSystem,
   playEnv: Environment,
+  dashboardBuildsDao: DashboardBuildsDao,
   buildsDao: BuildsDao,
   configsDao: ConfigsDao,
   projectsDao: ProjectsDao,
@@ -98,8 +100,8 @@ class MainActor @javax.inject.Inject() (
   private[this] val projectSupervisorActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val userActors = scala.collection.mutable.Map[String, ActorRef]()
 
-  private[this] def allBuilds() = {
-    buildsDao.findAll(Authorization.All, limit = None)
+  private[this] def allBuilds(cluster: Cluster): Seq[DashboardBuild] = {
+    dashboardBuildsDao.findAll(Authorization.All, limit = None).filter(_.cluster == cluster)
   }
 
   playEnv.mode match {
@@ -118,7 +120,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.ensure.container.agent.health")
       ){
-        allBuilds().foreach { build =>
+        allBuilds(Cluster.Ecs).foreach { build =>
           self ! MainActor.Messages.EnsureContainerAgentHealth(build.id)
         }
       }
@@ -126,7 +128,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.update.container.agent")
       ) {
-        allBuilds().foreach { build =>
+        allBuilds(Cluster.Ecs).foreach { build =>
           self ! MainActor.Messages.UpdateContainerAgent(build.id)
         }
       }
@@ -134,7 +136,7 @@ class MainActor @javax.inject.Inject() (
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.remove.old.services")
       ) {
-        allBuilds().foreach { build =>
+        allBuilds(Cluster.Ecs).foreach { build =>
           self ! MainActor.Messages.RemoveOldServices(build.id)
         }
       }
