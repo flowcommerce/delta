@@ -28,7 +28,7 @@ class KubernetesService @Inject()(configuration: play.api.Configuration) {
 
   private val ProductionNamespace = "production"
 
-  def getDeploymentVersion(serviceName: String): Seq[Version] = {
+  def getDeployedVersions(serviceName: String): Seq[Version] = {
     apps
       .listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, null, null, null, null, false)
       .getItems

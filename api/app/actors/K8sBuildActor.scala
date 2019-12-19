@@ -68,7 +68,7 @@ class K8sBuildActor @javax.inject.Inject() (
   }
 
   def captureLastState(build: Build): Future[String] = {
-    val versions = kubernetesService.getDeploymentVersion(build.name)
+    val versions = kubernetesService.getDeployedVersions(build.name)
     buildLastStatesDao.upsert(
       usersDao.systemUser,
       build,
