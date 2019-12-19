@@ -1,6 +1,6 @@
 package lib
 
-import io.flow.delta.config.v0.models.{BuildConfigUndefinedType, Cluster, Config, ConfigError, ConfigProject, ConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
+import io.flow.delta.config.v0.models.{BuildConfig, BuildConfigUndefinedType, Cluster, Config, ConfigError, ConfigProject, ConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
 import io.flow.delta.config.v0.models.json._
 import play.api.libs.json.Json
 
@@ -26,12 +26,18 @@ object ProjectConfigUtil {
       case _: ConfigUndefinedType => None
       case _: ConfigError => None
       case p: ConfigProject => {
-        BuildConfigUtil.findBuildByName(p.builds, buildName).map {
-          case b: EcsBuildConfig => b.cluster.getOrElse(Cluster.Ecs)
-          case b: K8sBuildConfig => b.cluster
-          case BuildConfigUndefinedType(_) => Unknown
+        BuildConfigUtil.findBuildByName(p.builds, buildName).map { build =>
+          cluster(build)
         }
       }
+    }
+  }
+
+  def cluster(config: BuildConfig): Cluster = {
+    config match {
+      case b: EcsBuildConfig => b.cluster.getOrElse(Cluster.Ecs)
+      case b: K8sBuildConfig => b.cluster
+      case BuildConfigUndefinedType(_) => Unknown
     }
   }
 }
