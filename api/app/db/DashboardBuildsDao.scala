@@ -2,9 +2,10 @@ package db
 
 import javax.inject.{Inject, Singleton}
 import anorm._
-import io.flow.delta.v0.models.DashboardBuild
+import io.flow.delta.v0.models.{DashboardBuild, State}
 import io.flow.postgresql.{Authorization, Query}
 import lib.ProjectConfigUtil
+import org.joda.time.DateTime
 import play.api.db._
 
 @Singleton
@@ -52,18 +53,22 @@ class DashboardBuildsDao @Inject()(
   private[this] val parser: RowParser[DashboardBuild] = {
     io.flow.delta.v0.anorm.parsers.ProjectSummary.parserWithPrefix("project") ~
     SqlParser.str("name") ~
-    io.flow.delta.v0.anorm.parsers.State.parserWithPrefix("last") ~
-    io.flow.delta.v0.anorm.parsers.State.parserWithPrefix("desired") ~
+    io.flow.delta.v0.anorm.parsers.State.parserWithPrefix("last").? ~
+    io.flow.delta.v0.anorm.parsers.State.parserWithPrefix("desired").? ~
     SqlParser.str("config_data").? map {
       case projectSummary ~ name ~ lastState ~ desiredState ~ configData => {
+        lazy val defaultState = State(
+          timestamp = DateTime.now,
+          versions = Nil,
+        )
         DashboardBuild(
           project = projectSummary,
           name = name,
           cluster = configData.flatMap { c =>
             ProjectConfigUtil.cluster(c, name)
           }.getOrElse(ProjectConfigUtil.Unknown),
-          desired = desiredState,
-          last = lastState
+          desired = desiredState.getOrElse(defaultState),
+          last = lastState.getOrElse(defaultState),
         )
       }
     }
