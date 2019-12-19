@@ -5,7 +5,7 @@ import com.amazonaws.services.ecr.model.DescribeImagesRequest
 import db.{ImagesDao, ImagesWriteDao, OrganizationsDao}
 import io.flow.delta.actors.SupervisorResult
 import io.flow.delta.aws.{Configuration, Credentials}
-import io.flow.delta.config.v0.{models => config}
+import io.flow.delta.config.v0.models.BuildConfig
 import io.flow.delta.lib.{BuildNames, Semver}
 import io.flow.delta.v0.models.{Build, Docker, ImageForm}
 import io.flow.postgresql.Authorization
@@ -32,7 +32,7 @@ class SyncECRImages @Inject()(
     withClientConfiguration(configuration.aws).
     build()
 
-  def run(build: Build, cfg: config.Build): SupervisorResult = {
+  def run(build: Build, cfg: BuildConfig): SupervisorResult = {
     organizationsDao.findById(Authorization.All, build.project.organization.id) match {
       case None => {
         // build was deleted
@@ -48,7 +48,7 @@ class SyncECRImages @Inject()(
   def syncImages(
     docker: Docker,
     build: Build,
-    cfg: config.Build
+    cfg: BuildConfig,
   ): SupervisorResult = {
     try {
       val descriedImages = ecrclient
@@ -73,7 +73,7 @@ class SyncECRImages @Inject()(
     }
   }
 
-  private[this] def upsertImage(docker: Docker, build: Build, cfg: config.Build, version: String): Boolean = {
+  private[this] def upsertImage(docker: Docker, build: Build, cfg: BuildConfig, version: String): Boolean = {
     imagesDao.findByBuildIdAndVersion(build.id, version) match {
       case Some(_) => {
         // Already know about this tag
@@ -95,5 +95,5 @@ class SyncECRImages @Inject()(
       }
     }
   }
-  
+
 }

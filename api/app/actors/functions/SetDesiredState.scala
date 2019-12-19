@@ -1,14 +1,14 @@
 package io.flow.delta.actors.functions
 
 import javax.inject.Inject
-
 import db.{BuildDesiredStatesDao, ConfigsDao, TagsDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
-import io.flow.delta.config.v0.models.{BuildStage, ConfigError, ConfigProject, ConfigUndefinedType}
+import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm, Version}
 import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, OrderBy}
+import lib.BuildConfigUtil
 import play.api.Application
 
 import scala.concurrent.Future
@@ -19,7 +19,7 @@ object SetDesiredState extends BuildSupervisorFunction {
 
   override def run(
     build: Build,
-    cfg: io.flow.delta.config.v0.models.Build
+    cfg: BuildConfig,
   ) (
     implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = Future {
@@ -36,7 +36,7 @@ object SetDesiredState extends BuildSupervisorFunction {
 class SetDesiredState @Inject()(
   buildDesiredStatesDao: BuildDesiredStatesDao,
   configsDao: ConfigsDao,
-  tagsDao: TagsDao
+  tagsDao: TagsDao,
 ) {
 
   val DefaultNumberInstances = 2L
@@ -73,7 +73,7 @@ class SetDesiredState @Inject()(
   }
 
   def setVersions(versions: Seq[Version], build: Build): SupervisorResult = {
-    assert(!versions.isEmpty, "Must have at least one version")
+    assert(versions.nonEmpty, "Must have at least one version")
 
     buildDesiredStatesDao.upsert(
       Constants.SystemUser,
@@ -96,7 +96,7 @@ class SetDesiredState @Inject()(
       case Some(config) => {
         config match {
           case cfg: ConfigProject => {
-            cfg.builds.find(_.name == build.name) match {
+            BuildConfigUtil.findEcsBuildByName(cfg.builds, build.name) match {
               case None => DefaultNumberInstances
               case Some(bc) => bc.initialNumberInstances
             }

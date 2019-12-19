@@ -31,7 +31,7 @@ class ProjectsDao @javax.inject.Inject() (
       left join organizations on organizations.id = projects.organization_id
       left join configs on configs.project_id = projects.id
   """)
-  
+
   def findByOrganizationIdAndName(auth: Authorization, organizationId: String, name: String): Option[Project] = {
     findAll(auth, organizationId = Some(organizationId), name = Some(name), limit = Some(1)).headOption
   }
@@ -114,7 +114,7 @@ class ProjectsDao @javax.inject.Inject() (
           name = name,
           uri = uri,
           config = configData match {
-            case None => Defaults.Config
+            case None => Defaults.EcsConfig
             case Some(text) => Json.parse(text).as[Config]
           }
         )
@@ -223,7 +223,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
         val org = organizationsDao.findById(Authorization.All, form.organization).getOrElse {
           sys.error(s"Could not find organization with id[${form.organization}]")
         }
-        
+
         val id = urlKey.generate(form.name.trim)
 
         db.withTransaction { implicit c =>
@@ -242,7 +242,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
             configsDao.upsertWithConnection(c, createdBy, id, cfg)
           }
 
-          form.config.getOrElse(Defaults.Config).builds.foreach { buildConfig =>
+          form.config.getOrElse(Defaults.EcsConfig).builds.foreach { buildConfig =>
             buildsWriteDao.upsert(c, createdBy, id, Status.Enabled, buildConfig)
           }
         }

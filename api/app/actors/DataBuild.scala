@@ -1,11 +1,11 @@
 package io.flow.delta.actors
 
 import db.BuildsDao
-import io.flow.delta.config.v0.{models => config}
+import io.flow.delta.config.v0.models._
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
-
+import lib.BuildConfigUtil
 
 trait DataBuild extends DataProject with EventLog {
 
@@ -61,13 +61,18 @@ trait DataBuild extends DataProject with EventLog {
     }
   }
 
-  def requiredBuildConfig: config.Build = {
+  def requiredEcsBuildConfig: EcsBuildConfig = {
     optionalBuildConfig.getOrElse {
       sys.error("No build config")
+    } match {
+      case c: EcsBuildConfig => c
+      case _: K8sBuildConfig | BuildConfigUndefinedType(_) => {
+        sys.error("Must have an ecs build config")
+      }
     }
   }
 
-  private[this] def optionalBuildConfig: Option[config.Build] = {
+  private[this] def optionalBuildConfig: Option[BuildConfig] = {
     dataBuild match {
       case None => {
         None
@@ -75,7 +80,7 @@ trait DataBuild extends DataProject with EventLog {
 
       case Some(build) => {
         withConfig { config =>
-          config.builds.find(_.name == build.name).getOrElse {
+          BuildConfigUtil.findBuildByName(config.builds, build.name).getOrElse {
             sys.error(s"Build[${build.id}] does not have a configuration matching name[${build.name}]")
           }
         }
@@ -87,8 +92,15 @@ trait DataBuild extends DataProject with EventLog {
     * Invokes the specified function w/ the current build config, but
     * only if we have an enabled configuration matching this build.
     */
-  def withBuildConfig[T](f: config.Build => T): Option[T] = {
+  def withBuildConfig[T](f: BuildConfig => T): Option[T] = {
     optionalBuildConfig.map(f)
+  }
+
+  def withEcsBuildConfig[T](f: EcsBuildConfig => T): Option[T] = {
+    optionalBuildConfig.flatMap {
+      case c: EcsBuildConfig => Some(c)
+      case _: K8sBuildConfig | _: BuildConfigUndefinedType => None
+    }.map(f)
   }
 
 }

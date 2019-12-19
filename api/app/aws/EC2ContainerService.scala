@@ -4,9 +4,10 @@ import akka.actor.ActorSystem
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
+import io.flow.delta.config.v0.models.BuildConfig
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Organization, Version}
-import io.flow.delta.config.v0.{models => config}
+import io.flow.delta.config.v0.models.EcsBuildConfig
 import io.flow.log.RollbarLogger
 import org.joda.time.DateTime
 
@@ -186,7 +187,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     settings: Settings,
     org: Organization,
     build: Build,
-    cfg: config.Build,
+    cfg: EcsBuildConfig,
     imageVersion: String,
     desiredCount: Long
   ): Future[Unit] = {
@@ -269,7 +270,7 @@ case class EC2ContainerService @javax.inject.Inject() (
       }
     }
   }
-  
+
   private[this] def getServiceArns(cluster: String): Seq[String] = {
     val serviceArns = scala.collection.mutable.ListBuffer.empty[List[String]]
     var hasMore = true
@@ -320,7 +321,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     settings: Settings,
     org: Organization,
     build: Build,
-    cfg: config.Build,
+    cfg: BuildConfig,
     imageVersion: String,
   ): Future[String] = {
     val taskName = getTaskName(org, build, imageVersion)
@@ -412,7 +413,7 @@ case class EC2ContainerService @javax.inject.Inject() (
     settings: Settings,
     org: Organization,
     build: Build,
-    cfg: config.Build,
+    cfg: EcsBuildConfig,
     imageVersion: String,
     taskDefinition: String,
     desiredCount: Long
@@ -489,7 +490,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         // or the service exists but is INACTIVE, then create the service
         log.info(s"AWS EC2ContainerService createOrUpdateService")
         client.createService(
-          // MaximumPercent is set to 200 to allow services with only 1 
+          // MaximumPercent is set to 200 to allow services with only 1
           // instance to be deployed with ECS.
           new CreateServiceRequest()
             .withServiceName(serviceName)

@@ -27,12 +27,12 @@ class ParserSpec extends PlaySpec {
   }
 
   "Samples" in {
-    configProject(read("empty.txt")) must be(Defaults.Config)
+    configProject(read("empty.txt")) must be(Defaults.EcsConfig)
 
     configProject(read("location.txt")) must be(
-      Defaults.Config.copy(
+      Defaults.EcsConfig.copy(
         builds = Seq(
-          Defaults.Build.copy(
+          Defaults.EcsBuildConfig.copy(
             portContainer = 9000,
             portHost = 6191
           )
@@ -41,9 +41,9 @@ class ParserSpec extends PlaySpec {
     )
 
     configProject(read("delta.txt")) must be(
-      Defaults.Config.copy(
+      Defaults.EcsConfig.copy(
         builds = Seq(
-          Defaults.Build.copy(
+          Defaults.EcsBuildConfig.copy(
             name = "api",
             dockerfile = "api/Dockerfile",
             portContainer = 9000,
@@ -51,7 +51,7 @@ class ParserSpec extends PlaySpec {
             initialNumberInstances = 1,
             remoteLogging = Some(true)
           ),
-          Defaults.Build.copy(
+          Defaults.EcsBuildConfig.copy(
             name = "www",
             dockerfile = "www/Dockerfile",
             portContainer = 9000,
@@ -62,14 +62,17 @@ class ParserSpec extends PlaySpec {
       )
     )
 
+    configProject(read("k8s.txt")) must be(Defaults.K8sConfig)
+
     configProject(read("complete.txt")) must be(
-      Defaults.Config.copy(
+      Defaults.EcsConfig.copy(
         branches = Seq(Branch(name = "master"), Branch(name = "release")),
         stages = Seq(ProjectStage.SyncShas, ProjectStage.SyncTags),
         builds = Seq(
-          Defaults.Build.copy(name = "api"),
-          Build(
+          Defaults.EcsBuildConfig.copy(name = "api"),
+          EcsBuildConfig(
             name = "www",
+            cluster = Some(Cluster.Ecs),
             dockerfile = "www/Dockerfile",
             instanceType = InstanceType.T2Medium,
             memory = Some(8150),
@@ -98,8 +101,8 @@ class ParserSpec extends PlaySpec {
   }
 
   "Empty file" in {
-    configProject("") must be(Defaults.Config)
-    configProject("   ") must be(Defaults.Config)
+    configProject("") must be(Defaults.EcsConfig)
+    configProject("   ") must be(Defaults.EcsConfig)
   }
 
   "Invalid file" in {
@@ -129,7 +132,7 @@ stages:
     configProject("""
 branches:
   - master
-    """) must be(Defaults.Config)
+    """) must be(Defaults.EcsConfig)
 
     configProject("""
 branches:
@@ -142,7 +145,7 @@ branches:
     configProject("""
 builds:
   - root
-    """) must be(Defaults.Config)
+    """) must be(Defaults.EcsConfig)
 
     configProject("""
 builds:
@@ -150,8 +153,8 @@ builds:
   - www
     """).builds.toList match {
       case api :: www :: Nil => {
-        api must be(Defaults.Build.copy(name = "api"))
-        www must be(Defaults.Build.copy(name = "www"))
+        api must be(Defaults.EcsBuildConfig.copy(name = "api"))
+        www must be(Defaults.EcsBuildConfig.copy(name = "www"))
       }
 
       case _ => sys.error("Expected two branches")
@@ -177,7 +180,7 @@ builds:
     """).builds.toList match {
       case api :: www :: Nil => {
         api must be(
-          Defaults.Build.copy(
+          Defaults.EcsBuildConfig.copy(
             name = "api",
             dockerfile = "api/Dockerfile",
             initialNumberInstances = 5,
@@ -187,7 +190,7 @@ builds:
           )
         )
         www must be(
-          Defaults.Build.copy(
+          Defaults.EcsBuildConfig.copy(
             name = "www",
             dockerfile = "www/Dockerfile",
             initialNumberInstances = 10,
@@ -208,7 +211,7 @@ builds:
     """).builds.toList match {
       case build :: Nil => {
         build must be(
-          Defaults.Build.copy(instanceType = InstanceType.T2Medium, memory = Some(1000))
+          Defaults.EcsBuildConfig.copy(instanceType = InstanceType.T2Medium, memory = Some(1000))
         )
       }
 
@@ -223,7 +226,7 @@ builds:
     """).builds.toList match {
       case build :: Nil => {
         build must be(
-          Defaults.Build.copy(portContainer = 9000, portHost = 6021)
+          Defaults.EcsBuildConfig.copy(portContainer = 9000, portHost = 6021)
         )
       }
 
@@ -231,4 +234,11 @@ builds:
     }
   }
 
+  "areAllBuildsKubernetes" in {
+    parser.areAllBuildsKubernetes(Nil) must be(false)
+    parser.areAllBuildsKubernetes(Seq(Defaults.K8sBuildConfig)) must be(true)
+    parser.areAllBuildsKubernetes(Seq(Defaults.EcsBuildConfig)) must be(false)
+    parser.areAllBuildsKubernetes(Seq(Defaults.EcsBuildConfig, Defaults.K8sBuildConfig)) must be(false)
+    parser.areAllBuildsKubernetes(Seq(Defaults.K8sBuildConfig, Defaults.K8sBuildConfig)) must be(true)
+  }
 }

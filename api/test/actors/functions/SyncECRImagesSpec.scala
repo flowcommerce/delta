@@ -10,7 +10,7 @@ import io.flow.test.utils.FlowPlaySpec
 class SyncECRImagesSpec extends FlowPlaySpec with db.Helpers {
   private val syncECR =  app.injector.instanceOf[SyncECRImages]
 
-  val bConfig = config.Build(
+  val bConfig = config.EcsBuildConfig(
     createTestId(),
     cluster = None,
     createTestId(),

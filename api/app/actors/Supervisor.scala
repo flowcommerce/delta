@@ -1,7 +1,7 @@
 package io.flow.delta.actors
 
 import io.flow.delta.v0.models.{Build, Project}
-import io.flow.delta.config.v0.models.{BuildStage, ConfigProject, ProjectStage}
+import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigProject, ProjectStage}
 import play.api.Application
 
 import scala.collection.mutable
@@ -113,7 +113,7 @@ trait BuildSupervisorFunction {
    */
   def run(
     build: Build,
-    config: io.flow.delta.config.v0.models.Build
+    config: BuildConfig,
   ) (
     implicit ec: scala.concurrent.ExecutionContext,
     app: Application

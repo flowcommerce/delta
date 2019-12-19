@@ -6,7 +6,7 @@ import db._
 import io.flow.akka.SafeReceive
 import io.flow.delta.actors.functions.{SyncDockerImages, TravisCiBuild, TravisCiDockerImageBuilder}
 import io.flow.delta.api.lib.EventLogProcessor
-import io.flow.delta.config.v0.models.{Build => BuildConfig}
+import io.flow.delta.config.v0.models.{BuildConfig, EcsBuildConfig}
 import io.flow.delta.lib.DockerHost.{DockerHub, Ecr}
 import io.flow.delta.lib.{BuildNames, DockerHost}
 import io.flow.delta.v0.models._
@@ -88,8 +88,8 @@ class DockerHubActor @javax.inject.Inject()(
     withOrganization { org =>
       withProject { project =>
         withEnabledBuild { build =>
-          withBuildConfig { buildConfig =>
-            travisCiDockerImageBuilder.buildDockerImage(TravisCiBuild(version, org, project, build, buildConfig, wSClient))
+          withEcsBuildConfig { ecsBuildConfig =>
+            travisCiDockerImageBuilder.buildDockerImage(TravisCiBuild(version, org, project, build, ecsBuildConfig, wSClient))
             self ! DockerHubActor.Messages.Monitor(version, new DateTime())
           }
         }
@@ -167,7 +167,7 @@ class DockerHubActor @javax.inject.Inject()(
     )
   }
 
-  def postDockerHubImageBuild(org: Organization, project: Project, build: Build, buildConfig: BuildConfig): Future[Unit] = {
+  def postDockerHubImageBuild(org: Organization, project: Project, build: Build, buildConfig: EcsBuildConfig): Future[Unit] = {
     client.DockerRepositories.postAutobuild(
       org.docker.organization,
       BuildNames.projectName(build),
@@ -192,7 +192,7 @@ class DockerHubActor @javax.inject.Inject()(
     }
   }
 
-  def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, buildConfig: BuildConfig): DockerBuildForm = {
+  def createBuildForm(docker: Docker, scms: Scms, scmsUri: String, build: Build, buildConfig: EcsBuildConfig): DockerBuildForm = {
     val fullName = BuildNames.dockerImageName(docker, build, buildConfig)
     val buildTags = createBuildTags(buildConfig.dockerfile)
 

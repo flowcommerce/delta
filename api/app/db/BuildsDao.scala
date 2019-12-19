@@ -4,10 +4,11 @@ import javax.inject.{Inject, Singleton}
 import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
-import io.flow.delta.config.v0.models.{Build => BuildConfig}
+import io.flow.delta.config.v0.models.BuildConfig
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.util.IdGenerator
+import lib.BuildConfigUtil
 import play.api.db._
 
 @Singleton
@@ -32,7 +33,7 @@ class BuildsDao @Inject()(
   def findAllByProjectId(auth: Authorization, projectId: String): Seq[Build] = {
     findAll(auth, projectId = Some(projectId), limit = None)
   }
-  
+
   def findByProjectIdAndName(auth: Authorization, projectId: String, name: String): Option[Build] = {
     findAll(auth, projectId = Some(projectId), name = Some(name), limit = Some(1)).headOption
   }
@@ -112,8 +113,9 @@ case class BuildsWriteDao @javax.inject.Inject() (
       upsert(c, createdBy, projectId, status, config)
     }
 
-    val build = buildsDao.findByProjectIdAndName(Authorization.All, projectId, config.name).getOrElse {
-      sys.error(s"Failed to create build for projectId[$projectId] name[${config.name}]")
+    val configName = BuildConfigUtil.getName(config)
+    val build = buildsDao.findByProjectIdAndName(Authorization.All, projectId, configName).getOrElse {
+      sys.error(s"Failed to create build for projectId[$projectId] name[$configName]")
     }
 
     mainActor ! MainActor.Messages.BuildCreated(build.id)
@@ -125,7 +127,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
     SQL(UpsertQuery).on(
       'id -> idGenerator.randomId(),
       'project_id -> projectId,
-      'name -> config.name.trim,
+      'name -> BuildConfigUtil.getName(config).trim,
       'status -> status.toString,
       'updated_by_user_id -> createdBy.id
     ).execute()

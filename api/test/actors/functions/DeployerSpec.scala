@@ -30,16 +30,16 @@ class DeployerSpec extends FlowPlaySpec with db.Helpers {
     // tag1
     createTag(createTagForm(project).copy(name = "0.0.1"))
     setLastStates(build, Nil)
-    await(SetDesiredState.run(build, Defaults.Build)) must be(
+    await(SetDesiredState.run(build, Defaults.EcsBuildConfig)) must be(
       SupervisorResult.Change("Desired state changed to: 0.0.1: 2 instances")
     )
     Deployer(build, last(build), desired(build), mainActor).scale() must be(
       SupervisorResult.Change(s"Scale Up: 0.0.1: Add 2 instances")
     )
-    
+
     // tag2
     createTag(createTagForm(project).copy(name = "0.0.2"))
-    await(SetDesiredState.run(build, Defaults.Build)) must be(
+    await(SetDesiredState.run(build, Defaults.EcsBuildConfig)) must be(
       SupervisorResult.Change("Desired state changed to: 0.0.2: 2 instances")
     )
     Deployer(build, last(build), desired(build), mainActor).scale() must be(
@@ -49,7 +49,7 @@ class DeployerSpec extends FlowPlaySpec with db.Helpers {
 
     // tag3
     createTag(createTagForm(project).copy(name = "0.0.3"))
-    await(SetDesiredState.run(build, Defaults.Build)) must be(
+    await(SetDesiredState.run(build, Defaults.EcsBuildConfig)) must be(
       SupervisorResult.Change("Desired state changed to: 0.0.3: 2 instances")
     )
 

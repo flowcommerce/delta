@@ -1,10 +1,9 @@
 package io.flow.delta.actors.functions
 
 import javax.inject.Inject
-
 import db.{BuildDesiredStatesDao, EventsDao, ImagesDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, MainActor, SupervisorResult}
-import io.flow.delta.config.v0.models.BuildStage
+import io.flow.delta.config.v0.models.{BuildConfig, BuildStage}
 import io.flow.delta.lib.Text
 import io.flow.delta.v0.models.{Build, EventType}
 import io.flow.postgresql.Authorization
@@ -18,7 +17,7 @@ object BuildDockerImage extends BuildSupervisorFunction {
 
   override def run(
     build: Build,
-    cfg: io.flow.delta.config.v0.models.Build
+    cfg: BuildConfig,
   ) (
     implicit ec: scala.concurrent.ExecutionContext, app: Application
   ): Future[SupervisorResult] = Future {

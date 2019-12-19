@@ -4,7 +4,7 @@ import java.util.UUID
 
 import io.flow.common.v0.models.{Name, User, UserReference}
 import io.flow.delta.api.lib.GitHubHelper
-import io.flow.delta.config.v0.{models => config}
+import io.flow.delta.config.v0.models.{BuildConfig, EcsBuildConfig}
 import io.flow.delta.lib.config.Defaults
 import io.flow.delta.v0.models._
 import io.flow.util.{Constants, IdGenerator, Random}
@@ -278,14 +278,14 @@ trait Helpers {
   def upsertBuild(
     project: Project = createProject()
   ) (
-    implicit cfg: config.Build = createBuildConfig(),
+    implicit cfg: BuildConfig = createBuildConfig(),
              user: UserReference = Constants.SystemUser
   ): Build = {
     buildsWriteDao.upsert(UserReference(user.id), project.id, Status.Enabled, cfg)
   }
 
-  def createBuildConfig() = {
-    Defaults.Build.copy(
+  def createBuildConfig(): EcsBuildConfig = {
+    Defaults.EcsBuildConfig.copy(
       name = createTestKey()
     )
   }

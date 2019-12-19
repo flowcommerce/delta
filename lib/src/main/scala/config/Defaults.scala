@@ -2,6 +2,7 @@ package io.flow.delta.lib.config
 
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.config.v0.models
+import io.flow.delta.config.v0.models.{Cluster, InstanceType}
 
 object Defaults {
 
@@ -9,15 +10,17 @@ object Defaults {
     name = "master"
   )
 
-  private[this] val instanceType = models.InstanceType.fromString("t2.micro").getOrElse {
-    sys.error("Default instance type[t2.micro] not found")
-  }
-
-  val Build = models.Build(
+  val K8sBuildConfig: models.K8sBuildConfig = models.K8sBuildConfig(
     name = BuildNames.DefaultBuildName,
+    cluster = Cluster.K8s,
+  )
+
+  val EcsBuildConfig: models.EcsBuildConfig = models.EcsBuildConfig(
+    name = BuildNames.DefaultBuildName,
+    cluster = Some(Cluster.Ecs),
     dockerfile = "./Dockerfile",
     initialNumberInstances = 2,
-    instanceType = instanceType,
+    instanceType = InstanceType.T2Micro,
     memory = None,
     portContainer = 80,
     portHost = 80,
@@ -29,10 +32,16 @@ object Defaults {
     allowDowntime = None
   )
 
-  val Config = models.ConfigProject(
+  val EcsConfig = models.ConfigProject(
     stages = models.ProjectStage.all,
     branches = Seq(Branch),
-    builds = Seq(Build)
+    builds = Seq(EcsBuildConfig)
+  )
+
+  val K8sConfig = models.ConfigProject(
+    stages = Nil,
+    branches = Seq(Branch),
+    builds = Seq(K8sBuildConfig)
   )
 
 }
