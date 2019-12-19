@@ -150,6 +150,15 @@ class MainActor @javax.inject.Inject() (
       }
 
       scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.project.sync")
+      ){
+        // make sure we have actors for all k8s builds
+        allBuilds(Cluster.K8s).foreach { build =>
+          self ! MainActor.Messages.CheckLastState(build.id)
+        }
+      }
+
+      scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.project.inactive.check")
       ) {
         projectsDao.findAll(Authorization.All, limit = None, minutesSinceLastEvent = Some(15)).foreach { project =>
