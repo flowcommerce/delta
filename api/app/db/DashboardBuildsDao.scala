@@ -43,7 +43,7 @@ class DashboardBuildsDao @Inject()(
         and(Filters(auth).organizations("projects.organization_id").sql).
         optionalLimit(limit).
         offset(offset).
-        orderBy("case when build_desired_states.versions::varchar = build_last_states.versions::varchar then 1 else 0 end, build_desired_states.timestamp desc").
+        orderBy("case when coalesce(build_desired_states.versions::varchar, 'desired') = coalesce(build_last_states.versions::varchar, 'last') then 1 else 0 end, build_desired_states.timestamp desc").
         as(
           parser.*
         )
