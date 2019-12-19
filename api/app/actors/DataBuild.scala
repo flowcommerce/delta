@@ -64,10 +64,14 @@ trait DataBuild extends DataProject with EventLog {
     }
   }
 
-  def requiredEcsBuildConfig: EcsBuildConfig = {
+  def requiredBuildConfig: BuildConfig = {
     optionalBuildConfig.getOrElse {
       sys.error("No build config")
-    } match {
+    }
+  }
+
+  def requiredEcsBuildConfig: EcsBuildConfig = {
+    requiredBuildConfig match {
       case c: EcsBuildConfig => c
       case _: K8sBuildConfig | BuildConfigUndefinedType(_) => {
         sys.error("Must have an ecs build config")

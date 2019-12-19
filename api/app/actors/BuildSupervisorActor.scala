@@ -119,7 +119,7 @@ class BuildSupervisorActor @Inject()(
           }
           case true => {
             eventLogProcessor.started(format(f), log = log(projectId))
-            f.run(build, requiredEcsBuildConfig).map {
+            f.run(build, requiredBuildConfig).map {
               case SupervisorResult.Change(desc) => {
                 eventLogProcessor.changed(format(f, desc), log = log(projectId))
               }
