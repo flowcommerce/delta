@@ -74,9 +74,7 @@ class K8sBuildActor @javax.inject.Inject() (
       build,
       StateForm(versions = versions)
     )
-    StateFormatter.label(versions)
-    println(s"TODO: captureLastState for build '${build.id}''")
-    Future.successful(StateFormatter.label(Nil))
+    Future.successful(StateFormatter.label(versions))
   }
 
 }
