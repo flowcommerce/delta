@@ -27,8 +27,8 @@ class DashboardBuildsDao @Inject()(
            configs.data::text as config_data
       from builds
       join projects on builds.project_id = projects.id
-      join build_last_states on build_last_states.build_id = builds.id
-      join build_desired_states on build_desired_states.build_id = builds.id
+      left join build_last_states on build_last_states.build_id = builds.id
+      left join build_desired_states on build_desired_states.build_id = builds.id
       left join configs on configs.project_id = projects.id
   """)
 
