@@ -7,6 +7,9 @@ import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.Authorization
 import lib.BuildConfigUtil
 
+import scala.concurrent.duration.{FiniteDuration, MINUTES}
+import scala.concurrent.{Await, Future}
+
 trait DataBuild extends DataProject with EventLog {
 
   def buildsDao: BuildsDao
@@ -108,6 +111,10 @@ trait DataBuild extends DataProject with EventLog {
       case c: K8sBuildConfig => Some(c)
       case _: EcsBuildConfig | _: BuildConfigUndefinedType => None
     }.map(f)
+  }
+
+  protected def await[T](f: => Future[T]): T = {
+    Await.result(f, FiniteDuration(1, MINUTES))
   }
 
 }

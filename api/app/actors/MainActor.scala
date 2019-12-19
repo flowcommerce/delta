@@ -5,15 +5,17 @@ import java.util.UUID
 import actors.RollbarActor
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import com.typesafe.config.Config
-import db.{BuildsDao, ItemsDao, ProjectsDao}
+import db.{BuildsDao, ConfigsDao, ItemsDao, ProjectsDao}
 import io.flow.akka.SafeReceive
 import io.flow.akka.recurring.{ScheduleConfig, Scheduler}
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.api.lib.StateDiff
+import io.flow.delta.config.v0.models.{Cluster, ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import javax.inject.Named
+import lib.ProjectConfigUtil
 import play.api.libs.concurrent.InjectedActorSupport
 import play.api.{Environment, Mode}
 
@@ -64,6 +66,7 @@ class MainActor @javax.inject.Inject() (
   logger: RollbarLogger,
   config: Config,
   ecsBuildFactory: EcsBuildActor.Factory,
+  k8sBuildFactory: K8sBuildActor.Factory,
   dockerHubFactory: DockerHubActor.Factory,
   dockerHubTokenFactory: DockerHubTokenActor.Factory,
   projectFactory: ProjectActor.Factory,
@@ -73,6 +76,7 @@ class MainActor @javax.inject.Inject() (
   system: ActorSystem,
   playEnv: Environment,
   buildsDao: BuildsDao,
+  configsDao: ConfigsDao,
   projectsDao: ProjectsDao,
   itemsDao: ItemsDao,
   @Named("rollbar-actor") rollbarActor: ActorRef,
@@ -87,6 +91,7 @@ class MainActor @javax.inject.Inject() (
   private[this] val dockerHubTokenActor = injectedChild(dockerHubTokenFactory(), name = s"main:DockerHubActor")
 
   private[this] val ecsBuildActors = scala.collection.mutable.Map[String, ActorRef]()
+  private[this] val k8sBuildActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val buildSupervisorActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val dockerHubActors = scala.collection.mutable.Map[String, ActorRef]()
   private[this] val projectActors = scala.collection.mutable.Map[String, ActorRef]()
@@ -210,7 +215,7 @@ class MainActor @javax.inject.Inject() (
 
       case MainActor.Messages.Scale(buildId, diffs) =>
         rollbarActor ! RollbarActor.Messages.Deployment(buildId, diffs)
-        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.Scale(diffs)
+        upsertBuildActor(buildId) ! EcsBuildActor.Messages.Scale(diffs)
 
       case MainActor.Messages.ShaUpserted(projectId, _) =>
         upsertProjectSupervisorActor(projectId) ! ProjectSupervisorActor.Messages.PursueDesiredState
@@ -228,7 +233,7 @@ class MainActor @javax.inject.Inject() (
         upsertDockerHubActor(buildId) ! DockerHubActor.Messages.Build(version)
 
       case MainActor.Messages.CheckLastState(buildId) =>
-        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.CheckLastState
+        upsertBuildActor(buildId) ! EcsBuildActor.Messages.CheckLastState
 
       case MainActor.Messages.BuildDesiredStateUpdated(buildId) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
@@ -237,16 +242,16 @@ class MainActor @javax.inject.Inject() (
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
 
       case MainActor.Messages.ConfigureAWS(buildId) =>
-        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.ConfigureAWS
+        upsertBuildActor(buildId) ! EcsBuildActor.Messages.ConfigureAWS
 
       case MainActor.Messages.RemoveOldServices(buildId) =>
-        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.RemoveOldServices
+        upsertBuildActor(buildId) ! EcsBuildActor.Messages.RemoveOldServices
 
       case MainActor.Messages.UpdateContainerAgent(buildId) =>
-        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.UpdateContainerAgent
+        upsertBuildActor(buildId) ! EcsBuildActor.Messages.UpdateContainerAgent
 
       case MainActor.Messages.EnsureContainerAgentHealth(buildId) =>
-        upsertEcsBuildActor(buildId) ! EcsBuildActor.Messages.EnsureContainerAgentHealth
+        upsertBuildActor(buildId) ! EcsBuildActor.Messages.EnsureContainerAgentHealth
     }
   }
 
@@ -283,12 +288,33 @@ class MainActor @javax.inject.Inject() (
     }
   }
 
-  def upsertEcsBuildActor(id: String): ActorRef = {
+  def upsertBuildActor(id: String): ActorRef = {
+    getClusterByBuildId(id).getOrElse {
+      sys.error(s"Build ${id}: Cannot determine cluster")
+    } match {
+      case Cluster.Ecs => upsertEcsBuildActor(id)
+      case Cluster.K8s => upsertK8sBuildActor(id)
+      case Cluster.UNDEFINED(other) => sys.error(s"Build ${id}: Invalid cluster '$other'")
+    }
+  }
+
+  private[this] def upsertEcsBuildActor(id: String): ActorRef = {
     this.synchronized {
       ecsBuildActors.getOrElse(id, {
         val ref = injectedChild(ecsBuildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
         ref ! EcsBuildActor.Messages.Setup
         ecsBuildActors += (id -> ref)
+        ref
+      })
+    }
+  }
+
+  private[this] def upsertK8sBuildActor(id: String): ActorRef = {
+    this.synchronized {
+      k8sBuildActors.getOrElse(id, {
+        val ref = injectedChild(k8sBuildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
+        ref ! EcsBuildActor.Messages.Setup
+        k8sBuildActors += (id -> ref)
         ref
       })
     }
@@ -319,4 +345,17 @@ class MainActor @javax.inject.Inject() (
   private[this] def randomName(): String = {
     s"$name:" + UUID.randomUUID().toString
   }
+
+  private[this] def getClusterByBuildId(buildId: String): Option[Cluster] = {
+    buildsDao.findById(Authorization.All, buildId).flatMap { build =>
+      configsDao.findByProjectId(Authorization.All, build.project.id).flatMap { config =>
+        config.config match {
+          case c: ConfigProject => ProjectConfigUtil.cluster(c, build.name)
+          case _: ConfigError | _: ConfigUndefinedType => None
+        }
+      }
+    }
+  }
+
 }
+
