@@ -28,14 +28,6 @@ class KubernetesService @Inject()(configuration: play.api.Configuration) {
 
   private val ProductionNamespace = "production"
 
-  // TODO: remove once IAM roles are setup properly working :-D
-  apps
-    .listNamespacedDeployment("production", true, null, null, null, null, null, null, null, false)
-    .getItems
-    .asScala
-    .map(_.getMetadata.getName)
-    .foreach(println)
-
   def getDeploymentVersion(serviceName: String): Seq[Version] = {
     apps
       .listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, null, null, null, null, false)

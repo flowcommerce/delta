@@ -22,5 +22,3 @@ users:
           - token
           - -i
           - flow-prod
-          - -r
-          - delta-role # a new role to be bound to ecsInstanceRole that is auth'd on EKS-flow-prod

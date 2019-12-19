@@ -4,8 +4,9 @@ import akka.actor.{Actor, ActorSystem}
 import db._
 import io.flow.akka.SafeReceive
 import io.flow.delta.lib.StateFormatter
-import io.flow.delta.v0.models.Build
+import io.flow.delta.v0.models.{Build, StateForm}
 import io.flow.log.RollbarLogger
+import k8s.KubernetesService
 
 import scala.concurrent.Future
 import scala.concurrent.duration._
@@ -30,8 +31,9 @@ class K8sBuildActor @javax.inject.Inject() (
   override val configsDao: ConfigsDao,
   override val projectsDao: ProjectsDao,
   override val organizationsDao: OrganizationsDao,
-  //buildLastStatesDao: InternalBuildLastStatesDao,
-  //usersDao: UsersDao,
+  kubernetesService: KubernetesService,
+  buildLastStatesDao: InternalBuildLastStatesDao,
+  usersDao: UsersDao,
   system: ActorSystem,
   override val logger: RollbarLogger,
   @com.google.inject.assistedinject.Assisted buildId: String
@@ -66,17 +68,13 @@ class K8sBuildActor @javax.inject.Inject() (
   }
 
   def captureLastState(build: Build): Future[String] = {
-    // TODO: get last state from k8s
-    /*
-    getK8sLastState(build).map { versions =>
-      buildLastStatesDao.upsert(
-        usersDao.systemUser,
-        build,
-        StateForm(versions = versions)
-      )
-      StateFormatter.label(versions)
-    }
-  */
+    val versions = kubernetesService.getDeploymentVersion(build.name)
+    buildLastStatesDao.upsert(
+      usersDao.systemUser,
+      build,
+      StateForm(versions = versions)
+    )
+    StateFormatter.label(versions)
     println(s"TODO: captureLastState for build '${build.id}''")
     Future.successful(StateFormatter.label(Nil))
   }
