@@ -103,4 +103,11 @@ trait DataBuild extends DataProject with EventLog {
     }.map(f)
   }
 
+  def withK8sBuildConfig[T](f: K8sBuildConfig => T): Option[T] = {
+    optionalBuildConfig.flatMap {
+      case c: K8sBuildConfig => Some(c)
+      case _: EcsBuildConfig | _: BuildConfigUndefinedType => None
+    }.map(f)
+  }
+
 }

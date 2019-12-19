@@ -5,6 +5,7 @@ import akka.actor.{Actor, ActorSystem}
 import db._
 import io.flow.akka.SafeReceive
 import io.flow.delta.api.lib.{EventLogProcessor, StateDiff}
+import io.flow.delta.config.v0.models.{BuildConfigUndefinedType, BuildStage, EcsBuildConfig, K8sBuildConfig}
 import io.flow.delta.config.v0.{models => config}
 import io.flow.delta.v0.models.{Build, Version}
 import io.flow.log.RollbarLogger
@@ -25,7 +26,7 @@ object BuildSupervisorActor {
     functions.SetDesiredState,
     functions.SyncDockerImages,
     functions.BuildDockerImage,
-    functions.Scale
+    functions.Scale,
   )
 
   trait Factory {
@@ -56,9 +57,14 @@ class BuildSupervisorActor @Inject()(
 
     case BuildSupervisorActor.Messages.PursueDesiredState =>
       withEnabledBuild { build =>
-        withEcsBuildConfig { buildConfig =>
+        withBuildConfig { buildConfig =>
+          val stages = buildConfig match {
+            case c: EcsBuildConfig => c.stages
+            case _: K8sBuildConfig => Seq(BuildStage.SetDesiredState)
+            case _: BuildConfigUndefinedType => Nil
+          }
           eventLogProcessor.runSync("PursueDesiredState", log = log(build.project.id)) {
-            run(build, buildConfig.stages, BuildSupervisorActor.Functions)
+            run(build, stages, BuildSupervisorActor.Functions)
           } // Should Await the Future?
         }
       }
