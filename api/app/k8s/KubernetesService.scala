@@ -17,14 +17,14 @@ trait KubernetesService {
   def getDeployedVersions(serviceName: String): Seq[Version]
 }
 
-class DummyK8sService extends KubernetesService {
+class MockK8sService extends KubernetesService {
 
   override def getDeployedVersions(serviceName: String): Seq[Version] = Seq.empty
 
 }
 
 @Singleton
-class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) {
+class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) extends KubernetesService {
 
   private val kubeConfigPath = configuration.get[String]("kube.config.path");
 

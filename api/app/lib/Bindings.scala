@@ -1,7 +1,7 @@
 package io.flow.delta.api.lib
 
 import io.flow.play.clients.DefaultTokenClient
-import k8s.{DefaultKubernetesService, DummyK8sService, KubernetesService}
+import k8s.{DefaultKubernetesService, MockK8sService, KubernetesService}
 import play.api.inject.Module
 import play.api.{Configuration, Environment, Mode}
 
@@ -22,7 +22,7 @@ class KubernetesModule extends Module {
         bind[KubernetesService].to[DefaultKubernetesService]
       )
       case Mode.Test => Seq(
-        bind[KubernetesService].to[DummyK8sService]
+        bind[KubernetesService].to[MockK8sService]
       )
     }
   }
