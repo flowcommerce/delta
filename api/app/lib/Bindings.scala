@@ -19,10 +19,10 @@ class KubernetesModule extends Module {
   def bindings(env: Environment, conf: Configuration) = {
     env.mode match {
       case Mode.Prod | Mode.Dev => Seq(
-        bind[DefaultKubernetesService].to[KubernetesService]
+        bind[KubernetesService].to[DefaultKubernetesService]
       )
       case Mode.Test => Seq(
-        bind[DummyK8sService].to[KubernetesService]
+        bind[KubernetesService].to[DummyK8sService]
       )
     }
   }
