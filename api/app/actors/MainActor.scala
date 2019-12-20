@@ -244,7 +244,7 @@ class MainActor @javax.inject.Inject() (
         upsertDockerHubActor(buildId) ! DockerHubActor.Messages.Build(version)
 
       case MainActor.Messages.CheckLastState(buildId) =>
-        upsertBuildActor(buildId) ! EcsBuildActor.Messages.CheckLastState
+        upsertBuildActor(buildId) !BuildActor.Messages.CheckLastState
 
       case MainActor.Messages.BuildDesiredStateUpdated(buildId) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState
@@ -313,7 +313,7 @@ class MainActor @javax.inject.Inject() (
     this.synchronized {
       ecsBuildActors.getOrElse(id, {
         val ref = injectedChild(ecsBuildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
-        ref ! EcsBuildActor.Messages.Setup
+        ref ! BuildActor.Messages.Setup
         ecsBuildActors += (id -> ref)
         ref
       })
@@ -324,7 +324,7 @@ class MainActor @javax.inject.Inject() (
     this.synchronized {
       k8sBuildActors.getOrElse(id, {
         val ref = injectedChild(k8sBuildFactory(id), name = randomName(), _.withDispatcher("io-dispatcher"))
-        ref ! EcsBuildActor.Messages.Setup
+        ref ! BuildActor.Messages.Setup
         k8sBuildActors += (id -> ref)
         ref
       })

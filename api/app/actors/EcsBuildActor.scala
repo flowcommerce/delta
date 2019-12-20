@@ -25,13 +25,9 @@ object EcsBuildActor {
   trait Message
 
   object Messages {
-    case object CheckLastState extends Message
-
     case object ConfigureAWS extends Message // One-time AWS setup
 
     case class Scale(diffs: Seq[StateDiff]) extends Message
-
-    case object Setup extends Message
 
     case object EnsureContainerAgentHealth extends Message
 
@@ -71,7 +67,7 @@ class EcsBuildActor @javax.inject.Inject() (
 
   def receive = SafeReceive.withLogUnhandled {
 
-    case EcsBuildActor.Messages.Setup =>
+    case BuildActor.Messages.Setup =>
       handleReceiveSetupEvent()
 
     case EcsBuildActor.Messages.Delete =>
@@ -80,7 +76,7 @@ class EcsBuildActor @javax.inject.Inject() (
         logger.withKeyValue("build_id", build.id).withKeyValue("build_name", build.name).withKeyValue("project", build.project.id).info(s"Called EcsBuildActor.Messages.Delete for build")
       }
 
-    case EcsBuildActor.Messages.CheckLastState =>
+    case BuildActor.Messages.CheckLastState =>
       withEnabledBuild { build =>
         captureLastState(build) // Should Await the Future?
       }
@@ -126,7 +122,7 @@ class EcsBuildActor @javax.inject.Inject() (
         Duration(1L, "second"),
         Duration(EcsBuildActor.CheckLastStateIntervalSeconds, "seconds")
       ) {
-        self ! EcsBuildActor.Messages.CheckLastState
+        self ! BuildActor.Messages.CheckLastState
       }
 
       ()

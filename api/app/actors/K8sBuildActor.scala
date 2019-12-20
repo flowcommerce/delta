@@ -11,13 +11,6 @@ import scala.concurrent.duration._
 
 object K8sBuildActor {
 
-  trait Message
-
-  object Messages {
-    case object Setup extends Message
-    case object CheckLastState extends Message
-  }
-
   trait Factory {
     def apply(buildId: String): Actor
   }
@@ -42,10 +35,10 @@ class K8sBuildActor @javax.inject.Inject() (
 
   def receive = SafeReceive.withLogUnhandled {
 
-    case K8sBuildActor.Messages.Setup =>
+    case BuildActor.Messages.Setup =>
       handleReceiveSetupEvent()
 
-    case K8sBuildActor.Messages.CheckLastState =>
+    case BuildActor.Messages.CheckLastState =>
       withEnabledBuild { build =>
         captureLastState(build)
       }
@@ -58,7 +51,7 @@ class K8sBuildActor @javax.inject.Inject() (
       Duration(1L, "second"),
       Duration(EcsBuildActor.CheckLastStateIntervalSeconds, "seconds")
     ) {
-      self ! K8sBuildActor.Messages.CheckLastState
+      self ! BuildActor.Messages.CheckLastState
     }
     ()
   }
