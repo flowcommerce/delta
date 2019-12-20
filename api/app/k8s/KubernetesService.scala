@@ -13,13 +13,17 @@ import scala.collection.JavaConverters._
 
 trait KubernetesService {
 
+  def getDesiredReplicas(serviceName: String, version: String): Option[Long]
+
   def getDeployedVersions(serviceName: String): Seq[Version]
+
 }
 
 class MockK8sService extends KubernetesService {
 
   override def getDeployedVersions(serviceName: String): Seq[Version] = Seq.empty
 
+  override def getDesiredReplicas(serviceName: String, version: String): Option[Long] = None
 }
 
 @Singleton
@@ -31,7 +35,7 @@ class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) 
 
   private val ProductionNamespace = "production"
 
-  def getDeployedVersions(serviceName: String): Seq[Version] = {
+  override def getDeployedVersions(serviceName: String): Seq[Version] = {
 
     val client = ClientBuilder.kubeconfig(kubeConfig).build()
 
@@ -46,7 +50,19 @@ class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) 
       .filter(_.instances > 0)
   }
 
-  def toVersion(rs: V1ReplicaSet): Seq[Version] = {
+  override def getDesiredReplicas(serviceName: String, version: String): Option[Long] = {
+    val client = ClientBuilder.kubeconfig(kubeConfig).build()
+    val apps = new AppsV1Api(client)
+    apps
+      .listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, null, null, null, null, false)
+      .getItems
+      .asScala
+      .filter(_.getMetadata.getName.startsWith(serviceName))
+      .find(_.getSpec.getTemplate.getSpec.getContainers.asScala.map(_.getImage).flatMap(Util.parseImage).exists(_.version == version))
+      .map(_.getSpec.getReplicas.toLong)
+  }
+
+  private def toVersion(rs: V1ReplicaSet): Seq[Version] = {
     rs.getSpec.getTemplate.getSpec.getContainers.asScala.map(_.getImage).flatMap(Util.parseImage).map { image =>
       Version(
         name = image.version,
