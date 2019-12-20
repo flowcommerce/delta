@@ -3,11 +3,12 @@ package io.flow.delta.actors.functions
 import javax.inject.Inject
 import db.{BuildDesiredStatesDao, ConfigsDao, TagsDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
-import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType}
+import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
 import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm, Version}
 import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, OrderBy}
+import k8s.KubernetesService
 import lib.BuildConfigUtil
 import play.api.Application
 
@@ -35,6 +36,7 @@ object SetDesiredState extends BuildSupervisorFunction {
   */
 class SetDesiredState @Inject()(
   buildDesiredStatesDao: BuildDesiredStatesDao,
+  kubernetesService: KubernetesService,
   configsDao: ConfigsDao,
   tagsDao: TagsDao,
 ) {
@@ -55,11 +57,11 @@ class SetDesiredState @Inject()(
       case Some(latestTag) => {
         buildDesiredStatesDao.findByBuildId(Authorization.All, build.id) match {
           case None => {
-            setVersions(Seq(Version(latestTag.name, instances = numberInstances(build))), build)
+            setVersions(Seq(Version(latestTag.name, instances = numberInstances(build, latestTag.name))), build)
           }
 
           case Some(state) => {
-            val targetVersions = Seq(Version(latestTag.name, instances = numberInstances(build)))
+            val targetVersions = Seq(Version(latestTag.name, instances = numberInstances(build, latestTag.name)))
 
             if (state.versions == targetVersions) {
               SupervisorResult.Ready("Desired versions remain: " + targetVersions.map(_.name).mkString(", "))
@@ -90,15 +92,16 @@ class SetDesiredState @Inject()(
     * By default, we create the same number of instances of the new
     * version as the total number of instances in the last state.
     */
-  def numberInstances(build: Build): Long = {
+  private def numberInstances(build: Build, version: String): Long = {
     configsDao.findByProjectId(Authorization.All, build.project.id).map(_.config) match {
       case None => DefaultNumberInstances
       case Some(config) => {
         config match {
           case cfg: ConfigProject => {
-            BuildConfigUtil.findEcsBuildByName(cfg.builds, build.name) match {
-              case None => DefaultNumberInstances
-              case Some(bc) => bc.initialNumberInstances
+            BuildConfigUtil.findBuildByName(cfg.builds, build.name) match {
+              case Some(_: K8sBuildConfig) => kubernetesService.getDesiredReplicaNumber(build.project.id, version).getOrElse(DefaultNumberInstances)
+              case Some(ecsConfig: EcsBuildConfig) => ecsConfig.initialNumberInstances
+              case _ => DefaultNumberInstances
             }
           }
           case ConfigError(_) | ConfigUndefinedType(_) => DefaultNumberInstances
