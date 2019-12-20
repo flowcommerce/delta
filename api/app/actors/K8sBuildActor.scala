@@ -69,7 +69,7 @@ class K8sBuildActor @javax.inject.Inject() (
 
   private[this] def captureLastState(build: Build): Unit = {
     Try {
-      kubernetesService.getDeployedVersions(build.name)
+      kubernetesService.getDeployedVersions(build.project.id)
     } match {
       case Success(versions) => {
         buildLastStatesDao.upsert(

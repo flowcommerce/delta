@@ -5,7 +5,6 @@ import java.io.FileReader
 import com.google.inject.{Inject, Singleton}
 import io.flow.delta.aws.Util
 import io.flow.delta.v0.models.Version
-import io.kubernetes.client.Configuration
 import io.kubernetes.client.apis.AppsV1Api
 import io.kubernetes.client.models.V1ReplicaSet
 import io.kubernetes.client.util.{ClientBuilder, KubeConfig}
@@ -30,15 +29,14 @@ class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) 
 
   private val kubeConfig = KubeConfig.loadKubeConfig(new FileReader(kubeConfigPath))
 
-  private val client = ClientBuilder.kubeconfig(kubeConfig).build();
-
-  Configuration.setDefaultApiClient(client);
-
-  private val apps = new AppsV1Api()
-
   private val ProductionNamespace = "production"
 
   def getDeployedVersions(serviceName: String): Seq[Version] = {
+
+    val client = ClientBuilder.kubeconfig(kubeConfig).build()
+
+    val apps = new AppsV1Api(client)
+
     apps
       .listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, null, null, null, null, false)
       .getItems
