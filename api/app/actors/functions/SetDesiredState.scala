@@ -6,6 +6,7 @@ import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
 import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
 import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm, Version}
+import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, OrderBy}
 import k8s.KubernetesService
@@ -13,6 +14,7 @@ import lib.BuildConfigUtil
 import play.api.Application
 
 import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 object SetDesiredState extends BuildSupervisorFunction {
 
@@ -39,7 +41,10 @@ class SetDesiredState @Inject()(
   kubernetesService: KubernetesService,
   configsDao: ConfigsDao,
   tagsDao: TagsDao,
+  logger: RollbarLogger
 ) {
+
+  private val configuredLogger = logger.fingerprint("SetDesiredState")
 
   val DefaultNumberInstances = 2L
 
@@ -93,13 +98,26 @@ class SetDesiredState @Inject()(
     * version as the total number of instances in the last state.
     */
   private def numberInstances(build: Build, version: String): Long = {
+
+    def getK8sDesiredReplicaNumber = Try {
+      kubernetesService
+        .getDesiredReplicaNumber(build.project.id, version)
+        .getOrElse(DefaultNumberInstances)
+    } match {
+      case Success(replicas) => replicas
+      case Failure(exception) => {
+        configuredLogger.warn("Error getting desired replica number", exception)
+        DefaultNumberInstances
+      }
+    }
+
     configsDao.findByProjectId(Authorization.All, build.project.id).map(_.config) match {
       case None => DefaultNumberInstances
       case Some(config) => {
         config match {
           case cfg: ConfigProject => {
             BuildConfigUtil.findBuildByName(cfg.builds, build.name) match {
-              case Some(_: K8sBuildConfig) => kubernetesService.getDesiredReplicaNumber(build.project.id, version).getOrElse(DefaultNumberInstances)
+              case Some(_: K8sBuildConfig) => getK8sDesiredReplicaNumber
               case Some(ecsConfig: EcsBuildConfig) => ecsConfig.initialNumberInstances
               case _ => DefaultNumberInstances
             }
