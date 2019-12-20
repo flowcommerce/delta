@@ -244,7 +244,7 @@ class MainActor @javax.inject.Inject() (
         upsertDockerHubActor(buildId) ! DockerHubActor.Messages.Build(version)
 
       case MainActor.Messages.CheckLastState(buildId) =>
-        upsertBuildActor(buildId) !BuildActor.Messages.CheckLastState
+        upsertBuildActor(buildId) ! BuildActor.Messages.CheckLastState
 
       case MainActor.Messages.BuildDesiredStateUpdated(buildId) =>
         upsertBuildSupervisorActor(buildId) ! BuildSupervisorActor.Messages.PursueDesiredState

@@ -54,7 +54,7 @@ class Scale @Inject()(
 
       case (None, Some(_)) => {
         mainActor ! MainActor.Messages.CheckLastState(build.id)
-        SupervisorResult.Checkpoint(s"Requested CheckLastState as last state is not known")
+        SupervisorResult.Checkpoint("Requested CheckLastState as last state is not known")
       }
 
       case (Some(last), Some(desired)) => {
