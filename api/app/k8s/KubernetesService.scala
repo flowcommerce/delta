@@ -13,7 +13,7 @@ import scala.collection.JavaConverters._
 
 trait KubernetesService {
 
-  def getDesiredReplicas(serviceName: String, version: String): Option[Long]
+  def getDesiredReplicaNumber(serviceName: String, version: String): Option[Long]
 
   def getDeployedVersions(serviceName: String): Seq[Version]
 
@@ -23,7 +23,7 @@ class MockK8sService extends KubernetesService {
 
   override def getDeployedVersions(serviceName: String): Seq[Version] = Seq.empty
 
-  override def getDesiredReplicas(serviceName: String, version: String): Option[Long] = None
+  override def getDesiredReplicaNumber(serviceName: String, version: String): Option[Long] = None
 }
 
 @Singleton
@@ -50,7 +50,7 @@ class DefaultKubernetesService @Inject()(configuration: play.api.Configuration) 
       .filter(_.instances > 0)
   }
 
-  override def getDesiredReplicas(serviceName: String, version: String): Option[Long] = {
+  override def getDesiredReplicaNumber(serviceName: String, version: String): Option[Long] = {
     val client = ClientBuilder.kubeconfig(kubeConfig).build()
     val apps = new AppsV1Api(client)
     apps

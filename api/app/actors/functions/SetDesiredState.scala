@@ -99,7 +99,7 @@ class SetDesiredState @Inject()(
         config match {
           case cfg: ConfigProject => {
             BuildConfigUtil.findBuildByName(cfg.builds, build.name) match {
-              case Some(_: K8sBuildConfig) => kubernetesService.getDesiredReplicas(build.project.id, version).getOrElse(DefaultNumberInstances)
+              case Some(_: K8sBuildConfig) => kubernetesService.getDesiredReplicaNumber(build.project.id, version).getOrElse(DefaultNumberInstances)
               case Some(ecsConfig: EcsBuildConfig) => ecsConfig.initialNumberInstances
               case _ => DefaultNumberInstances
             }
