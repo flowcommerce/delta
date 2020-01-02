@@ -79,8 +79,10 @@ class SetDesiredState @Inject()(
     }
   }
 
-  def setVersions(versions: Seq[Version], build: Build): SupervisorResult = {
-    assert(versions.nonEmpty, "Must have at least one version")
+  def setVersions(all: Seq[Version], build: Build): SupervisorResult = {
+    assert(all.nonEmpty, "Must have at least one version")
+    val versions = all.filter(_.instances > 0)
+    assert(versions.nonEmpty, "Must have at least one version with at least 1 instance")
 
     buildDesiredStatesDao.upsert(
       Constants.SystemUser,
@@ -98,15 +100,22 @@ class SetDesiredState @Inject()(
     * version as the total number of instances in the last state.
     */
   private def numberInstances(build: Build, version: String): Long = {
+    lazy val log = configuredLogger
+      .withKeyValue("build_id", build.id)
+      .withKeyValue("project_id", build.project.id)
 
     def getK8sDesiredReplicaNumber = Try {
       kubernetesService
         .getDesiredReplicaNumber(build.project.id, version)
         .getOrElse(DefaultNumberInstances)
     } match {
-      case Success(replicas) => replicas
+      case Success(replicas) if replicas > 0 => replicas
+      case Success(_) => {
+        log.warn("K8s query returned 0 instances - setting to default number of instanes")
+        DefaultNumberInstances
+      }
       case Failure(exception) => {
-        configuredLogger.warn("Error getting desired replica number", exception)
+        log.warn("Error getting desired replica number", exception)
         DefaultNumberInstances
       }
     }
