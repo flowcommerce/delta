@@ -112,7 +112,8 @@ class ApplicationController @javax.inject.Inject() (
       Ok(
         views.html.index(
           uiData(request).copy(organization = organization),
-          PaginatedCollection(buildsPage, dashboardBuilds.map(BuildView(_)))
+          PaginatedCollection(buildsPage, dashboardBuilds.map(BuildView(_))),
+          cluster = cluster,
         )
       )
     }
