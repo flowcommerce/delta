@@ -26,6 +26,7 @@ POST    /subscriptions/:identifier/:publication/toggle      controllers.Subscrip
 
 GET     /login                                  controllers.ApplicationController.redirect
 GET     /login/                                 controllers.LoginController.index(return_url: Option[String] ?= None)
+GET     /login/dev                              controllers.LoginController.dev(userId: String)
 GET     /login/github                           controllers.LoginController.githubCallback(code: String, state: Option[String] ?= None, return_url: Option[String] ?= None)
 GET     /logout                                 controllers.LogoutController.index
 GET     /logged_out                             controllers.LogoutController.logged_out
