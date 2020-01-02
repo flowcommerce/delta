@@ -25,7 +25,7 @@ class BuildDesiredStatesDao @Inject()(
   def onChange(mainActor: ActorRef, buildId: String): Unit = {
     mainActor ! MainActor.Messages.BuildDesiredStateUpdated(buildId)
   }
-  
+
   private[this] val BaseQuery = Query(s"""
     select build_desired_states.id,
            build_desired_states.versions,
@@ -183,9 +183,15 @@ class BuildDesiredStatesDao @Inject()(
         }
       }
   }
-  
+
   def delete(deletedBy: UserReference, build: Build): Unit = {
     lookupId(build.id).foreach { id =>
+      delete.delete("build_desired_states", deletedBy.id, id)
+    }
+  }
+
+  def deleteByBuildId(deletedBy: UserReference, buildId: String): Unit = {
+    lookupId(buildId).foreach { id =>
       delete.delete("build_desired_states", deletedBy.id, id)
     }
   }

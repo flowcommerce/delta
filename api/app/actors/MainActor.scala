@@ -16,7 +16,7 @@ import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import javax.inject.Named
-import lib.ProjectConfigUtil    
+import lib.ProjectConfigUtil
 import play.api.libs.concurrent.InjectedActorSupport
 import play.api.{Environment, Mode}
 
@@ -113,6 +113,15 @@ class MainActor @javax.inject.Inject() (
     }
   }
 
+  private[this] def updateProjectConfigs() = {
+    configsDao.findAll(Authorization.All, limit = None).foreach { internalConfig =>
+      internalConfig.config match {
+        case p: ConfigProject => configsDao.syncProjectBuilds(Constants.SystemUser, internalConfig.project.id, p)
+        case _ => // no-op
+      }
+    }
+  }
+
   playEnv.mode match {
     case Mode.Test => {
       logger.info("[MainActor] Background actors are disabled in Test")
@@ -120,6 +129,7 @@ class MainActor @javax.inject.Inject() (
 
     case _ => {
       logger.info("MainActor Starting")
+      updateProjectConfigs()
       updateClusters() // temporary to migrate cluster
 
       scheduleRecurring(

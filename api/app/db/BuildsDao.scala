@@ -100,6 +100,10 @@ case class BuildsWriteDao @javax.inject.Inject() (
               updated_by_user_id = {updated_by_user_id}
   """
 
+  private[this] val SelectBuildIdByProjectId = Query("""
+    select id from builds where project_id = {project_id}
+  """)
+
   private[this] val UpdateStatusQuery = """
     update builds
        set status = {status},
@@ -170,18 +174,32 @@ case class BuildsWriteDao @javax.inject.Inject() (
     ()
   }
 
+  def deleteAllByProjectId(user: UserReference, projectId: String): Unit = {
+    db.withConnection { c =>
+      SelectBuildIdByProjectId
+        .bind("project_id", projectId)
+        .as(SqlParser.str("id").*)(c)
+    }.foreach { id =>
+      deleteById(user, id)
+    }
+  }
+
   def delete(deletedBy: UserReference, build: Build): Unit = {
-    imagesDao.findAll(buildId = Some(build.id), limit = None).foreach { image =>
+    deleteById(deletedBy, build.id)
+  }
+
+  private[this] def deleteById(deletedBy: UserReference, buildId: String): Unit = {
+    imagesDao.findAll(buildId = Some(buildId), limit = None).foreach { image =>
       imagesWriteDao.delete(deletedBy, image)
     }
 
-    buildDesiredStatesDao.delete(deletedBy, build)
+    buildDesiredStatesDao.deleteByBuildId(deletedBy, buildId)
 
-    buildLastStatesDao.delete(deletedBy, build)
+    buildLastStatesDao.deleteByBuildId(deletedBy, buildId)
 
-    delete.delete("builds", deletedBy.id, build.id)
+    delete.delete("builds", deletedBy.id, buildId)
 
-    mainActor ! MainActor.Messages.BuildDeleted(build.id)
+    mainActor ! MainActor.Messages.BuildDeleted(buildId)
   }
 
 }
