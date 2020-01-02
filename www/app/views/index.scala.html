@@ -1,6 +1,7 @@
 @(
   data: io.flow.delta.www.lib.UiData,
-  dashboardBuilds: io.flow.play.util.PaginatedCollection[controllers.BuildView]
+  dashboardBuilds: io.flow.play.util.PaginatedCollection[controllers.BuildView],
+  cluster: Option[io.flow.delta.config.v0.models.Cluster]
 )(implicit flash: Flash, messages: Messages)
 
 @main(data) {
@@ -8,6 +9,21 @@
   @if(dashboardBuilds.isEmpty) {
     <p><em>Get started by creating a project and a successful first build.</em></p>
   } else {
+    <p>
+      Cluster:
+      @for(c <- io.flow.delta.config.v0.models.Cluster.all) {
+        @if(cluster.contains(c)) {
+          <b>@c</b>
+        } else {
+          <a href="/?cluster=@c">@c</a>
+        } |
+      }
+      @if(cluster.isEmpty) {
+        <b>all</b>
+      } else {
+        <a href="/">all</a>
+      }
+    </p>
 
   <div class="table-responsive">
     <table class="table">

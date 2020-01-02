@@ -1,6 +1,6 @@
 package lib
 
-import io.flow.delta.config.v0.models.{BuildConfig, BuildConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
+import io.flow.delta.config.v0.models.{BuildConfig, BuildConfigUndefinedType, Cluster, EcsBuildConfig, K8sBuildConfig}
 
 object BuildConfigUtil {
 
@@ -8,6 +8,14 @@ object BuildConfigUtil {
     config match {
       case c: EcsBuildConfig => c.name
       case c: K8sBuildConfig => c.name
+      case BuildConfigUndefinedType(other) => sys.error(s"Invalid config type: $other")
+    }
+  }
+
+  def getCluster(config: BuildConfig): Cluster = {
+    config match {
+      case _: EcsBuildConfig => Cluster.Ecs
+      case _: K8sBuildConfig => Cluster.K8s
       case BuildConfigUndefinedType(other) => sys.error(s"Invalid config type: $other")
     }
   }

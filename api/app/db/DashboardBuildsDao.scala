@@ -2,6 +2,7 @@ package db
 
 import javax.inject.{Inject, Singleton}
 import anorm._
+import io.flow.delta.config.v0.models.Cluster
 import io.flow.delta.v0.models.{DashboardBuild, State}
 import io.flow.postgresql.{Authorization, Query}
 import lib.ProjectConfigUtil
@@ -34,13 +35,17 @@ class DashboardBuildsDao @Inject()(
 
   def findAll(
     auth: Authorization,
+    organization: Option[String] = None,
+    cluster: Option[Cluster] = None,
     limit: Option[Long],
     offset: Long = 0
-  ): Seq[DashboardBuild] = {
+  )(implicit queryModifier: Query => Query = { q => q }): Seq[DashboardBuild] = {
 
     db.withConnection { implicit c =>
-      BaseQuery.
+      queryModifier(BaseQuery).
         and(Filters(auth).organizations("projects.organization_id").sql).
+        equals("projects.organization_id", organization).
+        equals("builds.cluster", cluster.map(_.toString)).
         optionalLimit(limit).
         offset(offset).
         orderBy("case when coalesce(build_desired_states.versions::varchar, 'desired') = coalesce(build_last_states.versions::varchar, 'last') then 1 else 0 end, build_desired_states.timestamp desc").

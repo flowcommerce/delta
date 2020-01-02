@@ -1104,6 +1104,8 @@
         {
           "method": "GET",
           "parameters": [
+            { "name": "organization", "type": "string", "required": false },
+            { "name": "cluster", "type": "io.flow.delta.config.v0.enums.cluster", "required": false },
             { "name": "limit", "type": "long", "default": 25, "description": "The number of records to return", "minimum": 1, "maximum": 100 },
             { "name": "offset", "type": "long", "default": 0, "description": "Used to paginate. First page of results is 0.", "minimum": 0 }
           ],

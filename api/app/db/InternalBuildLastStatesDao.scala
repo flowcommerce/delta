@@ -157,6 +157,11 @@ class InternalBuildLastStatesDao @Inject()(
   }
 
   def delete(deletedBy: UserReference, build: Build): Unit = {
-    dao.deleteById(deletedBy, build.id)
+    deleteByBuildId(deletedBy, build.id)
   }
+
+  def deleteByBuildId(deletedBy: UserReference, buildId: String): Unit = {
+    dao.deleteById(deletedBy, buildId)
+  }
+
 }
