@@ -5,7 +5,7 @@ import java.util.UUID
 import actors.RollbarActor
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import com.typesafe.config.Config
-import db.{BuildsDao, BuildsWriteDao, ConfigsDao, DashboardBuildsDao, ItemsDao, ProjectsDao}
+import db.{BuildsDao, ConfigsDao, DashboardBuildsDao, ItemsDao, ProjectsDao}
 import io.flow.akka.SafeReceive
 import io.flow.akka.recurring.{ScheduleConfig, Scheduler}
 import io.flow.common.v0.models.UserReference
@@ -78,7 +78,6 @@ class MainActor @javax.inject.Inject() (
   playEnv: Environment,
   dashboardBuildsDao: DashboardBuildsDao,
   buildsDao: BuildsDao,
-  buildsWriteDao: BuildsWriteDao,
   configsDao: ConfigsDao,
   projectsDao: ProjectsDao,
   itemsDao: ItemsDao,
@@ -105,23 +104,6 @@ class MainActor @javax.inject.Inject() (
     dashboardBuildsDao.findAll(Authorization.All, limit = None).filter(_.cluster == cluster)
   }
 
-  private[this] def updateClusters() = {
-    dashboardBuildsDao.findAll(Authorization.All, limit = None) { q =>
-      q.isNull("builds.cluster")
-    }.foreach { b =>
-      buildsWriteDao.updateCluster(Constants.SystemUser, b.id, b.cluster)
-    }
-  }
-
-  private[this] def updateProjectConfigs() = {
-    configsDao.findAll(Authorization.All, limit = None).foreach { internalConfig =>
-      internalConfig.config match {
-        case p: ConfigProject => configsDao.syncProjectBuilds(Constants.SystemUser, internalConfig.project.id, p)
-        case _ => // no-op
-      }
-    }
-  }
-
   playEnv.mode match {
     case Mode.Test => {
       logger.info("[MainActor] Background actors are disabled in Test")
@@ -129,8 +111,6 @@ class MainActor @javax.inject.Inject() (
 
     case _ => {
       logger.info("MainActor Starting")
-      updateProjectConfigs()
-      updateClusters() // temporary to migrate cluster
 
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.update.jwt.token"),
