@@ -1,5 +1,5 @@
 GET     /_internal_/healthcheck                 controllers.HealthchecksController.index()
-GET     /                                       controllers.ApplicationController.index(organization: Option[String] ?= None, builds_page: Int ?= 0)
+GET     /                                       controllers.ApplicationController.index(organization: Option[String] ?= None, cluster: Option[io.flow.delta.config.v0.models.Cluster] ?= None, builds_page: Int ?= 0)
 
 GET     /projects                               controllers.ApplicationController.redirect
 GET     /projects/                              controllers.ProjectsController.index(page: Int ?= 0)

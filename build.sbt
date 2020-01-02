@@ -50,6 +50,7 @@ lazy val api = project
     javaAgents += "io.kamon" % "kanela-agent" % "1.0.4",
     routesImport += "io.flow.delta.v0.Bindables.Core._",
     routesImport += "io.flow.delta.v0.Bindables.Models._",
+    routesImport += "io.flow.delta.config.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
@@ -94,6 +95,7 @@ lazy val www = project
   .settings(
     routesImport += "io.flow.delta.v0.Bindables.Core._",
     routesImport += "io.flow.delta.v0.Bindables.Models._",
+    routesImport += "io.flow.delta.config.v0.Bindables.Models._",
     routesGenerator := InjectedRoutesGenerator,
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
