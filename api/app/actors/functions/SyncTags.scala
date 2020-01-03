@@ -59,8 +59,13 @@ class SyncTags @Inject()(
     val repo: Repo = projectRepo(project)
 
     github.withGithubClient(project.user.id) { client =>
-      client.tags.getTags(repo.owner, repo.project).map { tags =>
+      client.tags.getTags(repo.owner, repo.project, page = 1, perPage = 100).map { response =>
+        val link = response.headers.getAll("link")
+        println(s"LINK: $link")
+        val tags = response.body
+        println(s"TAGS: ${tags.map(_.name)}")
         val localTags = GithubUtil.toTags(tags)
+        println(s"localTags: ${localTags.length}")
         // latest tag version first to set the expected state to
         // that version, if needed. Otherwise we will trigger a
         // state update for every tag.
@@ -76,7 +81,7 @@ class SyncTags @Inject()(
             }
           }
         }.toList match {
-          case Nil => SupervisorResult.Ready(s"No new tags found")
+          case Nil => SupervisorResult.Ready("No new tags found")
           case tag :: Nil => SupervisorResult.Change(s"One new tag found: $tag")
           case multiple => SupervisorResult.Change(s"New tags found: ${multiple.mkString(", ")}")
         }

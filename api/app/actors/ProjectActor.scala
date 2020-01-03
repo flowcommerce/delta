@@ -124,7 +124,7 @@ class ProjectActor @javax.inject.Inject() (
         client.hooks.get(repo.owner, repo.project).map { hooks =>
           val targetUrl = HookBaseUrl + project.id
 
-          hooks.find(_.config.url == Some(targetUrl)) match {
+          hooks.body.find(_.config.url.contains(targetUrl)) match {
             case Some(_) => {
               // No-op hook exists
             }
@@ -143,7 +143,7 @@ class ProjectActor @javax.inject.Inject() (
                 )
               )
             }.map { hook =>
-              log(project).withKeyValue("hook", hook.name).info("Created githib webhook for project")
+              log(project).withKeyValue("hook", hook.body.name).info("Created githib webhook for project")
             }.recover {
               case e: Throwable => {
                 log(project).error("Error creating hook", e)
