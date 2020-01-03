@@ -247,8 +247,8 @@ class DefaultGithub @javax.inject.Inject() (
     ).flatMap { response =>
       val client = gitHubHelper.apiClient(response.accessToken)
       for {
-        githubUser <- client.users.getUser()
-        emails <- client.userEmails.get()
+        githubUser <- client.users.getUser().map(_.body)
+        emails <- client.userEmails.get().map(_.body)
       } yield {
         // put primary first
         val sortedEmailAddresses = (emails.filter(_.primary) ++ emails.filter(!_.primary)).map(_.email)
@@ -276,7 +276,7 @@ class DefaultGithub @javax.inject.Inject() (
     oauthToken(user) match {
       case None => Future { Nil }
       case Some(token) => {
-        gitHubHelper.apiClient(token).repositories.getUserAndRepos(page)
+        gitHubHelper.apiClient(token).repositories.getUserAndRepos(page).map(_.body)
       }
     }
   }
@@ -294,7 +294,7 @@ class DefaultGithub @javax.inject.Inject() (
           repo = repo,
           path = path
         ).map { contents =>
-          Some(toText(contents))
+          Some(toText(contents.body))
         }.recover {
           case UnitResponse(404) => {
             None
@@ -414,7 +414,7 @@ class MockGithub @Inject()(
   ) = Future {
     MockGithubData.getFile(path)
   }
-  
+
   override def oauthToken(user: UserReference): Option[String] = {
     MockGithubData.getToken(user)
   }
