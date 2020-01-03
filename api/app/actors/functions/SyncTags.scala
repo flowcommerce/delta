@@ -87,6 +87,7 @@ class SyncTags @Inject()(
   }
 
   def getAllTags(client: Client, repo: Repo, page: Long = 1L)(implicit ec: ExecutionContext): Future[Seq[GithubUtil.Tag]] = {
+    println(s"getAllTags project[${repo.project}] page[$page]")
     client.tags.getTags(repo.owner, repo.project, page = page, perPage = 100).flatMap { response =>
       val links = response.headers.get("link").flatMap(HypermediaLinks.parse(_).toOption).getOrElse(HypermediaLinks())
       val localTags = GithubUtil.toTags(response.body)

@@ -37,6 +37,7 @@ case class HypermediaLinks(links: Seq[HypermediaLink] = Nil) {
 }
 
 object HypermediaLinks {
+
   def parse(value: String): Either[Seq[String], HypermediaLinks] = {
     val all = value.trim.split(",").map(_.trim).filter(_.nonEmpty).map { v =>
       HypermediaLink.parse(v)
@@ -53,6 +54,10 @@ object HypermediaLinks {
 }
 
 object HypermediaLink {
+  def apply(url: String, rel: HypermediaLinkRel): HypermediaLink = {
+    HypermediaLink(new URL(url), rel)
+  }
+
   def parse(value: String): Either[Seq[String], HypermediaLink] = {
     value.trim.split(";").map(_.trim).filter(_.nonEmpty).toList match {
       case url :: rel :: Nil => {
