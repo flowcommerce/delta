@@ -75,7 +75,7 @@ class DefaultKubernetesService @Inject()(
         c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, null, null, null, null, false)
           .getItems
           .asScala
-          .filter(_.getMetadata.getName.startsWith(serviceName))
+          .filter(_.getMetadata.getName.startsWith(s"$serviceName-"))
       }
     }
   }
