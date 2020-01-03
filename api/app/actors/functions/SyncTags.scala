@@ -5,6 +5,7 @@ import db.{TagsDao, TagsWriteDao}
 import io.flow.delta.actors.{ProjectSupervisorFunction, SupervisorResult}
 import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
+import io.flow.delta.lib.{HypermediaLink, HypermediaLinkRel}
 import io.flow.delta.v0.models.Project
 import io.flow.log.RollbarLogger
 import io.flow.util.Constants
@@ -60,8 +61,18 @@ class SyncTags @Inject()(
 
     github.withGithubClient(project.user.id) { client =>
       client.tags.getTags(repo.owner, repo.project, page = 1, perPage = 100).map { response =>
-        val link = response.headers.getAll("link")
-        println(s"LINK: $link")
+        val allLinks = response.headers.getAll("link")
+        val parsedLinks = response.headers.getAll("link").flatMap { l =>
+          HypermediaLink.parse(l) match {
+            case Left(errors) => println(s"Cannot parse link '${l}': $errors"); None
+            case Right(l) => Some(l)
+          }
+        }
+        val nextLink = parsedLinks.find(_.rel == HypermediaLinkRel.Next)
+        println(s"LINK: ${allLinks}")
+        println(s"parsedLinks: $parsedLinks")
+        println(s"nextLink: $nextLink")
+
         val tags = response.body
         println(s"TAGS: ${tags.map(_.name)}")
         val localTags = GithubUtil.toTags(tags)
