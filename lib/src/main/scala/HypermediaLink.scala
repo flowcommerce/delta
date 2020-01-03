@@ -27,7 +27,7 @@ object HypermediaLinkRel {
 
 case class HypermediaLinks(links: Seq[HypermediaLink] = Nil) {
   def url(rel: HypermediaLinkRel): Option[URL] = {
-    links.find(_.rel == HypermediaLinkRel.First).map(_.url)
+    links.find(_.rel == rel).map(_.url)
   }
 
   def first: Option[URL] = url(HypermediaLinkRel.First)
