@@ -70,7 +70,7 @@ lazy val api = project
       "io.flow" %% "lib-log" % "0.0.93",
       "io.flow" %% "lib-akka" % "0.1.13",
       "io.flow" %% "lib-usage" % "0.1.12",
-      "io.kubernetes" % "client-java" % "7.0.0",
+      "io.kubernetes" % "client-java" % "5.0.0",
       "com.github.ghik" %% "silencer-lib" % "1.4.2" % Provided,
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.2"),
     ),
