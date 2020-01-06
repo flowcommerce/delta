@@ -36,6 +36,8 @@ class DefaultKubernetesService @Inject()(
 
   private val ProductionNamespace = "production"
 
+  private val InstanceNameLabel = "app.kubernetes.io/instance"
+
   private[this] val kubeConfig: Option[KubeConfig] = {
     val path = new File(config.requiredString("kube.config.path"))
     if (path.exists()) {
@@ -72,10 +74,9 @@ class DefaultKubernetesService @Inject()(
     client match {
       case None => Nil
       case Some(c) => {
-        c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, null, null, null, null, false)
+        c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, s"$InstanceNameLabel=$serviceName", null, null, null, false)
           .getItems
           .asScala
-          .filter(_.getMetadata.getName.startsWith(s"$serviceName-"))
       }
     }
   }
