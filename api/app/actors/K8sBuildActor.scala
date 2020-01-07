@@ -37,7 +37,9 @@ class K8sBuildActor @javax.inject.Inject() (
   private[this] implicit val configuredRollbar = logger
     .fingerprint("K8sBuildActor")
     .withKeyValue("build_id", buildId)
-  configuredRollbar.info(s"K8sBuildActor created for build[${buildId}]")
+  configuredRollbar.info(s"K8sBuildActor created for build[$buildId]")
+
+  private val Root = "root"
 
   def receive = SafeReceive.withLogUnhandled {
 
@@ -69,7 +71,8 @@ class K8sBuildActor @javax.inject.Inject() (
 
   private[this] def captureLastState(build: Build): Unit = {
     Try {
-      kubernetesService.getDeployedVersions(build.project.id)
+      val deploymentName = getDeploymentName(build)
+      kubernetesService.getDeployedVersions(deploymentName)
     } match {
       case Success(versions) => {
         buildLastStatesDao.upsert(
@@ -90,6 +93,14 @@ class K8sBuildActor @javax.inject.Inject() (
       .organization(build.project.organization.id)
       .withKeyValue("project_id", build.project.id)
       .withKeyValue("build_name", build.name)
+  }
+
+  private[this] def getDeploymentName(build: Build): String = {
+    if (build.name == Root) {
+      build.project.id
+    } else {
+      s"${build.project.id}-${build.name}"
+    }
   }
 
 }
