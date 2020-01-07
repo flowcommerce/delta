@@ -4,7 +4,7 @@ import java.io.{File, FileReader}
 
 import com.google.inject.{Inject, Singleton}
 import io.flow.delta.aws.Util
-import io.flow.delta.v0.models.Version
+import io.flow.delta.v0.models.{Build, Version}
 import io.flow.log.RollbarLogger
 import io.flow.util.Config
 import io.kubernetes.client.apis.AppsV1Api
@@ -88,6 +88,20 @@ class DefaultKubernetesService @Inject()(
         instances = rs.getStatus.getReadyReplicas.toLong,
       )
     }
+  }
+
+}
+
+object KubernetesService {
+
+  private val Root = "root"
+
+  def toDeploymentName(build :Build) : String = {
+      if (build.name == Root) {
+        build.project.id
+      } else {
+        s"${build.project.id}-${build.name}"
+      }
   }
 
 }

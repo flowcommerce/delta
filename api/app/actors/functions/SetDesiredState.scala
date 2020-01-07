@@ -1,15 +1,16 @@
 package io.flow.delta.actors.functions
 
-import javax.inject.Inject
 import db.{BuildDesiredStatesDao, ConfigsDao, TagsDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
-import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
+import io.flow.delta.config.v0.models._
 import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm, Version}
 import io.flow.log.RollbarLogger
-import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, OrderBy}
+import io.flow.util.Constants
+import javax.inject.Inject
 import k8s.KubernetesService
+import k8s.KubernetesService.toDeploymentName
 import lib.BuildConfigUtil
 import play.api.Application
 
@@ -105,8 +106,9 @@ class SetDesiredState @Inject()(
       .withKeyValue("project_id", build.project.id)
 
     def getK8sDesiredReplicaNumber = Try {
+      val deploymentName = toDeploymentName(build)
       kubernetesService
-        .getDesiredReplicaNumber(build.project.id, version)
+        .getDesiredReplicaNumber(deploymentName, version)
         .getOrElse(DefaultNumberInstances)
     } match {
       case Success(replicas) if replicas > 0 => replicas

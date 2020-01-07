@@ -7,6 +7,7 @@ import io.flow.delta.api.lib.EventLogProcessor
 import io.flow.delta.v0.models.{Build, StateForm}
 import io.flow.log.RollbarLogger
 import k8s.KubernetesService
+import k8s.KubernetesService.toDeploymentName
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -39,8 +40,6 @@ class K8sBuildActor @javax.inject.Inject() (
     .withKeyValue("build_id", buildId)
   configuredRollbar.info(s"K8sBuildActor created for build[$buildId]")
 
-  private val Root = "root"
-
   def receive = SafeReceive.withLogUnhandled {
 
     case BuildActor.Messages.Setup =>
@@ -71,7 +70,7 @@ class K8sBuildActor @javax.inject.Inject() (
 
   private[this] def captureLastState(build: Build): Unit = {
     Try {
-      val deploymentName = getDeploymentName(build)
+      val deploymentName = toDeploymentName(build)
       kubernetesService.getDeployedVersions(deploymentName)
     } match {
       case Success(versions) => {
@@ -93,14 +92,6 @@ class K8sBuildActor @javax.inject.Inject() (
       .organization(build.project.organization.id)
       .withKeyValue("project_id", build.project.id)
       .withKeyValue("build_name", build.name)
-  }
-
-  private[this] def getDeploymentName(build: Build): String = {
-    if (build.name == Root) {
-      build.project.id
-    } else {
-      s"${build.project.id}-${build.name}"
-    }
   }
 
 }
