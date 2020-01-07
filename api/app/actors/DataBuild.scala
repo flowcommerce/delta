@@ -35,10 +35,9 @@ trait DataBuild extends DataProject with EventLog {
 
   override def logPrefix: String = {
     val base = format(this)
-    dataBuild.map { build =>
-      s"$base[${BuildNames.projectName(build)}]"
-    }.getOrElse {
-      s"$base[unknown build]"
+    dataBuild match {
+      case None => base
+      case Some(build) =>s"$base[${BuildNames.projectName(build)}]"
     }
   }
 

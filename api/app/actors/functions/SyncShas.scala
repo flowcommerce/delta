@@ -62,7 +62,7 @@ class SyncShas @Inject()(
           val existing = shasDao.findByProjectIdAndBranch(Authorization.All, project.id, branchName).map(_.hash)
 
           client.refs.getByRef(repo.owner, repo.project, s"heads/$branchName").map { branch =>
-            val branchSha = branch.`object`.sha
+            val branchSha = branch.body.`object`.sha
             if (existing.contains(branchSha)) {
               SupervisorResult.Ready(s"Shas table already records that branch[$branchName] is at $branchSha")
             } else {

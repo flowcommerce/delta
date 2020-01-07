@@ -111,6 +111,7 @@ class MainActor @javax.inject.Inject() (
 
     case _ => {
       logger.info("MainActor Starting")
+
       scheduleRecurring(
         ScheduleConfig.fromConfig(config, "main.actor.update.jwt.token"),
         DockerHubTokenActor.Messages.Refresh,

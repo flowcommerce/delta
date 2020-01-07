@@ -72,7 +72,7 @@ class Tag @Inject()(
           val repo: Repo = projectRepo(project)
 
           client.tags.getTags(repo.owner, repo.project).flatMap { tags =>
-            GithubUtil.toTags(tags).reverse.headOption match {
+            GithubUtil.toTags(tags.body).reverse.headOption match {
               case None => {
                 createTag(io.flow.delta.actors.functions.Tag.InitialTag, sha, project, repo)
               }
@@ -98,7 +98,7 @@ class Tag @Inject()(
   /**
     * For projects with auto tag enabled, this method actually creates
     * a new tag with the given name, pointing to the specified sha.
-    * 
+    *
     * @param name e.g. 0.0.2
     * @param sha e.g. ff731cfdad6e5b05ec40535fd7db03c91bbcb8ff
     */

@@ -98,9 +98,11 @@ class ApplicationController @javax.inject.Inject() (
     Redirect(request.path + "/")
   }
 
-  def index(organization: Option[String], buildsPage: Int = 0) = User.async { implicit request =>
+  def index(organization: Option[String], cluster: Option[Cluster], buildsPage: Int = 0) = User.async { implicit request =>
     for {
       dashboardBuilds <- deltaClient(request).dashboardBuilds.get(
+        organization = organization,
+        cluster = cluster,
         limit = Pagination.DefaultLimit.toLong + 1L,
         offset = buildsPage * Pagination.DefaultLimit.toLong
       ).recover {
@@ -110,7 +112,8 @@ class ApplicationController @javax.inject.Inject() (
       Ok(
         views.html.index(
           uiData(request).copy(organization = organization),
-          PaginatedCollection(buildsPage, dashboardBuilds.map(BuildView(_)))
+          PaginatedCollection(buildsPage, dashboardBuilds.map(BuildView(_))),
+          cluster = cluster,
         )
       )
     }

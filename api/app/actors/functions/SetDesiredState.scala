@@ -1,15 +1,16 @@
 package io.flow.delta.actors.functions
 
-import javax.inject.Inject
 import db.{BuildDesiredStatesDao, ConfigsDao, TagsDao}
 import io.flow.delta.actors.{BuildSupervisorFunction, SupervisorResult}
-import io.flow.delta.config.v0.models.{BuildConfig, BuildStage, ConfigError, ConfigProject, ConfigUndefinedType, EcsBuildConfig, K8sBuildConfig}
+import io.flow.delta.config.v0.models._
 import io.flow.delta.lib.StateFormatter
 import io.flow.delta.v0.models.{Build, StateForm, Version}
 import io.flow.log.RollbarLogger
-import io.flow.util.Constants
 import io.flow.postgresql.{Authorization, OrderBy}
+import io.flow.util.Constants
+import javax.inject.Inject
 import k8s.KubernetesService
+import k8s.KubernetesService.toDeploymentName
 import lib.BuildConfigUtil
 import play.api.Application
 
@@ -79,8 +80,10 @@ class SetDesiredState @Inject()(
     }
   }
 
-  def setVersions(versions: Seq[Version], build: Build): SupervisorResult = {
-    assert(versions.nonEmpty, "Must have at least one version")
+  def setVersions(all: Seq[Version], build: Build): SupervisorResult = {
+    assert(all.nonEmpty, "Must have at least one version")
+    val versions = all.filter(_.instances > 0)
+    assert(versions.nonEmpty, "Must have at least one version with at least 1 instance")
 
     buildDesiredStatesDao.upsert(
       Constants.SystemUser,
@@ -98,15 +101,23 @@ class SetDesiredState @Inject()(
     * version as the total number of instances in the last state.
     */
   private def numberInstances(build: Build, version: String): Long = {
+    lazy val log = configuredLogger
+      .withKeyValue("build_id", build.id)
+      .withKeyValue("project_id", build.project.id)
 
     def getK8sDesiredReplicaNumber = Try {
+      val deploymentName = toDeploymentName(build)
       kubernetesService
-        .getDesiredReplicaNumber(build.project.id, version)
+        .getDesiredReplicaNumber(deploymentName, version)
         .getOrElse(DefaultNumberInstances)
     } match {
-      case Success(replicas) => replicas
+      case Success(replicas) if replicas > 0 => replicas
+      case Success(_) => {
+        log.warn("K8s query returned 0 instances - setting to default number of instanes")
+        DefaultNumberInstances
+      }
       case Failure(exception) => {
-        configuredLogger.warn("Error getting desired replica number", exception)
+        log.warn("Error getting desired replica number", exception)
         DefaultNumberInstances
       }
     }

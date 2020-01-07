@@ -1,19 +1,18 @@
 package db
 
-import javax.inject.{Inject, Singleton}
+import javax.inject.Inject
 import anorm._
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.actors.MainActor
-import io.flow.delta.config.v0.models.BuildConfig
+import io.flow.delta.config.v0.models.{BuildConfig, Cluster}
 import io.flow.delta.v0.models.{Build, Status}
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.util.IdGenerator
 import lib.BuildConfigUtil
 import play.api.db._
 
-@Singleton
 class BuildsDao @Inject()(
-  db: Database
+  db: Database,
 ) {
 
   private[db] val Master = "master"
@@ -22,6 +21,7 @@ class BuildsDao @Inject()(
     select builds.id,
            builds.name,
            builds.status,
+           builds.cluster,
            builds.project_id,
            projects.name as project_name,
            projects.uri as project_uri,
@@ -90,18 +90,30 @@ case class BuildsWriteDao @javax.inject.Inject() (
 
   private[this] val UpsertQuery = """
     insert into builds
-    (id, project_id, name, status, updated_by_user_id)
+    (id, project_id, name, status, cluster, updated_by_user_id)
     values
-    ({id}, {project_id}, {name}, {status}, {updated_by_user_id})
+    ({id}, {project_id}, {name}, {status}, {cluster}, {updated_by_user_id})
     on conflict(project_id, name)
     do update
           set status = {status},
+              cluster = {cluster},
               updated_by_user_id = {updated_by_user_id}
   """
+
+  private[this] val SelectBuildIdByProjectId = Query("""
+    select id from builds where project_id = {project_id}
+  """)
 
   private[this] val UpdateStatusQuery = """
     update builds
        set status = {status},
+           updated_by_user_id = {updated_by_user_id}
+     where id = {id}
+  """
+
+  private[this] val UpdateClusterQuery = """
+    update builds
+       set cluster = {cluster},
            updated_by_user_id = {updated_by_user_id}
      where id = {id}
   """
@@ -129,6 +141,7 @@ case class BuildsWriteDao @javax.inject.Inject() (
       'project_id -> projectId,
       'name -> BuildConfigUtil.getName(config).trim,
       'status -> status.toString,
+      'cluster -> BuildConfigUtil.getCluster(config).toString,
       'updated_by_user_id -> createdBy.id
     ).execute()
     ()
@@ -150,18 +163,43 @@ case class BuildsWriteDao @javax.inject.Inject() (
     }
   }
 
+  def updateCluster(createdBy: UserReference, buildId: String, cluster: Cluster): Unit = {
+    db.withConnection { implicit c =>
+      SQL(UpdateClusterQuery).on(
+        'id -> buildId,
+        'cluster -> cluster.toString,
+        'updated_by_user_id -> createdBy.id
+      ).execute()
+    }
+    ()
+  }
+
+  def deleteAllByProjectId(user: UserReference, projectId: String): Unit = {
+    db.withConnection { c =>
+      SelectBuildIdByProjectId
+        .bind("project_id", projectId)
+        .as(SqlParser.str("id").*)(c)
+    }.foreach { id =>
+      deleteById(user, id)
+    }
+  }
+
   def delete(deletedBy: UserReference, build: Build): Unit = {
-    imagesDao.findAll(buildId = Some(build.id), limit = None).foreach { image =>
+    deleteById(deletedBy, build.id)
+  }
+
+  private[this] def deleteById(deletedBy: UserReference, buildId: String): Unit = {
+    imagesDao.findAll(buildId = Some(buildId), limit = None).foreach { image =>
       imagesWriteDao.delete(deletedBy, image)
     }
 
-    buildDesiredStatesDao.delete(deletedBy, build)
+    buildDesiredStatesDao.deleteByBuildId(deletedBy, buildId)
 
-    buildLastStatesDao.delete(deletedBy, build)
+    buildLastStatesDao.deleteByBuildId(deletedBy, buildId)
 
-    delete.delete("builds", deletedBy.id, build.id)
+    delete.delete("builds", deletedBy.id, buildId)
 
-    mainActor ! MainActor.Messages.BuildDeleted(build.id)
+    mainActor ! MainActor.Messages.BuildDeleted(buildId)
   }
 
 }

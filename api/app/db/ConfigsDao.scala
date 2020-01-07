@@ -2,12 +2,12 @@ package db
 
 import anorm._
 import io.flow.common.v0.models.UserReference
-import io.flow.delta.config.v0.models.Config
+import io.flow.delta.config.v0.models.{Config, ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.config.v0.models.json._
-import io.flow.delta.v0.models.Reference
+import io.flow.delta.v0.models.{Reference, Status}
 import io.flow.postgresql.{Authorization, OrderBy, Query}
 import io.flow.util.IdGenerator
-
+import lib.BuildConfigUtil
 import play.api.db._
 import play.api.libs.json._
 
@@ -20,7 +20,9 @@ case class InternalConfig(
 @javax.inject.Singleton
 class ConfigsDao @javax.inject.Inject() (
   db: Database,
-  delete: Delete
+  buildsDao: BuildsDao,
+  buildsWriteDao: BuildsWriteDao,
+  delete: Delete,
 ) {
 
   private[this] val BaseQuery = Query(s"""
@@ -73,12 +75,12 @@ class ConfigsDao @javax.inject.Inject() (
       ).
         equals("configs.project_id", projectId).
         as(
-          parser().*
+          parser.*
         )
     }
   }
 
-  private[this] def parser(): RowParser[InternalConfig] = {
+  private[this] val parser: RowParser[InternalConfig] = {
     SqlParser.str("id") ~
     SqlParser.str("project_id") ~
     SqlParser.str("data") map {
@@ -98,21 +100,16 @@ class ConfigsDao @javax.inject.Inject() (
     existing match {
       case None => {
         upsert(createdBy, projectId, newConfig)
-        ()
       }
 
       case Some(ex) => {
-        ex == newConfig match {
-          case false => {
-            upsert(createdBy, projectId, newConfig)
-            ()
-          }
-          case true => {
-            // noop - no change
-          }
+        if (ex != newConfig) {
+          upsert(createdBy, projectId, newConfig)
         }
       }
     }
+
+    ()
   }
 
   def upsert(createdBy: UserReference, projectId: String, config: Config): InternalConfig = {
@@ -120,24 +117,46 @@ class ConfigsDao @javax.inject.Inject() (
       upsertWithConnection(c, createdBy, projectId, config)
     }
 
+    // TODO: Sync builds in a transaction
+    syncBuilds(createdBy, projectId, config)
+
     findByProjectId(Authorization.All, projectId).getOrElse {
       sys.error(s"Failed to create configuration for projectId[$projectId]")
     }
   }
 
-  private[db] def upsertWithConnection(implicit c: java.sql.Connection, createdBy: UserReference, projectId: String, config: Config): Unit = {
+  private[db] def upsertWithConnection(c: java.sql.Connection, createdBy: UserReference, projectId: String, config: Config): Unit = {
     SQL(UpsertQuery).on(
       'id -> idGenerator.randomId(),
       'project_id -> projectId,
       'data -> Json.toJson(config).toString,
       'updated_by_user_id -> createdBy.id
-    ).execute()
+    ).execute()(c)
     ()
   }
 
+  private[this] def syncBuilds(user: UserReference, projectId: String, config: Config): Unit = {
+    config match {
+      case p: ConfigProject => syncProjectBuilds(user, projectId, p)
+      case _: ConfigError | _: ConfigUndefinedType => buildsWriteDao.deleteAllByProjectId(user, projectId)
+    }
+  }
+
+  def syncProjectBuilds(user: UserReference, projectId: String, config: ConfigProject): Unit = {
+    val existing = buildsDao.findAllByProjectId(Authorization.All, projectId)
+    val allNames = config.builds.map(BuildConfigUtil.getName)
+    config.builds.foreach { build =>
+      buildsWriteDao.upsert(user, projectId, Status.Enabled, build)
+    }
+
+    existing.filterNot { e => allNames.contains(e.name) }.foreach { build =>
+      buildsWriteDao.delete(user, build)
+    }
+  }
+
   def deleteByProjectId(deletedBy: UserReference, projectId: String): Unit = {
-    findByProjectId(Authorization.All, projectId).foreach { internal =>
-      delete(deletedBy, internal)
+    findByProjectId(Authorization.All, projectId).foreach { p =>
+      delete(deletedBy, p)
     }
   }
 

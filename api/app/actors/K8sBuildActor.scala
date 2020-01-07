@@ -7,6 +7,7 @@ import io.flow.delta.api.lib.EventLogProcessor
 import io.flow.delta.v0.models.{Build, StateForm}
 import io.flow.log.RollbarLogger
 import k8s.KubernetesService
+import k8s.KubernetesService.toDeploymentName
 
 import scala.concurrent.duration._
 import scala.util.{Failure, Success, Try}
@@ -37,7 +38,7 @@ class K8sBuildActor @javax.inject.Inject() (
   private[this] implicit val configuredRollbar = logger
     .fingerprint("K8sBuildActor")
     .withKeyValue("build_id", buildId)
-  configuredRollbar.info(s"K8sBuildActor created for build[${buildId}]")
+  configuredRollbar.info(s"K8sBuildActor created for build[$buildId]")
 
   def receive = SafeReceive.withLogUnhandled {
 
@@ -69,7 +70,8 @@ class K8sBuildActor @javax.inject.Inject() (
 
   private[this] def captureLastState(build: Build): Unit = {
     Try {
-      kubernetesService.getDeployedVersions(build.project.id)
+      val deploymentName = toDeploymentName(build)
+      kubernetesService.getDeployedVersions(deploymentName)
     } match {
       case Success(versions) => {
         buildLastStatesDao.upsert(

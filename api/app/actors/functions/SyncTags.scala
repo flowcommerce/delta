@@ -5,13 +5,15 @@ import db.{TagsDao, TagsWriteDao}
 import io.flow.delta.actors.{ProjectSupervisorFunction, SupervisorResult}
 import io.flow.delta.api.lib.{GithubUtil, Repo}
 import io.flow.delta.config.v0.models.{ConfigProject, ProjectStage}
+import io.flow.delta.lib.HypermediaLinks
 import io.flow.delta.v0.models.Project
+import io.flow.github.v0.Client
 import io.flow.log.RollbarLogger
 import io.flow.util.Constants
 import io.flow.postgresql.Authorization
 import play.api.Application
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
 object SyncTags extends ProjectSupervisorFunction {
 
@@ -59,12 +61,12 @@ class SyncTags @Inject()(
     val repo: Repo = projectRepo(project)
 
     github.withGithubClient(project.user.id) { client =>
-      client.tags.getTags(repo.owner, repo.project).map { tags =>
-        val localTags = GithubUtil.toTags(tags)
+      getAllTags(client, repo).map { localTags =>
         // latest tag version first to set the expected state to
         // that version, if needed. Otherwise we will trigger a
         // state update for every tag.
-        localTags.reverse.flatMap { tag =>
+        localTags.sortBy(_.semver).reverse.flatMap { tag =>
+          // TODO: change to a single sql query to find all tags
           tagsDao.findByProjectIdAndName(Authorization.All, project.id, tag.semver.label) match {
             case None => {
               tagsWriteDao.upsert(Constants.SystemUser, project.id, tag.semver.label, tag.sha)
@@ -76,18 +78,33 @@ class SyncTags @Inject()(
             }
           }
         }.toList match {
-          case Nil => SupervisorResult.Ready(s"No new tags found")
+          case Nil => SupervisorResult.Ready("No new tags found")
           case tag :: Nil => SupervisorResult.Change(s"One new tag found: $tag")
           case multiple => SupervisorResult.Change(s"New tags found: ${multiple.mkString(", ")}")
         }
-      }.recover {
-        case ex: Throwable => {
-          log(project).
-            withKeyValue("repo.owner", repo.owner).
-            withKeyValue("repo.project", repo.project).
-            error("getTags failed", ex)
-          throw new RuntimeException(ex)
+      }
+    }
+  }
+
+  def getAllTags(client: Client, repo: Repo, page: Long = 1L)(implicit ec: ExecutionContext): Future[Seq[GithubUtil.Tag]] = {
+    println(s"getAllTags project[${repo.project}] page[$page]")
+    client.tags.getTags(repo.owner, repo.project, page = page, perPage = 100).flatMap { response =>
+      val links = response.headers.get("link").flatMap(HypermediaLinks.parse(_).toOption).getOrElse(HypermediaLinks())
+      val localTags = GithubUtil.toTags(response.body)
+      if (links.next.isDefined) {
+        getAllTags(client, repo, page + 1).map { t =>
+          localTags ++ t
         }
+      } else {
+        Future.successful(localTags)
+      }
+    }.recoverWith {
+      case ex: Throwable => {
+        logger.
+          withKeyValue("repo.owner", repo.owner).
+          withKeyValue("repo.project", repo.project).
+          error("getTags failed", ex)
+        Future.failed(ex)
       }
     }
   }

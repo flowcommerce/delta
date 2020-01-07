@@ -6,6 +6,7 @@ import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.delta.www.lib.{Config, DeltaClientProvider, UiData}
 import io.flow.play.controllers.IdentifiedCookie._
 import io.flow.play.controllers.{FlowController, FlowControllerComponents}
+import io.flow.util.FlowEnvironment
 import play.api.i18n._
 import play.api.mvc.ControllerComponents
 
@@ -21,6 +22,14 @@ class LoginController @javax.inject.Inject() (
 
   def index(returnUrl: Option[String]) = Action { implicit request =>
     Ok(views.html.login.index(config, UiData(requestPath = request.path), returnUrl))
+  }
+
+  def dev(userId: String) = Action { _ =>
+    assert(
+      FlowEnvironment.Current == FlowEnvironment.Development,
+      s"Env '${FlowEnvironment.Current}' must be development'"
+    )
+    Redirect("/").withIdentifiedCookieUser(UserReference(userId.toString))
   }
 
   @silent

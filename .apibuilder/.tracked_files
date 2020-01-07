@@ -3,6 +3,7 @@ flow:
   common:
     anorm_2_6_parsers:
     - api/app/generated/FlowCommonV0Conversions.scala
+    - api/app/generated/FlowCommonV0Parsers.scala
     play_2_x_json:
     - generated/app/FlowCommonV0Models.scala
   delta:
@@ -16,6 +17,7 @@ flow:
   delta-config:
     anorm_2_6_parsers:
     - api/app/generated/FlowDeltaConfigV0Conversions.scala
+    - api/app/generated/FlowDeltaConfigV0Parsers.scala
     play_2_6_client:
     - generated/app/FlowDeltaConfigV0Client.scala
   docker-hub:
@@ -33,6 +35,7 @@ flow:
   github:
     anorm_2_6_parsers:
     - api/app/generated/FlowGithubV0Conversions.scala
+    - api/app/generated/FlowGithubV0Parsers.scala
     play_2_6_client:
     - generated/app/FlowGithubV0Client.scala
   github-oauth:
