@@ -128,7 +128,7 @@ class TravisCiDockerImageBuilder @Inject()(
       case _: TimeoutException => {
         eventLogProcessor.error(s"Timeout expired triggering Travis CI build [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
       }
-      case io.flow.docker.registry.v0.errors.UnitResponse(code) => {
+      case io.flow.travis.ci.v0.errors.UnitResponse(code) => {
         code match {
           case _ => {
             eventLogProcessor.error(s"Travis CI returned HTTP $code when triggering build [${dockerImageName}:${travisCiBuild.version}]", log = log(projectId))
