@@ -1725,7 +1725,7 @@ package io.flow.travis.ci.v0 {
       f(play.api.libs.json.Json.parse(r.body)) match {
         case play.api.libs.json.JsSuccess(x, _) => x
         case play.api.libs.json.JsError(errors) => {
-          throw io.flow.travis.ci.v0.errors.FailedRequest(r.status, s"Invalid json for class[" + className + "]: " + errors.mkString(" "))
+          throw io.flow.travis.ci.v0.errors.FailedRequest(r.status, s"Invalid json[${r.body}] for class[" + className + "]: " + errors.mkString(" "))
         }
       }
     }
