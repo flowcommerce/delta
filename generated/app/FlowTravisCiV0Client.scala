@@ -178,7 +178,6 @@ package io.flow.travis.ci.v0.models {
   )
 
   final case class RequestRepositoryData(
-    id: String,
     name: String,
     ownerName: _root_.scala.Option[String] = None,
     slug: _root_.scala.Option[String] = None
@@ -1111,16 +1110,14 @@ package io.flow.travis.ci.v0.models {
 
     implicit def jsonReadsTravisCiRequestRepositoryData: play.api.libs.json.Reads[RequestRepositoryData] = {
       for {
-        id <- (__ \ "id").read[String]
         name <- (__ \ "name").read[String]
         ownerName <- (__ \ "owner_name").readNullable[String]
         slug <- (__ \ "slug").readNullable[String]
-      } yield RequestRepositoryData(id, name, ownerName, slug)
+      } yield RequestRepositoryData(name, ownerName, slug)
     }
 
     def jsObjectRequestRepositoryData(obj: io.flow.travis.ci.v0.models.RequestRepositoryData): play.api.libs.json.JsObject = {
       play.api.libs.json.Json.obj(
-        "id" -> play.api.libs.json.JsString(obj.id),
         "name" -> play.api.libs.json.JsString(obj.name)
       ) ++ (obj.ownerName match {
         case None => play.api.libs.json.Json.obj()
