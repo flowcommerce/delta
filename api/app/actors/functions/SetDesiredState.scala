@@ -107,6 +107,11 @@ class SetDesiredState @Inject()(
 
     def getK8sDesiredReplicaNumber = Try {
       val deploymentName = toDeploymentName(build)
+      configuredLogger
+        .withKeyValue("build_name", build.name)
+        .withKeyValue("build_project_id", build.project.id)
+        .withKeyValue("deploymentName", deploymentName)
+        .info("getK8sDesiredReplicaNumber")
       kubernetesService
         .getDesiredReplicaNumber(deploymentName, version)
         .getOrElse(DefaultNumberInstances)

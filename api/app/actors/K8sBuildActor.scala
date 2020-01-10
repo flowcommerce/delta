@@ -71,6 +71,11 @@ class K8sBuildActor @javax.inject.Inject() (
   private[this] def captureLastState(build: Build): Unit = {
     Try {
       val deploymentName = toDeploymentName(build)
+      configuredRollbar
+        .withKeyValue("build_name", build.name)
+        .withKeyValue("build_project_id", build.project.id)
+        .withKeyValue("deploymentName", deploymentName)
+        .info("CaptureLastState")
       kubernetesService.getDeployedVersions(deploymentName)
     } match {
       case Success(versions) => {
