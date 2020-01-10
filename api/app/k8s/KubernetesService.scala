@@ -51,7 +51,7 @@ class DefaultKubernetesService @Inject()(
   }
 
   override def getDeployedVersions(serviceName: String): Seq[Version] = {
-    replicaSets(serviceName).flatMap(toVersion).filter(_.instances > 0)
+    replicaSets(serviceName).map(toVersion).filter(_.instances > 0)
   }
 
   override def getDesiredReplicaNumber(serviceName: String, version: String): Option[Long] = {
@@ -81,13 +81,13 @@ class DefaultKubernetesService @Inject()(
     }
   }
 
-  private def toVersion(rs: V1ReplicaSet): Seq[Version] = {
+  private def toVersion(rs: V1ReplicaSet): Version = {
     rs.getSpec.getTemplate.getSpec.getContainers.asScala.map(_.getImage).flatMap(Util.parseImage).map { image =>
       Version(
         name = image.version,
         instances = rs.getStatus.getReadyReplicas.toLong,
       )
-    }
+    }.head
   }
 
 }
