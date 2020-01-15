@@ -48,7 +48,7 @@ code:
       generators:
         play_2_6_client: generated/app
     email:
-      version: latest
+      version: 0.6.9
       generators:
         play_2_6_client: generated/app
     rollbar:
