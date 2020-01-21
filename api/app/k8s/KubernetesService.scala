@@ -7,8 +7,8 @@ import io.flow.delta.aws.Util
 import io.flow.delta.v0.models.{Build, Version}
 import io.flow.log.RollbarLogger
 import io.flow.util.Config
-import io.kubernetes.client.openapi.apis.AppsV1Api
-import io.kubernetes.client.openapi.models.V1ReplicaSet
+import io.kubernetes.client.apis.AppsV1Api
+import io.kubernetes.client.models.V1ReplicaSet
 import io.kubernetes.client.util.{ClientBuilder, KubeConfig}
 
 import scala.collection.JavaConverters._
@@ -74,7 +74,7 @@ class DefaultKubernetesService @Inject()(
     client match {
       case None => Nil
       case Some(c) => {
-        c.listNamespacedReplicaSet(ProductionNamespace, "true", null, null, null, s"$InstanceNameLabel=$serviceName", null, null, null, false)
+        c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, s"$InstanceNameLabel=$serviceName", null, null, null, false)
           .getItems
           .asScala
       }
