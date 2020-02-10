@@ -2093,7 +2093,7 @@ package io.flow.github.v0 {
         requestHeaders: Seq[(String, String)] = Nil
       )(implicit ec: scala.concurrent.ExecutionContext): scala.concurrent.Future[io.flow.github.v0.Response[Unit]] = {
         _executeRequest("DELETE", s"/repos/${play.utils.UriEncoding.encodePathSegment(owner, "UTF-8")}/${play.utils.UriEncoding.encodePathSegment(repo, "UTF-8")}/hooks/${id}", requestHeaders = requestHeaders).map {
-          case r if r.status == 204 => ResponseImpl(body = (), status = r.status, headers = ResponseHeaders(r.headers))
+          case r if r.status == 204 => ResponseImpl(body = (), status = r.status, headers = ResponseHeaders(r.headers.map { case (k, v) => k -> v.toSeq }))
           case r if r.status == 404 => throw io.flow.github.v0.errors.UnitResponse(r.status)
           case r => throw io.flow.github.v0.errors.FailedRequest(r.status, s"Unsupported response code[${r.status}]. Expected: 204, 404")
         }
@@ -2445,7 +2445,7 @@ package io.flow.github.v0 {
       ResponseImpl(
         body = parseJson(className, r, f),
         status = r.status,
-        headers = ResponseHeaders(r.headers),
+        headers = ResponseHeaders(r.headers.map { case (k, v) => k -> v.toSeq }),
       )
     }
 
