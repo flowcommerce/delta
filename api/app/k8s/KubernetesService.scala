@@ -11,7 +11,7 @@ import io.kubernetes.client.apis.AppsV1Api
 import io.kubernetes.client.models.V1ReplicaSet
 import io.kubernetes.client.util.{ClientBuilder, KubeConfig}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 trait KubernetesService {
 
@@ -77,6 +77,7 @@ class DefaultKubernetesService @Inject()(
         c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, s"$InstanceNameLabel=$serviceName", null, null, null, false)
           .getItems
           .asScala
+          .toSeq
       }
     }
   }

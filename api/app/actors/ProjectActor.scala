@@ -70,11 +70,11 @@ class ProjectActor @javax.inject.Inject() (
         }
       }
 
-      system.scheduler.schedule(
+      system.scheduler.scheduleWithFixedDelay(
         Duration(ProjectActor.SyncIfInactiveIntervalMinutes, "minutes"),
         Duration(ProjectActor.SyncIfInactiveIntervalMinutes, "minutes")
       ) {
-        self ! ProjectActor.Messages.SyncIfInactive
+        () => self ! ProjectActor.Messages.SyncIfInactive
       }
       ()
 

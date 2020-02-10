@@ -55,12 +55,12 @@ class EventsDao @javax.inject.Inject() (
 
     db.withConnection { implicit c =>
       SQL(InsertQuery).on(
-        'id -> id,
-        'project_id -> projectId,
-        'type -> `type`.toString,
-        'summary -> summary.trim,
-        'error -> error,
-        'updated_by_user_id -> createdBy.id
+        Symbol("id") ->id,
+        Symbol("project_id") ->projectId,
+        Symbol("type") ->`type`.toString,
+        Symbol("summary") ->summary.trim,
+        Symbol("error") ->error,
+        Symbol("updated_by_user_id") ->createdBy.id
       ).execute()
     }
 

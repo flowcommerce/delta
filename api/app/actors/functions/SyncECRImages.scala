@@ -12,7 +12,7 @@ import io.flow.postgresql.Authorization
 import io.flow.util.Constants
 import javax.inject.Inject
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 
 /**

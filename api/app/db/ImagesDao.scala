@@ -160,12 +160,12 @@ case class ImagesWriteDao @javax.inject.Inject() (
 
         db.withConnection { implicit c =>
           SQL(UpsertQuery).on(
-            'id -> IdGenerator("img").randomId(),
-            'build_id -> form.buildId,
-            'name -> form.name.trim,
-            'version -> form.version.trim,
-            'sort_key -> Util.generateVersionSortKey(form.version.trim),
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->IdGenerator("img").randomId(),
+            Symbol("build_id") ->form.buildId,
+            Symbol("name") ->form.name.trim,
+            Symbol("version") ->form.version.trim,
+            Symbol("sort_key") ->Util.generateVersionSortKey(form.version.trim),
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 
@@ -186,12 +186,12 @@ case class ImagesWriteDao @javax.inject.Inject() (
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'id -> image.id,
-            'build_id -> form.buildId,
-            'name -> form.name.trim,
-            'version -> form.version.trim,
-            'sort_key -> Util.generateVersionSortKey(form.version.trim),
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->image.id,
+            Symbol("build_id") ->form.buildId,
+            Symbol("name") ->form.name.trim,
+            Symbol("version") ->form.version.trim,
+            Symbol("sort_key") ->Util.generateVersionSortKey(form.version.trim),
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 

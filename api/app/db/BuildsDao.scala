@@ -137,12 +137,12 @@ case class BuildsWriteDao @javax.inject.Inject() (
 
   private[db] def upsert(implicit c: java.sql.Connection, createdBy: UserReference, projectId: String, status: Status, config: BuildConfig): Unit = {
     SQL(UpsertQuery).on(
-      'id -> idGenerator.randomId(),
-      'project_id -> projectId,
-      'name -> BuildConfigUtil.getName(config).trim,
-      'status -> status.toString,
-      'cluster -> BuildConfigUtil.getCluster(config).toString,
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") ->idGenerator.randomId(),
+      Symbol("project_id") ->projectId,
+      Symbol("name") ->BuildConfigUtil.getName(config).trim,
+      Symbol("status") ->status.toString,
+      Symbol("cluster") ->BuildConfigUtil.getCluster(config).toString,
+      Symbol("updated_by_user_id") ->createdBy.id
     ).execute()
     ()
   }
@@ -150,9 +150,9 @@ case class BuildsWriteDao @javax.inject.Inject() (
   def updateStatus(createdBy: UserReference, build: Build, status: Status): Build = {
     db.withConnection { implicit c =>
       SQL(UpdateStatusQuery).on(
-        'id -> build.id,
-        'status -> status.toString,
-        'updated_by_user_id -> createdBy.id
+        Symbol("id") ->build.id,
+        Symbol("status") ->status.toString,
+        Symbol("updated_by_user_id") ->createdBy.id
       ).execute()
     }
 
@@ -166,9 +166,9 @@ case class BuildsWriteDao @javax.inject.Inject() (
   def updateCluster(createdBy: UserReference, buildId: String, cluster: Cluster): Unit = {
     db.withConnection { implicit c =>
       SQL(UpdateClusterQuery).on(
-        'id -> buildId,
-        'cluster -> cluster.toString,
-        'updated_by_user_id -> createdBy.id
+        Symbol("id") ->buildId,
+        Symbol("cluster") ->cluster.toString,
+        Symbol("updated_by_user_id") ->createdBy.id
       ).execute()
     }
     ()

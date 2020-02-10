@@ -10,7 +10,7 @@ import io.flow.log.RollbarLogger
 import io.flow.util.Config
 import org.apache.commons.codec.binary.Base64
 
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.control.NonFatal
 
 @javax.inject.Singleton

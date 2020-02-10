@@ -10,8 +10,8 @@
   @helper.select(
       value,
       Seq( ("" -> "-- select --") ) ++ orgs.map( v => (v.id -> v.id) ),
-      '_label -> "Organization",
-      '_error -> error
+      Symbol("_label") ->"Organization",
+      Symbol("_error") ->error
   )
 }
 

@@ -72,10 +72,10 @@ class AmiUpdatesDao @Inject() (
 
   private[this] def toNamedParameter(updatedBy: UserReference, form: AmiUpdateForm): Seq[NamedParameter] = {
     Seq(
-      'id -> form.id,
-      'name -> form.name,
-      'updated_by_user_id -> updatedBy.id,
-      'hash_code -> form.hashCode()
+      Symbol("id") ->form.id,
+      Symbol("name") ->form.name,
+      Symbol("updated_by_user_id") ->updatedBy.id,
+      Symbol("hash_code") ->form.hashCode()
     )
   }
 

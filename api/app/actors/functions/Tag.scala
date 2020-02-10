@@ -52,7 +52,7 @@ class Tag @Inject()(
 
   private[this] case class Tag(semver: Semver, sha: String)
 
-  private[this] def projectRepo(project: Project): Repo = GithubUtil.parseUri(project.uri).right.getOrElse {
+  private[this] def projectRepo(project: Project): Repo = GithubUtil.parseUri(project.uri).getOrElse {
     sys.error(s"Project id[${project.id}] uri[${project.uri}]: Could not parse")
   }
 

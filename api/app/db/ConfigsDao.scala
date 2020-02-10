@@ -127,10 +127,10 @@ class ConfigsDao @javax.inject.Inject() (
 
   private[db] def upsertWithConnection(c: java.sql.Connection, createdBy: UserReference, projectId: String, config: Config): Unit = {
     SQL(UpsertQuery).on(
-      'id -> idGenerator.randomId(),
-      'project_id -> projectId,
-      'data -> Json.toJson(config).toString,
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") ->idGenerator.randomId(),
+      Symbol("project_id") ->projectId,
+      Symbol("data") ->Json.toJson(config).toString,
+      Symbol("updated_by_user_id") ->createdBy.id
     ).execute()(c)
     ()
   }

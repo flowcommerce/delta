@@ -15,15 +15,15 @@
 
           @helper.inputText(
               form("email"),
-              '_label -> "Email address of user to add",
-              '_error -> form.error("email")
+              Symbol("_label") ->"Email address of user to add",
+              Symbol("_error") ->form.error("email")
           )
 
           @helper.select(
               form("role"),
               options = io.flow.delta.v0.models.Role.all.map( r => (r.toString, r.toString) ),
-              '_label -> "Role",
-              '_error -> form("role")
+              Symbol("_label") ->"Role",
+              Symbol("_error") ->form("role")
           )
 
       </fieldset>

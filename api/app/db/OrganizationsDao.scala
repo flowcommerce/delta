@@ -149,12 +149,12 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
 
   private[this] def create(implicit c: java.sql.Connection, createdBy: UserReference, form: OrganizationForm): String = {
     SQL(InsertQuery).on(
-      'id -> form.id.trim,
-      'user_id -> createdBy.id,
-      'docker_provider -> form.docker.provider.toString,
-      'docker_organization -> form.docker.organization.trim,
-      'travis_organization -> form.travis.organization.trim,
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") ->form.id.trim,
+      Symbol("user_id") ->createdBy.id,
+      Symbol("docker_provider") ->form.docker.provider.toString,
+      Symbol("docker_organization") ->form.docker.organization.trim,
+      Symbol("travis_organization") ->form.travis.organization.trim,
+      Symbol("updated_by_user_id") ->createdBy.id
     ).execute()
 
     membershipsDao.create(
@@ -173,11 +173,11 @@ case class OrganizationsWriteDao @javax.inject.Inject() (
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'id -> organization.id,
-            'docker_provider -> form.docker.provider.toString,
-            'docker_organization -> form.docker.organization.trim,
-            'travis_organization -> form.travis.organization.trim,
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->organization.id,
+            Symbol("docker_provider") ->form.docker.provider.toString,
+            Symbol("docker_organization") ->form.docker.organization.trim,
+            Symbol("travis_organization") ->form.travis.organization.trim,
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 

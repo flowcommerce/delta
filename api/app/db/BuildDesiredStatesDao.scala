@@ -116,10 +116,10 @@ class BuildDesiredStatesDao @Inject()(
 
         db.withConnection { implicit c =>
           SQL(UpsertQuery).on(
-            'id -> id,
-            'build_id -> build.id,
-            'versions -> Json.toJson(normalize(form.versions)).toString,
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->id,
+            Symbol("build_id") ->build.id,
+            Symbol("versions") ->Json.toJson(normalize(form.versions)).toString,
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 
@@ -148,9 +148,9 @@ class BuildDesiredStatesDao @Inject()(
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'build_id -> build.id,
-            'versions -> Json.toJson(normalize(form.versions)).toString,
-            'updated_by_user_id -> createdBy.id
+            Symbol("build_id") ->build.id,
+            Symbol("versions") ->Json.toJson(normalize(form.versions)).toString,
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 
@@ -199,7 +199,7 @@ class BuildDesiredStatesDao @Inject()(
   private[this] def lookupId(buildId: String): Option[String] = {
     db.withConnection { implicit c =>
       SQL(LookupIdQuery).on(
-        'build_id -> buildId
+        Symbol("build_id") ->buildId
       ).as(SqlParser.get[String]("id").*).headOption
     }
   }

@@ -59,11 +59,11 @@ class K8sBuildActor @javax.inject.Inject() (
   private[this] def handleReceiveSetupEvent(): Unit = {
     setBuildId(buildId)
 
-    system.scheduler.schedule(
+    system.scheduler.scheduleWithFixedDelay(
       Duration(1L, "second"),
       Duration(EcsBuildActor.CheckLastStateIntervalSeconds, "seconds")
     ) {
-      self ! BuildActor.Messages.CheckLastState
+      () => self ! BuildActor.Messages.CheckLastState
     }
     ()
   }

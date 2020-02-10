@@ -4,15 +4,14 @@ import akka.actor.ActorSystem
 import com.amazonaws.auth.AWSStaticCredentialsProvider
 import com.amazonaws.services.ecs.AmazonECSClientBuilder
 import com.amazonaws.services.ecs.model._
-import io.flow.delta.config.v0.models.BuildConfig
+import io.flow.delta.config.v0.models.{BuildConfig, EcsBuildConfig}
 import io.flow.delta.lib.BuildNames
 import io.flow.delta.v0.models.{Build, Organization, Version}
-import io.flow.delta.config.v0.models.EcsBuildConfig
 import io.flow.log.RollbarLogger
 import org.joda.time.DateTime
 
-import scala.collection.JavaConverters._
 import scala.concurrent.Future
+import scala.jdk.CollectionConverters._
 
 object EC2ContainerService {
 
@@ -130,13 +129,14 @@ case class EC2ContainerService @javax.inject.Inject() (
 
         // find all the container instances for this cluster
         logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService listContainerInstances")
-        val containerInstanceArns = client.listContainerInstances(
-          new ListContainerInstancesRequest()
-          .withCluster(cluster)
-        ).getContainerInstanceArns.asScala
+        val containerInstanceArns =
+          client.listContainerInstances(
+            new ListContainerInstancesRequest().withCluster(cluster)
+          ).getContainerInstanceArns
+            .asScala.toSeq
 
         // call update for each container instance
-        containerInstanceArns.map{ containerInstanceArn =>
+        containerInstanceArns.map { containerInstanceArn =>
           logger.fingerprint(this.getClass.getName).withKeyValue("cluster",cluster).withKeyValue("project", projectId).info(s"AWS EC2ContainerService updateContainerAgent")
           client.updateContainerAgent(
             new UpdateContainerAgentRequest()
@@ -294,7 +294,7 @@ case class EC2ContainerService @javax.inject.Inject() (
         }
       }
     }
-    serviceArns.flatten.distinct
+    serviceArns.flatten.toSeq.distinct
   }
 
   private[this] def getServicesInfo(cluster: String, serviceNames: Seq[String]): Seq[Service] = {
@@ -314,7 +314,7 @@ case class EC2ContainerService @javax.inject.Inject() (
       servicesToDescribe = serviceNames.drop(dropped).take(batchSize)
     }
 
-    services.flatten.distinct
+    services.flatten.toSeq.distinct
   }
 
   def registerTaskDefinition(
@@ -403,9 +403,12 @@ case class EC2ContainerService @javax.inject.Inject() (
       log.info(s"AWS EC2ContainerService describeContainerInstances")
       client.describeContainerInstances(
         new DescribeContainerInstancesRequest()
-        .withCluster(clusterName)
-        .withContainerInstances(containerInstances)
-      ).getContainerInstances().asScala.map{containerInstance => containerInstance.getEc2InstanceId }
+          .withCluster(clusterName)
+          .withContainerInstances(containerInstances)
+      ).getContainerInstances
+        .asScala
+        .toSeq
+        .map { containerInstance => containerInstance.getEc2InstanceId }
     }
   }
 

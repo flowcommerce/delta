@@ -23,9 +23,9 @@ class Delete @javax.inject.Inject() (
     table: String, deletedById: String, id: String
   ): Unit = {
     SQL(Query).on(
-      'id -> id,
-      'table -> table,
-      'user_id -> deletedById
+      Symbol("id") ->id,
+      Symbol("table") ->table,
+      Symbol("user_id") ->deletedById
     ).execute()
     ()
   }
