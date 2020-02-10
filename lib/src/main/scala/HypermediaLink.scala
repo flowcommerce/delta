@@ -39,16 +39,23 @@ case class HypermediaLinks(links: Seq[HypermediaLink] = Nil) {
 object HypermediaLinks {
 
   def parse(value: String): Either[Seq[String], HypermediaLinks] = {
-    val all = value.trim.split(",").map(_.trim).filter(_.nonEmpty).map { v =>
-      HypermediaLink.parse(v)
-    }
-    all.flatMap(_.left.getOrElse(Nil)).toList match {
-      case Nil => {
-        Right(HypermediaLinks(all.map(_.right.get)))
-      }
-      case errors => {
-        Left(errors)
-      }
+    val all =
+      value.trim.split(",")
+        .map(_.trim)
+        .filter(_.nonEmpty)
+        .map { v => HypermediaLink.parse(v) }
+        .toSeq
+
+    all.collect { case Left(e) => e } match {
+      case Nil =>
+        Right(
+          HypermediaLinks(
+            links = all.collect { case Right(v) => v }
+          )
+        )
+
+      case errors => Left(errors.flatten)
+
     }
   }
 }
@@ -63,18 +70,19 @@ object HypermediaLink {
       case url :: rel :: Nil => {
         val validatedUrl = validateUrl(url)
         val validatedRel = validateRel(rel)
-        Seq(validatedUrl, validatedRel).flatMap(_.left.getOrElse(Nil)).toList match {
-          case Nil => {
-            Right(
+        Seq(validatedUrl, validatedRel).collect { case Left(e) => e } match {
+          case Nil =>
+            for {
+              url <- validatedUrl
+              rel <- validatedRel
+            } yield {
               HypermediaLink(
-                url = validatedUrl.right.get,
-                rel = validatedRel.right.get,
+                url = url,
+                rel = rel,
               )
-            )
-          }
-          case errors => {
-            Left(errors)
-          }
+            }
+
+          case errors => Left(errors.flatten)
         }
       }
       case _ => {

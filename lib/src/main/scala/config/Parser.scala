@@ -4,7 +4,7 @@ import io.flow.delta.config.v0.models
 import io.flow.delta.config.v0.models.{Branch, BuildConfig, BuildConfigUndefinedType, BuildStage, Cluster, Config, ConfigError, ConfigProject, EcsBuildConfig, InstanceType, K8sBuildConfig, ProjectStage}
 import org.yaml.snakeyaml.Yaml
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 /**
@@ -92,7 +92,7 @@ case class Parser() {
             mapToBuild(toMap(map))
           }
         }
-      }
+      }.toSeq
 
       case _ => {
         Seq(Defaults.EcsBuildConfig)
@@ -229,7 +229,7 @@ case class Parser() {
   private[this] def toStringArray(obj: Any): Seq[String] = {
     obj match {
       case v: java.lang.String => Seq(v)
-      case ar: java.util.ArrayList[_] => ar.asScala.map(_.toString)
+      case ar: java.util.ArrayList[_] => ar.asScala.toSeq.map(_.toString)
       case _ => Nil
     }
   }
