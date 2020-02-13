@@ -8,7 +8,7 @@ object DirectDbAccess extends FlowPlaySpec with db.Helpers {
   def setCreatedAt(table: String, id: String, minutes: Int): Unit = {
     database.withConnection { implicit c =>
       SQL(s"update $table set created_at = now() + interval '$minutes minutes' where id = {id}").on(
-        'id -> id
+        Symbol("id") ->id
       ).executeUpdate()
     }
     ()

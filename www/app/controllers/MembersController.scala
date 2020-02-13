@@ -17,7 +17,7 @@ class MembersController @javax.inject.Inject() (
   controllerComponents: ControllerComponents,
   flowControllerComponents: FlowControllerComponents
 )(implicit ec: ExecutionContext)
-  extends BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) {
+  extends controllers.BaseController(deltaClientProvider, controllerComponents, flowControllerComponents) {
 
   override def section = None
 

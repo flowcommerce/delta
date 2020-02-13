@@ -6,7 +6,7 @@ import com.amazonaws.services.elasticloadbalancing.AmazonElasticLoadBalancingCli
 import com.amazonaws.services.elasticloadbalancing.model._
 import io.flow.log.RollbarLogger
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.concurrent.Future
 
 object ElasticLoadBalancer {
@@ -38,7 +38,10 @@ case class ElasticLoadBalancer @javax.inject.Inject() (
 
     client.describeInstanceHealth(
       new DescribeInstanceHealthRequest().withLoadBalancerName(loadBalancerName)
-    ).getInstanceStates.asScala.filter(_.getState == "InService").map(_.getInstanceId)
+    ).getInstanceStates
+      .asScala
+      .toSeq
+      .filter(_.getState == "InService").map(_.getInstanceId)
   }
 
   def createLoadBalancerAndHealthCheck(settings: Settings, projectId: String): Future[String] = {

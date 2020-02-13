@@ -50,7 +50,7 @@ class SyncTags @Inject()(
       withKeyValue("project_name", project.name)
   }
 
-  private[this] def projectRepo(project: Project): Repo = GithubUtil.parseUri(project.uri).right.getOrElse {
+  private[this] def projectRepo(project: Project): Repo = GithubUtil.parseUri(project.uri).getOrElse {
     log(project).withKeyValue("uri", project.uri).error("Could not parse project uri")
     sys.error(s"Project id[${project.id}] uri[${project.uri}]: Could not parse")
   }

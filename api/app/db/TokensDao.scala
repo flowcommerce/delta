@@ -118,12 +118,12 @@ class TokensDao @javax.inject.Inject() (
         val id = IdGenerator("tok").randomId()
 
         SQL(InsertQuery).on(
-          'id -> id,
-          'user_id -> form.userId,
-          'tag -> form.tag.trim,
-          'token -> form.token.trim,
-          'description -> Util.trimmedString(form.description),
-          'updated_by_user_id -> createdBy.id
+          Symbol("id") ->id,
+          Symbol("user_id") ->form.userId,
+          Symbol("tag") ->form.tag.trim,
+          Symbol("token") ->form.token.trim,
+          Symbol("description") ->Util.trimmedString(form.description),
+          Symbol("updated_by_user_id") ->createdBy.id
         ).execute()
 
         Right(
@@ -161,8 +161,8 @@ class TokensDao @javax.inject.Inject() (
     implicit c: java.sql.Connection
   ): Unit = {
     SQL(IncrementNumberViewsQuery).on(
-      'id -> tokenId,
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") ->tokenId,
+      Symbol("updated_by_user_id") ->createdBy.id
     ).execute()
     ()
   }

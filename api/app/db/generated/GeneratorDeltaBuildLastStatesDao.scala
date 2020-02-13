@@ -97,12 +97,12 @@ class BuildLastStatesDao @Inject() (
 
   private[this] def toNamedParameter(updatedBy: UserReference, form: BuildLastStatesForm): Seq[NamedParameter] = {
     Seq(
-      'id -> randomId(),
-      'build_id -> form.buildId,
-      'timestamp -> form.timestamp,
-      'versions -> Json.toJson(form.versions).toString,
-      'updated_by_user_id -> updatedBy.id,
-      'hash_code -> form.hashCode()
+      Symbol("id") ->randomId(),
+      Symbol("build_id") ->form.buildId,
+      Symbol("timestamp") ->form.timestamp,
+      Symbol("versions") ->Json.toJson(form.versions).toString,
+      Symbol("updated_by_user_id") ->updatedBy.id,
+      Symbol("hash_code") ->form.hashCode()
     )
   }
 

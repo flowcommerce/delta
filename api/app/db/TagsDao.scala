@@ -178,12 +178,12 @@ case class TagsWriteDao @javax.inject.Inject() (
 
         db.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'id -> id,
-            'project_id -> form.projectId,
-            'name -> form.name.trim,
-            'hash -> form.hash.trim,
-            'sort_key -> Util.generateVersionSortKey(form.name.trim),
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->id,
+            Symbol("project_id") ->form.projectId,
+            Symbol("name") ->form.name.trim,
+            Symbol("hash") ->form.hash.trim,
+            Symbol("sort_key") ->Util.generateVersionSortKey(form.name.trim),
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 
@@ -206,12 +206,12 @@ case class TagsWriteDao @javax.inject.Inject() (
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'id -> tag.id,
-            'project_id -> form.projectId,
-            'name -> form.name.trim,
-            'hash -> form.hash.trim,
-            'sort_key -> Util.generateVersionSortKey(form.name.trim),
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->tag.id,
+            Symbol("project_id") ->form.projectId,
+            Symbol("name") ->form.name.trim,
+            Symbol("hash") ->form.hash.trim,
+            Symbol("sort_key") ->Util.generateVersionSortKey(form.name.trim),
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 

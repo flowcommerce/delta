@@ -10,7 +10,7 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
 
   "create" in {
     val form = createOrganizationForm()
-    val organization = organizationsWriteDao.create(systemUser, form).right.getOrElse {
+    val organization = organizationsWriteDao.create(systemUser, form).getOrElse {
       sys.error("Failed to create org")
     }
     organization.id must be(form.id)
@@ -25,7 +25,7 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
       travis = org.travis
     )
 
-    val updated = organizationsWriteDao.update(systemUser, org, form).right.getOrElse {
+    val updated = organizationsWriteDao.update(systemUser, org, form).getOrElse {
       sys.error("Failed to update org")
     }
     updated.id must be(form.id)
@@ -41,7 +41,7 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
       travis = Travis(organization = "updated")
     )
 
-    val updated = organizationsWriteDao.update(systemUser, org, form).right.getOrElse {
+    val updated = organizationsWriteDao.update(systemUser, org, form).getOrElse {
       sys.error("Failed to update org")
     }
     updated.id must be(form.id)
@@ -53,7 +53,7 @@ class OrganizationsDaoSpec extends FlowPlaySpec with Helpers {
   "creation users added as admin of org" in {
     val user = createUserReference()
     val form = createOrganizationForm()
-    val org = organizationsWriteDao.create(user, form).right.getOrElse {
+    val org = organizationsWriteDao.create(user, form).getOrElse {
       sys.error("Failed to create org")
     }
     val membership = membershipsDao.findByOrganizationIdAndUserId(Authorization.All, org.id, user.id).getOrElse {

@@ -9,28 +9,28 @@
 
     @helper.inputText(
         form("name"),
-        '_label -> "Name",
-        '_error -> form.error("name")
+        Symbol("_label") ->"Name",
+        Symbol("_error") ->form.error("name")
     )
 
     @helper.select(
         form("visibility"),
         Seq( ("" -> "-- select --") ) ++ io.flow.delta.v0.models.Visibility.all.map( v => (v.toString -> v.toString) ),
-        '_label -> "Visibility",
-        '_error -> form.error("visibility")
+        Symbol("_label") ->"Visibility",
+        Symbol("_error") ->form.error("visibility")
     )
 
     @helper.select(
         form("scms"),
         Seq( ("" -> "-- select --") ) ++ io.flow.delta.v0.models.Scms.all.map( v => (v.toString -> v.toString) ),
-        '_label -> "SCMS",
-        '_error -> form.error("scms")
+        Symbol("_label") ->"SCMS",
+        Symbol("_error") ->form.error("scms")
     )
 
     @helper.inputText(
         form("uri"),
-        '_label -> "URI",
-        '_error -> form.error("uri")
+        Symbol("_label") ->"URI",
+        Symbol("_error") ->form.error("uri")
     )
 
 </fieldset>

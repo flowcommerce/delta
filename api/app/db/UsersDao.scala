@@ -143,11 +143,11 @@ case class UsersWriteDao @javax.inject.Inject() (
 
         db.withConnection { implicit c =>
           SQL(InsertQuery).on(
-            'id -> id,
-            'email -> form.email.map(_.trim),
-            'first_name -> Util.trimmedString(form.name.flatMap(_.first)),
-            'last_name -> Util.trimmedString(form.name.flatMap(_.last)),
-            'updated_by_user_id -> createdBy.getOrElse(usersDao.anonymousUser).id
+            Symbol("id") ->id,
+            Symbol("email") ->form.email.map(_.trim),
+            Symbol("first_name") ->Util.trimmedString(form.name.flatMap(_.first)),
+            Symbol("last_name") ->Util.trimmedString(form.name.flatMap(_.last)),
+            Symbol("updated_by_user_id") ->createdBy.getOrElse(usersDao.anonymousUser).id
           ).execute()
         }
 

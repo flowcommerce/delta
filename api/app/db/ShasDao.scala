@@ -162,11 +162,11 @@ case class ShasWriteDao @javax.inject.Inject() (
 
     db.withConnection { implicit c =>
       SQL(UpsertQuery).on(
-        'id -> newId,
-        'project_id -> form.projectId.trim,
-        'branch -> form.branch.trim,
-        'hash -> form.hash.trim,
-        'updated_by_user_id -> createdBy.id
+        Symbol("id") ->newId,
+        Symbol("project_id") ->form.projectId.trim,
+        Symbol("branch") ->form.branch.trim,
+        Symbol("hash") ->form.hash.trim,
+        Symbol("updated_by_user_id") ->createdBy.id
       ).execute()
     }
 

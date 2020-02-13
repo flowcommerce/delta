@@ -113,15 +113,15 @@ class ItemsDao @javax.inject.Inject() (
     val id = IdGenerator("itm").randomId()
 
     SQL(InsertQuery).on(
-      'id -> id,
-      'organization_id -> organization(form.summary).id,
-      'visibility -> visibility(form.summary).toString,
-      'object_id -> objectId(form.summary),
-      'label -> form.label,
-      'description -> form.description,
-      'contents -> form.contents.trim.toLowerCase,
-      'summary -> Json.stringify(Json.toJson(form.summary)),
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") ->id,
+      Symbol("organization_id") ->organization(form.summary).id,
+      Symbol("visibility") ->visibility(form.summary).toString,
+      Symbol("object_id") ->objectId(form.summary),
+      Symbol("label") ->form.label,
+      Symbol("description") ->form.description,
+      Symbol("contents") ->form.contents.trim.toLowerCase,
+      Symbol("summary") ->Json.stringify(Json.toJson(form.summary)),
+      Symbol("updated_by_user_id") ->createdBy.id
     ).execute()
 
     findById(Authorization.All, id).getOrElse {

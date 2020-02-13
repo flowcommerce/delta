@@ -3,7 +3,7 @@ code:
     common:
       version: latest
       generators:
-        anorm_2_6_parsers: api/app/generated
+        anorm_2_8_parsers: api/app/generated
         play_2_x_json: generated/app
     error:
       version: latest
@@ -12,46 +12,46 @@ code:
     docker-registry:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_8_client: generated/app
     docker-hub:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_8_client: generated/app
     github:
       version: latest
       generators:
-        - generator: anorm_2_6_parsers
+        - generator: anorm_2_8_parsers
           target: api/app/generated
           attributes:
             response: envelope
-        - generator: play_2_6_client
+        - generator: play_2_8_client
           target: generated/app
           attributes:
             response: envelope
     github-oauth:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_8_client: generated/app
     delta:
       version: latest
       generators:
         play_2_x_routes: api/conf/delta.routes
-        anorm_2_6_parsers: api/app/generated
-        play_2_6_client: generated/app
+        anorm_2_8_parsers: api/app/generated
+        play_2_8_client: generated/app
     delta-config:
       version: latest
       generators:
-        anorm_2_6_parsers: api/app/generated      
-        play_2_6_client: generated/app
+        anorm_2_8_parsers: api/app/generated
+        play_2_8_client: generated/app
     travis-ci:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_8_client: generated/app
     email:
       version: 0.6.9
       generators:
-        play_2_6_client: generated/app
+        play_2_8_client: generated/app
     rollbar:
       version: latest
       generators:
-        play_2_6_client: generated/app
+        play_2_8_client: generated/app

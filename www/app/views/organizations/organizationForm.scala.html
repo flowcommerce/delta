@@ -10,8 +10,8 @@
     @if(id.isEmpty) {
       @helper.inputText(
           form("id"),
-          '_label -> "Id",
-          '_error -> form.error("id")
+          Symbol("_label") ->"Id",
+          Symbol("_error") ->form.error("id")
       )
 
     } else {    
@@ -21,14 +21,14 @@
 
     @helper.inputText(
         form("docker_organization"),
-        '_label -> "Docker Hub Organization",
-        '_error -> form.error("docker_organization")
+        Symbol("_label") ->"Docker Hub Organization",
+        Symbol("_error") ->form.error("docker_organization")
     )
 
     @helper.inputText(
         form("travis_organization"),
-        '_label -> "Travis Organization",
-        '_error -> form.error("travis_organization")
+        Symbol("_label") ->"Travis Organization",
+        Symbol("_error") ->form.error("travis_organization")
     )
 </fieldset>
 

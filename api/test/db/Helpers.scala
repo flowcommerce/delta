@@ -89,7 +89,7 @@ trait Helpers {
     form: OrganizationForm = createOrganizationForm(),
     user: UserReference = Constants.SystemUser
   ): Organization = {
-    organizationsWriteDao.create(UserReference(user.id), form).right.getOrElse {
+    organizationsWriteDao.create(UserReference(user.id), form).getOrElse {
       sys.error("Failed to create organization")
     }
   }

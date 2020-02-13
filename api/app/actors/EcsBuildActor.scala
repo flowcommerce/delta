@@ -118,13 +118,12 @@ class EcsBuildActor @javax.inject.Inject() (
     if (isScaleEnabled) {
       self ! EcsBuildActor.Messages.ConfigureAWS
 
-      system.scheduler.schedule(
+      system.scheduler.scheduleWithFixedDelay(
         Duration(1L, "second"),
         Duration(EcsBuildActor.CheckLastStateIntervalSeconds, "seconds")
       ) {
-        self ! BuildActor.Messages.CheckLastState
+        () => self ! BuildActor.Messages.CheckLastState
       }
-
       ()
     }
   }
@@ -279,8 +278,8 @@ class EcsBuildActor @javax.inject.Inject() (
       asgDesiredSize = asgDesiredSize,
       elbSslCertificateId = config.requiredString("aws.elb.ssl.certificate.flow"),
       apibuilderSslCertificateId = config.requiredString("aws.elb.ssl.certificate.apibuilder"),
-      elbSubnets = config.requiredString("aws.elb.subnets").split(","),
-      asgSubnets = config.requiredString("aws.autoscaling.subnets").split(","),
+      elbSubnets = config.requiredString("aws.elb.subnets").split(",").toIndexedSeq,
+      asgSubnets = config.requiredString("aws.autoscaling.subnets").split(",").toIndexedSeq,
       lcSecurityGroup = config.requiredString("aws.launch.configuration.security.group"),
       elbSecurityGroup = config.requiredString("aws.service.security.group"),
       elbCrossZoneLoadBalancing = crossZoneLoadBalancing,

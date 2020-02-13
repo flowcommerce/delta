@@ -228,14 +228,14 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
         db.withTransaction { implicit c =>
           SQL(InsertQuery).on(
-            'id -> id,
-            'organization_id -> org.id,
-            'user_id -> createdBy.id,
-            'visibility -> form.visibility.toString,
-            'scms -> form.scms.toString,
-            'name -> form.name.trim,
-            'uri -> form.uri.trim,
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->id,
+            Symbol("organization_id") ->org.id,
+            Symbol("user_id") ->createdBy.id,
+            Symbol("visibility") ->form.visibility.toString,
+            Symbol("scms") ->form.scms.toString,
+            Symbol("name") ->form.name.trim,
+            Symbol("uri") ->form.uri.trim,
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
 
           form.config.foreach { cfg =>
@@ -275,12 +275,12 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
         db.withConnection { implicit c =>
           SQL(UpdateQuery).on(
-            'id -> project.id,
-            'visibility -> form.visibility.toString,
-            'scms -> form.scms.toString,
-            'name -> form.name.trim,
-            'uri -> form.uri.trim,
-            'updated_by_user_id -> createdBy.id
+            Symbol("id") ->project.id,
+            Symbol("visibility") ->form.visibility.toString,
+            Symbol("scms") ->form.scms.toString,
+            Symbol("name") ->form.name.trim,
+            Symbol("uri") ->form.uri.trim,
+            Symbol("updated_by_user_id") ->createdBy.id
           ).execute()
         }
 
@@ -317,7 +317,7 @@ case class ProjectsWriteDao @javax.inject.Inject() (
 
     db.withConnection { implicit c =>
       SQL("select delete_project({id})").on(
-        'id -> project.id
+        Symbol("id") ->project.id
       ).execute()
     }
 

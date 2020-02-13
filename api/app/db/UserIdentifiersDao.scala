@@ -56,7 +56,7 @@ class UserIdentifiersDao @javax.inject.Inject() (
   private[this] val CharactersAndNumbers = Characters + Numbers
 
   private[this] def randomString(alphabet: String)(n: Int): String = {
-    Stream.continually(random.nextInt(alphabet.length)).map(alphabet).take(n).mkString
+    LazyList.continually(random.nextInt(alphabet.length)).map(alphabet).take(n).mkString
   }
 
   /**
@@ -72,10 +72,10 @@ class UserIdentifiersDao @javax.inject.Inject() (
     val id = IdGenerator("usi").randomId()
 
     SQL(InsertQuery).on(
-      'id -> id,
-      'user_id -> user.id,
-      'value -> generateIdentifier(),
-      'updated_by_user_id -> createdBy.id
+      Symbol("id") ->id,
+      Symbol("user_id") ->user.id,
+      Symbol("value") ->generateIdentifier(),
+      Symbol("updated_by_user_id") ->createdBy.id
     ).execute()
 
     findAllWithConnection(id = Some(id), limit = Some(1)).headOption.getOrElse {
