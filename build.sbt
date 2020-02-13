@@ -97,11 +97,11 @@ lazy val www = project
     routesGenerator := InjectedRoutesGenerator,
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
-      "org.webjars" % "bootstrap" % "4.4.1-1",
+      "org.webjars" % "bootstrap" % "3.4.1",
       "org.webjars.bower" % "bootstrap-social" % "5.1.1",
       "org.webjars" %% "webjars-play" % "2.8.0",
-      "org.webjars" % "font-awesome" % "5.12.0",
-      "org.webjars" % "jquery" % "3.4.1",
+      "org.webjars" % "font-awesome" % "5.11.2",
+      "org.webjars" % "jquery" % "2.1.4",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.4.4" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.4.4" % Provided cross CrossVersion.full
     ),
