@@ -50,10 +50,10 @@
     @if(dashboardBuilds.hasPrevious || dashboardBuilds.hasNext) {
       <ul class="pager">
         @if(dashboardBuilds.hasPrevious) {
-          <li><a href="@routes.ApplicationController.index(builds_page = dashboardBuilds.page - 1)">Previous</a></li>
+          <li><a href="@routes.ApplicationController.index(builds_page = dashboardBuilds.page - 1, cluster = cluster)">Previous</a></li>
        }
         @if(dashboardBuilds.hasNext) {
-         <li><a href="@routes.ApplicationController.index(builds_page = dashboardBuilds.page + 1)">Next</a></li>
+         <li><a href="@routes.ApplicationController.index(builds_page = dashboardBuilds.page + 1, cluster = cluster)">Next</a></li>
         }
       </ul>
     }
