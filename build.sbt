@@ -68,7 +68,7 @@ lazy val api = project
       "io.flow" %% "lib-postgresql-play-play28" % "0.3.76",
       "io.flow" %% "lib-play-graphite-play28" % "0.1.46",
       "io.flow" %% "lib-usage-play28" % "0.1.26",
-      "io.kubernetes" % "client-java" % "8.0.0",
+      "io.kubernetes" % "client-java" % "5.0.0",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full
     ),
