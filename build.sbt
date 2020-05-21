@@ -4,7 +4,7 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.13.1"
 
-val awsVersion = "1.11.778"
+val awsVersion = "1.11.787"
 
 lazy val generated = project
   .in(file("generated"))
@@ -61,13 +61,13 @@ lazy val api = project
       "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
       "com.typesafe.play" %% "play-json-joda" % "2.8.1",
       "org.postgresql" % "postgresql" % "42.2.12",
-      "com.sendgrid" %  "sendgrid-java" % "4.4.8",
+      "com.sendgrid" %  "sendgrid-java" % "4.5.0",
       "io.flow" %% "lib-akka-akka26" % "0.1.18",
-      "io.flow" %% "lib-event-play28" % "1.0.44",
+      "io.flow" %% "lib-event-play28" % "1.0.45",
       "io.flow" %% "lib-log" % "0.1.10",
-      "io.flow" %% "lib-postgresql-play-play28" % "0.3.76",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.3.77",
       "io.flow" %% "lib-play-graphite-play28" % "0.1.46",
-      "io.flow" %% "lib-usage-play28" % "0.1.26",
+      "io.flow" %% "lib-usage-play28" % "0.1.27",
       "io.kubernetes" % "client-java" % "5.0.0",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.6.0" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.6.0" % Provided cross CrossVersion.full
