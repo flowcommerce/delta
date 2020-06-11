@@ -26,8 +26,10 @@ trait MockClient extends FlowPlaySpec with db.Helpers with FlowMockClient[
     )
   }
 
-  def identifiedClientSystemUser() = createIdentifiedClient(
+  def identifiedClientForUser(user: UserReference) = createIdentifiedClient(
     s"http://localhost:$port",
-    Constants.SystemUser
+    user
   )
+
+  def identifiedClientSystemUser() = identifiedClientForUser(Constants.SystemUser)
 }

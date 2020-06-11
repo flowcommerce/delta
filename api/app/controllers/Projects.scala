@@ -15,16 +15,17 @@ import play.api.mvc._
 
 @javax.inject.Singleton
 class Projects @javax.inject.Inject() (
-                                        @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
-                                        buildsDao: BuildsDao,
-                                        buildDesiredStatesDao: BuildDesiredStatesDao,
-                                        buildLastStatesDao: InternalBuildLastStatesDao,
-                                        helpers: Helpers,
-                                        imagesDao: ImagesDao,
-                                        projectsDao: ProjectsDao,
-                                        projectsWriteDao: ProjectsWriteDao,
-                                        val controllerComponents: ControllerComponents,
-                                        val flowControllerComponents: FlowControllerComponents
+  @javax.inject.Named("main-actor") mainActor: akka.actor.ActorRef,
+  buildsDao: BuildsDao,
+  buildDesiredStatesDao: BuildDesiredStatesDao,
+  buildLastStatesDao: InternalBuildLastStatesDao,
+  helpers: Helpers,
+  imagesDao: ImagesDao,
+  projectsDao: ProjectsDao,
+  projectsWriteDao: ProjectsWriteDao,
+  membershipsDao: MembershipsDao,
+  val controllerComponents: ControllerComponents,
+  val flowControllerComponents: FlowControllerComponents
 ) extends BaseIdentifiedRestController {
 
   def get(
@@ -95,8 +96,15 @@ class Projects @javax.inject.Inject() (
 
   def deleteById(id: String) = Identified { request =>
     helpers.withProject(request.user, id) { project =>
-      projectsWriteDao.delete(request.user, project)
-      NoContent
+      // The user must belong to the organization which owns the project.
+      // This prevent everyone from being able to delete public projects.
+      membershipsDao.findByOrganizationIdAndUserId(authorization(request), project.organization.id, request.user.id) match {
+        case None =>
+          Unauthorized
+        case Some(_) =>
+          projectsWriteDao.delete(request.user, project)
+          NoContent
+      }
     }
   }
  
