@@ -2,7 +2,8 @@ package controllers
 
 import java.util.UUID
 
-import io.flow.delta.v0.models.{Organization, Project}
+import io.flow.common.v0.models.UserReference
+import io.flow.delta.v0.models.{Organization, Project, Visibility}
 
 class ProjectsSpec extends MockClient with db.Helpers {
 
@@ -90,6 +91,19 @@ class ProjectsSpec extends MockClient with db.Helpers {
     expectNotFound(
       identifiedClientSystemUser().projects.deleteById(project.id)
     )
+  }
+
+  "DELETE /projects validates membership" in {
+    val project = createProject(org)(createProjectForm(org).copy(visibility = Visibility.Public))
+
+    val user2 = createUser()
+    expectNotAuthorized(
+      identifiedClientForUser(UserReference(user2.id)).projects.deleteById(project.id)
+    )
+
+    await(
+      identifiedClientSystemUser().projects.getById(project.id)
+    ).id must be (project.id)
   }
 
 }
