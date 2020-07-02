@@ -4,8 +4,6 @@ organization := "io.flow"
 
 scalaVersion in ThisBuild := "2.13.1"
 
-val awsVersion = "1.11.787"
-
 lazy val generated = project
   .in(file("generated"))
   .enablePlugins(PlayScala)
@@ -53,12 +51,12 @@ lazy val api = project
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       jdbc,
-      "com.amazonaws" % "aws-java-sdk-ec2" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-ecs" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-ecr" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-autoscaling" % awsVersion,
-      "com.amazonaws" % "aws-java-sdk-sns" % awsVersion,
+      "com.amazonaws" % "aws-java-sdk-ec2" % "1.11.787",
+      "com.amazonaws" % "aws-java-sdk-ecs" % "1.11.787",
+      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.787",
+      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % "1.11.787",
+      "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.11.787",
+      "com.amazonaws" % "aws-java-sdk-sns" % "1.11.787",
       "com.typesafe.play" %% "play-json-joda" % "2.8.1",
       "org.postgresql" % "postgresql" % "42.2.12",
       "com.sendgrid" %  "sendgrid-java" % "4.5.0",
