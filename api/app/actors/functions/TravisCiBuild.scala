@@ -13,6 +13,7 @@ import io.flow.log.RollbarLogger
 import io.flow.util.Config
 import io.flow.travis.ci.v0.Client
 import io.flow.travis.ci.v0.models._
+import io.flow.travis.ci.v0.models.json._
 import play.api.libs.ws.WSClient
 
 import scala.concurrent.{Await, ExecutionContext}
@@ -145,7 +146,7 @@ class TravisCiDockerImageBuilder @Inject()(
   private def createRequestPostForm(travisCiBuild: TravisCiBuild): RequestPostForm = {
     val dockerImageName = BuildNames.dockerImageName(travisCiBuild.org.docker, travisCiBuild.build, travisCiBuild.ecsBuildConfig)
 
-    RequestPostForm(
+    val form = RequestPostForm(
       request = RequestPostFormData(
         branch = travisCiBuild.version,
         message = Option(travisCommitMessage(dockerImageName, travisCiBuild.version)),
@@ -180,6 +181,14 @@ class TravisCiDockerImageBuilder @Inject()(
         )
       )
     )
+
+    logger
+      .withKeyValue("build", travisCiBuild.build.name)
+      .withKeyValue("form", form)
+      .withSendToRollbar(false)
+      .warn("Dump delta form")
+
+    form
   }
 
   private def createRequestHeaders(travisCiBuild: TravisCiBuild): Seq[(String, String)] = {
