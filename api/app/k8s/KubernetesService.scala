@@ -38,6 +38,10 @@ class DefaultKubernetesService @Inject()(
 
   private val InstanceNameLabel = "app.kubernetes.io/name"
 
+  private val LiveStage = "live"
+
+  private val StageLabel = "app.kubernetes.io/stage"
+
   private[this] val kubeConfig: Option[KubeConfig] = {
     val path = new File(config.requiredString("kube.config.path"))
     if (path.exists()) {
@@ -70,11 +74,16 @@ class DefaultKubernetesService @Inject()(
     }
   }
 
+  private[this] def getReplicaSetsLabelSelector(serviceName: String) = List(
+    s"$InstanceNameLabel=$serviceName",
+    s"$StageLabel=$LiveStage"
+  ).mkString(",")
+
   private[this] def replicaSets(serviceName: String): Seq[V1ReplicaSet] = {
     client match {
       case None => Nil
       case Some(c) => {
-        c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, s"$InstanceNameLabel=$serviceName", null, null, null, false)
+        c.listNamespacedReplicaSet(ProductionNamespace, true, null, null, null, getReplicaSetsLabelSelector(serviceName), null, null, null, false)
           .getItems
           .asScala
           .toSeq
