@@ -150,8 +150,8 @@ class TravisCiDockerImageBuilder @Inject()(
       request = RequestPostFormData(
         branch = travisCiBuild.version,
         message = Option(travisCommitMessage(dockerImageName, travisCiBuild.version)),
+        mergeMode = Option(MergeMode.Replace),
         config = RequestConfigData(
-          mergeMode = Option(MergeMode.Replace),
           branches = Option(RequestConfigBranchesData(
             only = Option(Seq("/^\\d+\\.\\d+\\.\\d+$/"))
           )),
