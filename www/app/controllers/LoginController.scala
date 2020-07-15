@@ -52,7 +52,7 @@ class LoginController @javax.inject.Inject() (
           u
         }
       }
-      Redirect(url).withIdentifiedCookieUser(UserReference(user.id.toString))
+      Redirect(url).withIdentifiedCookieUser(UserReference(user.id))
     }.recover {
       case response: io.flow.delta.v0.errors.GenericErrorResponse => {
         Ok(views.html.login.index(config, UiData(requestPath = request.path), returnUrl, response.genericError.messages))

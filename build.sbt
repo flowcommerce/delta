@@ -78,6 +78,7 @@ lazy val api = project
     ),
     // Make sure you only exclude warnings for the project directories, i.e. make builds reproducible
     scalacOptions += s"-P:silencer:sourceRoots=${baseDirectory.value.getCanonicalPath}",
+    javaOptions in Test += "-Dconfig.file=conf/test.conf",
   )
 
 lazy val www = project

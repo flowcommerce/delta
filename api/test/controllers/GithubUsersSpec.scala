@@ -1,6 +1,7 @@
 package controllers
 
 import io.flow.delta.api.lib.MockGithubData
+import io.flow.delta.v0.errors.GenericErrorResponse
 import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.github.v0.models.{OwnerType, User => GithubUser}
 
@@ -16,7 +17,7 @@ class GithubUsersSpec extends MockClient with db.Helpers {
       gravatarId = None,
       url = s"https://github.com/$login",
       htmlUrl = s"https://github.com/$login",
-      `type` = OwnerType.User
+      `type` = OwnerType.User,
     )
   }
 
@@ -24,7 +25,7 @@ class GithubUsersSpec extends MockClient with db.Helpers {
     val githubUser = createLocalGithubUser()
     val code = "test"
 
-    MockGithubData.addUser(githubUser, code)
+    MockGithubData.addUser(githubUser, code, organizations = Seq("flowcommerce"))
 
     val user = await(anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code)))
 
@@ -41,12 +42,22 @@ class GithubUsersSpec extends MockClient with db.Helpers {
     val githubUser = createLocalGithubUser().copy(email = None)
     val code = "test"
 
-    MockGithubData.addUser(githubUser, code)
+    MockGithubData.addUser(githubUser, code, organizations = Seq("flowcommerce"))
     val user = await(
       anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code))
     )
     user.email must be(None)
     usersDao.findByGithubUserId(githubUser.id).map(_.id) must be(Some(user.id))
+  }
+
+  "POST /authentication/github should deny accounts that are not in the required orgs" in {
+    val githubUser = createLocalGithubUser().copy(email = None)
+    val code = "test"
+
+    MockGithubData.addUser(githubUser, code, organizations = Seq("fbi", "nsa", "spacex"))
+    a [GenericErrorResponse] must be thrownBy await(
+      anonClient.githubUsers.postGithub(GithubAuthenticationForm(code = code))
+    )
   }
 
 }

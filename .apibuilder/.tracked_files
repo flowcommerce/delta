@@ -32,6 +32,7 @@ flow:
   github:
     anorm_2_8_parsers:
     - api/app/generated/FlowGithubV0Conversions.scala
+    - api/app/generated/FlowGithubV0Parsers.scala
     play_2_8_client:
     - generated/app/FlowGithubV0Client.scala
   github-oauth:

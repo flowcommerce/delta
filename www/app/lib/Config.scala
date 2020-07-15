@@ -14,7 +14,7 @@ class Config @javax.inject.Inject() (
 
   val VersionsPerPage = 5
 
-  private val GithubScopes = Seq("user:email", "repo", "read:repo_hook", "write:repo_hook")
+  private val GithubScopes = Seq("user:email", "read:org", "repo", "read:repo_hook", "write:repo_hook")
 
   private[this] val GitHubOauthUrl = "https://github.com/login/oauth/authorize"
 

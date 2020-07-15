@@ -22,7 +22,8 @@ case class GithubUserData(
   token: String,
   emails: Seq[String],
   name: Option[String],
-  avatarUrl: Option[String]
+  avatarUrl: Option[String],
+  organizations: Seq[String],
 )
 
 class GitHubHelper @javax.inject.Inject() (
@@ -150,6 +151,19 @@ trait Github {
     }
   }
 
+  protected def config: Config
+  protected lazy val allowedOrgs = config.optionalList("github.delta.allowedOrgs")
+  protected def validateUser(userData: GithubUserData): Either[Seq[String], Unit] = {
+    allowedOrgs match {
+      case None => Right(())
+      case Some(allowedOrgs) =>
+        if ((allowedOrgs intersect userData.organizations).nonEmpty)
+          Right(())
+        else
+          Left(Seq(s"user is not a member of allowed organizations - ${allowedOrgs.mkString(",")}"))
+    }
+  }
+
   /**
     * For this user, returns the oauth token if available
     */
@@ -160,7 +174,7 @@ trait Github {
 @javax.inject.Singleton
 class DefaultGithub @javax.inject.Inject() (
   logger: RollbarLogger,
-  config: Config,
+  val config: Config,
   gitHubHelper: GitHubHelper,
   githubUsersDao: GithubUsersDao,
   tokensDao: TokensDao,
@@ -181,58 +195,45 @@ class DefaultGithub @javax.inject.Inject() (
   )
 
   override def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
-    getGithubUserFromCode(code).map {
-      case Left(errors) => Left(errors)
-      case Right(githubUserWithToken) => {
-        val userResult: Either[Seq[String], User] = usersDao.findByGithubUserId(githubUserWithToken.githubId) match {
-          case Some(user) => {
-            Right(user)
-          }
-          case None => {
-            githubUserWithToken.emails.headOption flatMap { email =>
+    getGithubUserFromCode(code).map { githubUser =>
+      for {
+        githubUserWithToken <- githubUser
+        _ <- validateUser(githubUserWithToken)
+        user <- usersDao.findByGithubUserId(githubUserWithToken.githubId)
+          .orElse {
+            githubUserWithToken.emails.headOption.flatMap { email =>
               usersDao.findByEmail(email)
-            } match {
-              case Some(user) => {
-                Right(user)
-              }
-              case None => {
-                usersWriteDao.create(
-                  createdBy = None,
-                  form = UserForm(
-                    email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(gitHubHelper.parseName)
-                  )
-                )
-              }
             }
           }
-        }
-
-        userResult match {
-          case Left(errors) => {
-            Left(errors)
-          }
-          case Right(user) => {
-            githubUsersDao.upsertById(
+          .toRight(Seq("not found"))
+          .orElse {
+            usersWriteDao.create(
               createdBy = None,
-              form = GithubUserForm(
-                userId = user.id,
-                githubUserId = githubUserWithToken.githubId,
-                login = githubUserWithToken.login
+              form = UserForm(
+                email = githubUserWithToken.emails.headOption,
+                name = githubUserWithToken.name.map(gitHubHelper.parseName)
               )
             )
-
-            tokensDao.setLatestByTag(
-              createdBy = UserReference(id = user.id),
-              form = InternalTokenForm.GithubOauth(
-                userId = user.id,
-                token = githubUserWithToken.token
-              )
-            )
-
-            Right(user)
           }
-        }
+      } yield {
+        githubUsersDao.upsertById(
+          createdBy = None,
+          form = GithubUserForm(
+            userId = user.id,
+            githubUserId = githubUserWithToken.githubId,
+            login = githubUserWithToken.login
+          )
+        )
+
+        tokensDao.setLatestByTag(
+          createdBy = UserReference(id = user.id),
+          form = InternalTokenForm.GithubOauth(
+            userId = user.id,
+            token = githubUserWithToken.token
+          )
+        )
+
+        user
       }
     }
   }
@@ -249,6 +250,7 @@ class DefaultGithub @javax.inject.Inject() (
       for {
         githubUser <- client.users.getUser().map(_.body)
         emails <- client.userEmails.get().map(_.body)
+        orgs <- client.users.getUserAndOrgs(perPage = Some(100))
       } yield {
         // put primary first
         val sortedEmailAddresses = (emails.filter(_.primary) ++ emails.filter(!_.primary)).map(_.email)
@@ -260,7 +262,8 @@ class DefaultGithub @javax.inject.Inject() (
             token = response.accessToken,
             emails = sortedEmailAddresses,
             name = githubUser.name,
-            avatarUrl = githubUser.avatarUrl
+            avatarUrl = githubUser.avatarUrl,
+            organizations = orgs.body.map(_.login),
           )
         )
       }
@@ -332,62 +335,50 @@ class MockGithub @Inject()(
   githubUsersDao: GithubUsersDao,
   tokensDao: TokensDao,
   usersDao: UsersDao,
-  usersWriteDao: UsersWriteDao
+  usersWriteDao: UsersWriteDao,
+  val config: Config,
 ) extends Github {
 
   override def getUserFromCode(code: String)(implicit ec: ExecutionContext): Future[Either[Seq[String], User]] = {
-    getGithubUserFromCode(code).map {
-      case Left(errors) => Left(errors)
-      case Right(githubUserWithToken) => {
-        val userResult: Either[Seq[String], User] = usersDao.findByGithubUserId(githubUserWithToken.githubId) match {
-          case Some(user) => {
-            Right(user)
-          }
-          case None => {
-            githubUserWithToken.emails.headOption flatMap { email =>
+    getGithubUserFromCode(code).map { githubUser =>
+      for {
+        githubUserWithToken <- githubUser
+        _ <- validateUser(githubUserWithToken)
+        user <- usersDao.findByGithubUserId(githubUserWithToken.githubId)
+          .orElse {
+            githubUserWithToken.emails.headOption.flatMap { email =>
               usersDao.findByEmail(email)
-            } match {
-              case Some(user) => {
-                Right(user)
-              }
-              case None => {
-                usersWriteDao.create(
-                  createdBy = None,
-                  form = UserForm(
-                    email = githubUserWithToken.emails.headOption,
-                    name = githubUserWithToken.name.map(gitHubHelper.parseName)
-                  )
-                )
-              }
             }
           }
-        }
-
-        userResult match {
-          case Left(errors) => {
-            Left(errors)
-          }
-          case Right(user) => {
-            githubUsersDao.upsertById(
+          .toRight(Seq("not found"))
+          .orElse {
+            usersWriteDao.create(
               createdBy = None,
-              form = GithubUserForm(
-                userId = user.id,
-                githubUserId = githubUserWithToken.githubId,
-                login = githubUserWithToken.login
+              form = UserForm(
+                email = githubUserWithToken.emails.headOption,
+                name = githubUserWithToken.name.map(gitHubHelper.parseName)
               )
             )
-
-            tokensDao.setLatestByTag(
-              createdBy = UserReference(id = user.id),
-              form = InternalTokenForm.GithubOauth(
-                userId = user.id,
-                token = githubUserWithToken.token
-              )
-            )
-
-            Right(user)
           }
-        }
+      } yield {
+        githubUsersDao.upsertById(
+          createdBy = None,
+          form = GithubUserForm(
+            userId = user.id,
+            githubUserId = githubUserWithToken.githubId,
+            login = githubUserWithToken.login
+          )
+        )
+
+        tokensDao.setLatestByTag(
+          createdBy = UserReference(id = user.id),
+          form = InternalTokenForm.GithubOauth(
+            userId = user.id,
+            token = githubUserWithToken.token
+          )
+        )
+
+        user
       }
     }
   }
@@ -427,7 +418,7 @@ object MockGithubData {
   private[this] val repositories = scala.collection.mutable.Map[String, GithubRepository]()
   private[this] val files = scala.collection.mutable.Map[String, String]()
 
-  def addUser(githubUser: GithubUser, code: String, token: Option[String] = None): Unit = {
+  def addUser(githubUser: GithubUser, code: String, token: Option[String] = None, organizations: Seq[String] = Seq()): Unit = {
     githubUserByCodes += (
       code -> GithubUserData(
         githubId = githubUser.id,
@@ -435,7 +426,8 @@ object MockGithubData {
         token = token.getOrElse(IdGenerator("tok").randomId),
         emails = Seq(githubUser.email).flatten,
         name = githubUser.name,
-        avatarUrl = githubUser.avatarUrl
+        avatarUrl = githubUser.avatarUrl,
+        organizations = organizations,
       )
     )
     ()
