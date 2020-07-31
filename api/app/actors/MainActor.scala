@@ -5,7 +5,7 @@ import java.util.UUID
 import actors.RollbarActor
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, PoisonPill, Props}
 import com.typesafe.config.Config
-import db.{BuildsDao, ConfigsDao, DashboardBuildsDao, ItemsDao, ProjectsDao}
+import db.{BuildsDao, ConfigsDao, DashboardBuildsDao, EventsDao, ItemsDao, ProjectsDao}
 import io.flow.akka.SafeReceive
 import io.flow.akka.recurring.{ScheduleConfig, Scheduler}
 import io.flow.common.v0.models.UserReference
@@ -14,7 +14,7 @@ import io.flow.delta.config.v0.models.{Cluster, ConfigError, ConfigProject, Conf
 import io.flow.delta.v0.models.DashboardBuild
 import io.flow.log.RollbarLogger
 import io.flow.util.Constants
-import io.flow.postgresql.Authorization
+import io.flow.postgresql.{Authorization, Pager}
 import javax.inject.Named
 import lib.ProjectConfigUtil
 import play.api.libs.concurrent.InjectedActorSupport
@@ -59,6 +59,8 @@ object MainActor {
     case class EnsureContainerAgentHealth(buildId: String)
     case class UpdateContainerAgent(buildId: String)
     case class RemoveOldServices(buildId: String)
+
+    case object RemoveOldEvents
   }
 }
 
@@ -81,6 +83,7 @@ class MainActor @javax.inject.Inject() (
   configsDao: ConfigsDao,
   projectsDao: ProjectsDao,
   itemsDao: ItemsDao,
+  eventsDao: EventsDao,
   @Named("rollbar-actor") rollbarActor: ActorRef,
 ) extends Actor with ActorLogging with Scheduler with InjectedActorSupport {
 
@@ -116,6 +119,11 @@ class MainActor @javax.inject.Inject() (
         ScheduleConfig.fromConfig(config, "main.actor.update.jwt.token"),
         DockerHubTokenActor.Messages.Refresh,
         dockerHubTokenActor
+      )
+
+      scheduleRecurring(
+        ScheduleConfig.fromConfig(config, "main.actor.remove.old.events"),
+        MainActor.Messages.RemoveOldEvents
       )
 
       scheduleRecurring(
@@ -178,6 +186,8 @@ class MainActor @javax.inject.Inject() (
     }
 
     case _ => SafeReceive.withLogUnhandled {
+      case MainActor.Messages.RemoveOldEvents => removeOldEvents()
+
       case MainActor.Messages.BuildCreated(id) =>
         upsertBuildSupervisorActor(id) ! BuildSupervisorActor.Messages.PursueDesiredState
 
@@ -264,6 +274,14 @@ class MainActor @javax.inject.Inject() (
 
       case MainActor.Messages.EnsureContainerAgentHealth(buildId) =>
         upsertBuildActor(buildId) ! EcsBuildActor.Messages.EnsureContainerAgentHealth
+    }
+  }
+
+  def removeOldEvents(): Unit = {
+    Pager.create { offset =>
+      eventsDao.findAll(numberMinutesSinceCreation = Some(1440), limit = Some(500), offset = offset)
+    }.foreach { event =>
+      eventsDao.delete(Constants.SystemUser, event)
     }
   }
 
