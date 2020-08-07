@@ -23,7 +23,7 @@
               form("role"),
               options = io.flow.delta.v0.models.Role.all.map( r => (r.toString, r.toString) ),
               Symbol("_label") ->"Role",
-              Symbol("_error") ->form("role")
+              Symbol("_error") ->form.error("role")
           )
 
       </fieldset>

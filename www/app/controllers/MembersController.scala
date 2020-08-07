@@ -170,7 +170,7 @@ object MembersController {
 
   private val uiForm = Form(
     mapping(
-      "role" -> nonEmptyText,
+      "role" -> default(nonEmptyText, io.flow.delta.v0.models.Role.Member.toString),
       "email" -> nonEmptyText
     )(UiForm.apply)(UiForm.unapply)
   )
