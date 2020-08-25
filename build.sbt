@@ -53,7 +53,7 @@ lazy val api = project
       jdbc,
       "com.amazonaws" % "aws-java-sdk-ec2" % "1.11.842",
       "com.amazonaws" % "aws-java-sdk-ecs" % "1.11.842",
-      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.847",
+      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.848",
       "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % "1.11.842",
       "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.11.842",
       "com.amazonaws" % "aws-java-sdk-sns" % "1.11.842",
