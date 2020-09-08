@@ -252,7 +252,7 @@ class EcsBuildActor @javax.inject.Inject() (
     }
   }
 
-  private[this] def awsSettings(): DefaultSettings = withEcsBuildConfig { bc =>
+  private[this] def awsSettings: DefaultSettings = withEcsBuildConfig { bc =>
     val instanceType = bc.instanceType
     val instanceMemorySettings = InstanceTypeDefaults.memory(instanceType)
     val latestAmi = amiUpdatesDao.findAll(limit = Some(1), orderBy = OrderBy("-ami_updates.created_at")).head.id

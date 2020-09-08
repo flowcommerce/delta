@@ -19,12 +19,12 @@ class SemverSpec extends PlaySpec {
   }
 
   "next" in {
-    Semver(0, 1, 2).next must be(Semver(0, 1, 3))
+    Semver(0, 1, 2).next() must be(Semver(0, 1, 3))
   }
 
   "next prevents minor from exceeded 100" in {
-    Semver(0, 1, 98).next must be(Semver(0, 1, 99))
-    Semver(0, 1, 99).next must be(Semver(0, 2, 0))
+    Semver(0, 1, 98).next() must be(Semver(0, 1, 99))
+    Semver(0, 1, 99).next() must be(Semver(0, 2, 0))
   }
 
   "label" in {

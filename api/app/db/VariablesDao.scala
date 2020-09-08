@@ -56,12 +56,12 @@ class VariablesDao @javax.inject.Inject() (
       case Nil => {
         db.withConnection { implicit c =>
           SQL(UpsertQuery).on(
-            Symbol("id") ->idGenerator.randomId,
+            Symbol("id") ->idGenerator.randomId(),
             Symbol("organization_id") ->form.organization,
             Symbol("key") ->form.key,
             Symbol("value") ->form.value,
             Symbol("updated_by_user_id") ->updatedBy.id
-          ).execute
+          ).execute()
         }
 
         Right(

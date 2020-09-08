@@ -23,7 +23,7 @@ class ParserSpec extends PlaySpec {
   }
 
   def read(path: File): String = {
-    scala.io.Source.fromFile(path).getLines.toSeq.mkString("\n")
+    scala.io.Source.fromFile(path).getLines().toSeq.mkString("\n")
   }
 
   "Samples" in {

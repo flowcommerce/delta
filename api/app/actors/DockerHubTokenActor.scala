@@ -85,7 +85,7 @@ class DockerHubToken @javax.inject.Inject() (
     */
   def refresh()(implicit ec: ExecutionContext): Unit = {
     organizationsDao.findAll(Authorization.All, limit = None).foreach { organization =>
-      generateTokenFuture.map { jwt =>
+      generateTokenFuture().map { jwt =>
         val form = VariableForm(organization.id, tokenKey, jwt.token)
         variablesDao.upsert(Authorization.All, usersDao.systemUser, form) match {
           case Left(errors) => logger.withKeyValues("error", errors).error(s"Error refreshing docker hub JWT token")

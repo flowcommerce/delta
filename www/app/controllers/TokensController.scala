@@ -45,7 +45,7 @@ class TokensController @javax.inject.Inject() (
   }
 
   def postCreate = User.async { implicit request =>
-    val form = TokensController.tokenForm.bindFromRequest
+    val form = TokensController.tokenForm.bindFromRequest()
     form.fold (
 
       errors => Future {
