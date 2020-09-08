@@ -57,7 +57,7 @@ class MembersController @javax.inject.Inject() (
 
   def postCreate(orgId: String) = User.async { implicit request =>
     withOrganization(request, orgId) { org =>
-      val boundForm = MembersController.uiForm.bindFromRequest
+      val boundForm = MembersController.uiForm.bindFromRequest()
 
       organizations(request).flatMap { _ =>
         boundForm.fold (

@@ -84,7 +84,7 @@ class Tag @Inject()(
                     }
                   }
                   case false => {
-                    createTag(tag.semver.next.label, sha, project, repo)
+                    createTag(tag.semver.next().label, sha, project, repo)
                   }
                 }
               }

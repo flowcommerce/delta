@@ -68,7 +68,7 @@ class ProjectSupervisorActor @Inject()(
             run(project, config, ProjectSupervisorActor.Functions)
 
             buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
-              sender ! MainActor.Messages.BuildSync(build.id)
+              sender() ! MainActor.Messages.BuildSync(build.id)
             }
           }
         }
@@ -77,7 +77,7 @@ class ProjectSupervisorActor @Inject()(
     case ProjectSupervisorActor.Messages.CheckTag(name: String) =>
       withProject { project =>
         buildsDao.findAllByProjectId(Authorization.All, project.id).foreach { build =>
-          sender ! MainActor.Messages.BuildCheckTag(build.id, name)
+          sender() ! MainActor.Messages.BuildCheckTag(build.id, name)
         }
       }
 

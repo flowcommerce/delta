@@ -423,7 +423,7 @@ object MockGithubData {
       code -> GithubUserData(
         githubId = githubUser.id,
         login = githubUser.login,
-        token = token.getOrElse(IdGenerator("tok").randomId),
+        token = token.getOrElse(IdGenerator("tok").randomId()),
         emails = Seq(githubUser.email).flatten,
         name = githubUser.name,
         avatarUrl = githubUser.avatarUrl,

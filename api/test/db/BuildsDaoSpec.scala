@@ -27,7 +27,7 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
       Some(build.id)
     )
 
-    buildsDao.findById(Authorization.All, createTestKey) must be(None)
+    buildsDao.findById(Authorization.All, createTestKey()) must be(None)
   }
 
   "findByProjectIdAndName" in {
@@ -53,8 +53,8 @@ class BuildsDaoSpec extends FlowPlaySpec with Helpers {
     )
 
     buildsDao.findAll(Authorization.All, ids = Some(Nil), limit = None) must be(Nil)
-    buildsDao.findAll(Authorization.All, ids = Some(Seq(createTestKey)), limit = None) must be(Nil)
-    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, createTestKey)), limit = None).map(_.id) must be(Seq(build1.id))
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(createTestKey())), limit = None) must be(Nil)
+    buildsDao.findAll(Authorization.All, ids = Some(Seq(build1.id, createTestKey())), limit = None).map(_.id) must be(Seq(build1.id))
   }
 
   "findAll by projectId" in {
