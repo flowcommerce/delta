@@ -30,7 +30,7 @@ lazy val lib = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % "1.26"
+      "org.yaml" % "snakeyaml" % "1.27"
     )
   )
 
@@ -51,21 +51,21 @@ lazy val api = project
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       jdbc,
-      "com.amazonaws" % "aws-java-sdk-ec2" % "1.11.853",
-      "com.amazonaws" % "aws-java-sdk-ecs" % "1.11.853",
-      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.858",
-      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % "1.11.853",
-      "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.11.853",
-      "com.amazonaws" % "aws-java-sdk-sns" % "1.11.853",
+      "com.amazonaws" % "aws-java-sdk-ec2" % "1.11.865",
+      "com.amazonaws" % "aws-java-sdk-ecs" % "1.11.865",
+      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.865",
+      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % "1.11.865",
+      "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.11.865",
+      "com.amazonaws" % "aws-java-sdk-sns" % "1.11.865",
       "com.typesafe.play" %% "play-json-joda" % "2.9.1",
       "org.postgresql" % "postgresql" % "42.2.16",
-      "com.sendgrid" %  "sendgrid-java" % "4.6.4",
-      "io.flow" %% "lib-akka-akka26" % "0.1.30",
-      "io.flow" %% "lib-event-play28" % "1.0.54",
-      "io.flow" %% "lib-log" % "0.1.19",
-      "io.flow" %% "lib-postgresql-play-play28" % "0.3.92",
-      "io.flow" %% "lib-play-graphite-play28" % "0.1.58",
-      "io.flow" %% "lib-usage-play28" % "0.1.34",
+      "com.sendgrid" %  "sendgrid-java" % "4.6.5",
+      "io.flow" %% "lib-akka-akka26" % "0.1.31",
+      "io.flow" %% "lib-event-play28" % "1.0.55",
+      "io.flow" %% "lib-log" % "0.1.20",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.3.93",
+      "io.flow" %% "lib-play-graphite-play28" % "0.1.60",
+      "io.flow" %% "lib-usage-play28" % "0.1.35",
       "io.kubernetes" % "client-java" % "5.0.0",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.1" cross CrossVersion.full),
       "com.github.ghik" %% "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
@@ -123,8 +123,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play28" % "0.6.11",
-    "io.flow" %% "lib-test-utils-play28" % "0.1.3" % Test,
+    "io.flow" %% "lib-play-play28" % "0.6.12",
+    "io.flow" %% "lib-test-utils-play28" % "0.1.4" % Test,
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
