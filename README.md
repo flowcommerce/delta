@@ -24,3 +24,4 @@ See: https://github.com/flowcommerce/delta-postgresql
 ### Compiling and Running
 
 See: https://github.com/flowcommerce/delta/blob/master/DEVELOPER.md
+
