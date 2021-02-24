@@ -30,7 +30,7 @@ lazy val lib = project
   .settings(commonSettings: _*)
   .settings(
     libraryDependencies ++= Seq(
-      "org.yaml" % "snakeyaml" % "1.27"
+      "org.yaml" % "snakeyaml" % "1.28"
     )
   )
 
@@ -51,20 +51,20 @@ lazy val api = project
     testOptions += Tests.Argument("-oF"),
     libraryDependencies ++= Seq(
       jdbc,
-      "com.amazonaws" % "aws-java-sdk-ec2" % "1.11.952",
-      "com.amazonaws" % "aws-java-sdk-ecs" % "1.11.952",
-      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.952",
-      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % "1.11.952",
-      "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.11.952",
-      "com.amazonaws" % "aws-java-sdk-sns" % "1.11.952",
+      "com.amazonaws" % "aws-java-sdk-ec2" % "1.11.961",
+      "com.amazonaws" % "aws-java-sdk-ecs" % "1.11.961",
+      "com.amazonaws" % "aws-java-sdk-ecr" % "1.11.961",
+      "com.amazonaws" % "aws-java-sdk-elasticloadbalancing" % "1.11.961",
+      "com.amazonaws" % "aws-java-sdk-autoscaling" % "1.11.961",
+      "com.amazonaws" % "aws-java-sdk-sns" % "1.11.961",
       "com.typesafe.play" %% "play-json-joda" % "2.9.2",
-      "org.postgresql" % "postgresql" % "42.2.18",
+      "org.postgresql" % "postgresql" % "42.2.19",
       "com.sendgrid" %  "sendgrid-java" % "4.7.1",
       "io.flow" %% "lib-akka-akka26" % "0.1.44",
-      "io.flow" %% "lib-event-play28" % "1.0.75",
-      "io.flow" %% "lib-log" % "0.1.34",
-      "io.flow" %% "lib-postgresql-play-play28" % "0.4.15",
-      "io.flow" %% "lib-play-graphite-play28" % "0.1.87",
+      "io.flow" %% "lib-event-play28" % "1.0.76",
+      "io.flow" %% "lib-log" % "0.1.35",
+      "io.flow" %% "lib-postgresql-play-play28" % "0.4.16",
+      "io.flow" %% "lib-play-graphite-play28" % "0.1.89",
       "io.flow" %% "lib-usage-play28" % "0.1.54",
       "io.kubernetes" % "client-java" % "5.0.0",
       compilerPlugin("com.github.ghik" %% "silencer-plugin" % "1.7.2" cross CrossVersion.full),
@@ -123,8 +123,8 @@ lazy val commonSettings: Seq[Setting[_]] = Seq(
   libraryDependencies ++= Seq(
     ws,
     guice,
-    "io.flow" %% "lib-play-play28" % "0.6.31",
-    "io.flow" %% "lib-test-utils-play28" % "0.1.25" % Test,
+    "io.flow" %% "lib-play-play28" % "0.6.32",
+    "io.flow" %% "lib-test-utils-play28" % "0.1.26" % Test,
   ),
   sources in (Compile,doc) := Seq.empty,
   publishArtifact in (Compile, packageDoc) := false,
