@@ -1,6 +1,6 @@
 package controllers
 
-import com.github.ghik.silencer.silent
+import scala.annotation.nowarn
 import db.SubscriptionsDao
 import io.flow.delta.v0.models.json._
 import io.flow.delta.v0.models.{Publication, Subscription, SubscriptionForm}
@@ -50,7 +50,7 @@ class Subscriptions @javax.inject.Inject() (
     }
   }
 
-  @silent
+  @nowarn
   def post(identifier: Option[String]) = Identified(parse.json) { request =>
     request.body.validate[SubscriptionForm] match {
       case e: JsError => {
@@ -66,7 +66,7 @@ class Subscriptions @javax.inject.Inject() (
     }
   }
 
-  @silent
+  @nowarn
   def deleteById(id: String, identifier: Option[String]) = Identified { request =>
     withSubscription(id) { subscription =>
       subscriptionsDao.delete(request.user, subscription)

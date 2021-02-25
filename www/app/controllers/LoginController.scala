@@ -1,6 +1,6 @@
 package controllers
 
-import com.github.ghik.silencer.silent
+import scala.annotation.nowarn
 import io.flow.common.v0.models.UserReference
 import io.flow.delta.v0.models.GithubAuthenticationForm
 import io.flow.delta.www.lib.{Config, DeltaClientProvider, UiData}
@@ -32,7 +32,7 @@ class LoginController @javax.inject.Inject() (
     Redirect("/").withIdentifiedCookieUser(UserReference(userId.toString))
   }
 
-  @silent
+  @nowarn
   def githubCallback(
     code: String,
     state: Option[String],

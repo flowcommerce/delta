@@ -1,6 +1,6 @@
 package controllers
 
-import com.github.ghik.silencer.silent
+import scala.annotation.nowarn
 import io.flow.delta.config.v0.models.{ConfigError, ConfigProject, ConfigUndefinedType}
 import io.flow.delta.v0.errors.UnitResponse
 import io.flow.delta.v0.models._
@@ -129,7 +129,7 @@ class ProjectsController @javax.inject.Inject() (
     }
   }
 
-  @silent
+  @nowarn
   def postGithubOrg(
     orgId: String,
     owner: String, // github owner, ex. flowcommerce
